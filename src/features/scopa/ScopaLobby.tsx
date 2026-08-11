@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RulesModal } from './components/RulesModal';
 
 function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
@@ -13,6 +14,7 @@ export function ScopaLobby() {
   const [name, setName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
@@ -36,9 +38,13 @@ export function ScopaLobby() {
 
   return (
     <div className="container scopa-lobby">
+      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
       <header className="scopa-lobby-header">
         <h1>Scopa</h1>
         <p>Le jeu de cartes italien, en ligne, entre potes. 2, 3 ou 4 joueurs.</p>
+        <button type="button" className="btn btn-outline scopa-rules-link" onClick={() => setRulesOpen(true)}>
+          📖 Règles du jeu
+        </button>
       </header>
 
       <div className="scopa-lobby-name">

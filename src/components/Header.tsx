@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   return (
@@ -8,6 +9,9 @@ export function Header() {
           <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="La Cafétéria" className="site-logo" />
           <span>La Cafétéria</span>
         </Link>
+        <div className="site-header-actions">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

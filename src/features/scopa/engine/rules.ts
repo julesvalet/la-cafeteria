@@ -130,12 +130,13 @@ export function playCard(
     const found = options.find(
       (opt) => opt.length === captureCardIds.length && opt.every((c) => captureCardIds.includes(c.id)),
     );
-    if (!found) return { state, error: 'Capture invalide.' };
+    if (!found) return { state, error: 'Capture invalide : cette sélection ne correspond à aucune capture possible.' };
     chosenCombo = found;
-  } else if (options.length === 1) {
-    chosenCombo = options[0];
-  } else if (options.length > 1) {
-    return { state, error: 'Choix de capture requis.' };
+  } else if (options.length > 0) {
+    return {
+      state,
+      error: 'Une capture est possible avec cette carte : sélectionne la ou les cartes de la table à capturer.',
+    };
   }
 
   const newHand = [...player.hand];

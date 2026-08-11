@@ -1,16 +1,47 @@
 .site-header {
   border-bottom: 1px solid var(--color-border);
-  background: rgba(255, 252, 248, 0.85);
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
   backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 20;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .site-header-inner {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   height: 72px;
+}
+
+.site-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 17px;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-primary-light);
+  transform: rotate(-12deg) scale(1.05);
+}
+
+.theme-toggle-icon {
+  display: inline-block;
+  transition: transform 0.3s ease;
 }
 
 .site-brand {
@@ -30,7 +61,7 @@
   font-family: var(--font-heading);
   font-size: 21px;
   font-weight: 600;
-  color: var(--color-primary-darker);
+  color: var(--color-heading);
 }
 
 .site-main {

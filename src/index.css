@@ -1,12 +1,17 @@
 :root {
+  /* Brand accent — identical in light & dark themes */
   --color-primary: #c9975e;
   --color-primary-dark: #a97844;
   --color-primary-darker: #7a5730;
   --color-primary-light: #e8c9a0;
   --color-primary-tint: #f6e9d8;
+
+  /* Surfaces & text — theme-dependent */
   --color-bg: #fffcf8;
   --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
   --color-text: #3b2a1e;
+  --color-heading: #7a5730;
   --color-text-muted: #8a7563;
   --color-border: #ecdfcc;
   --color-success: #5a8a5a;
@@ -26,6 +31,24 @@
   color-scheme: light;
 }
 
+:root[data-theme='dark'] {
+  --color-bg: #17120d;
+  --color-surface: #241c15;
+  --color-surface-raised: #2c231a;
+  --color-text: #f1e4d3;
+  --color-heading: #e8c9a0;
+  --color-text-muted: #b2a08a;
+  --color-border: #3c2f22;
+  --color-success: #7cb47c;
+  --color-danger: #d97b64;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,11 +59,20 @@ body {
   padding: 0;
 }
 
+html {
+  background: var(--color-bg);
+}
+
 body {
   background: linear-gradient(180deg, var(--color-primary-tint) 0%, var(--color-bg) 320px);
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+:root[data-theme='dark'] body {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)) 0%, var(--color-bg) 320px);
 }
 
 #root {
@@ -56,7 +88,7 @@ h4 {
   font-family: var(--font-heading);
   font-weight: 600;
   margin: 0;
-  color: var(--color-primary-darker);
+  color: var(--color-heading);
 }
 
 p {
@@ -114,11 +146,11 @@ button {
 .btn-outline {
   background: transparent;
   border: 1.5px solid var(--color-primary-light);
-  color: var(--color-primary-darker);
+  color: var(--color-heading);
 }
 
 .btn-outline:hover {
-  background: var(--color-primary-tint);
+  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
 }
 
 .btn:disabled {

@@ -1,16 +1,21 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useScopaRoom } from './net/useScopaRoom';
-import { findCaptureOptions } from './engine/rules';
-import { RANK_LABEL, SUIT_LABEL } from './engine/deck';
 import { PlayingCard } from './components/PlayingCard';
 import { ScoreBoard } from './components/ScoreBoard';
+import { CapturedPile } from './components/CapturedPile';
+import { DeckPile } from './components/DeckPile';
+import { ScopaFlash } from './components/ScopaFlash';
+import { RulesModal } from './components/RulesModal';
+import { AnimatedNumber } from './components/AnimatedNumber';
 import type { CardT } from './engine/types';
 
 interface LocationState {
   isHost?: boolean;
   name?: string;
 }
+
+const DEAL_STEP = 0.06;
 
 export function ScopaRoom() {
   const { code = '' } = useParams();
@@ -58,12 +63,74 @@ export function ScopaRoom() {
 
 function ScopaGameView({ code, name, isHost }: { code: string; name: string; isHost: boolean }) {
   const { state, selfId, status, error, sendAction } = useScopaRoom(code, name, isHost);
-  const [pendingCard, setPendingCard] = useState<CardT | null>(null);
-  const [pendingOptions, setPendingOptions] = useState<CardT[][]>([]);
+
+  const [selectedCard, setSelectedCard] = useState<CardT | null>(null);
+  const [selectedTableIds, setSelectedTableIds] = useState<string[]>([]);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [scopaFlashName, setScopaFlashName] = useState<string | null>(null);
+
+  const lastErrorRef = useRef<string | null>(null);
+  const prevScopeRef = useRef<number[]>([]);
+  const lastHandNumberRef = useRef(0);
+  const lastTotalHandRef = useRef(0);
 
   const myIndex = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = myIndex >= 0 ? state?.players[myIndex] : undefined;
   const isMyTurn = state?.phase === 'playing' && state.turn === myIndex;
+
+  // Compute a stagger-delay map for cards that just got dealt, so PlayingCard
+  // can play its deal-in entrance the moment it first mounts.
+  const dealDelays = new Map<string, number>();
+  if (state) {
+    const totalHand = state.players.reduce((sum, p) => sum + p.hand.length, 0);
+    const isNewHand = state.handNumber !== lastHandNumberRef.current;
+    const isRedeal = !isNewHand && lastTotalHandRef.current === 0 && totalHand > 0 && state.phase === 'playing';
+
+    if (isNewHand || isRedeal) {
+      let idx = 0;
+      if (isNewHand) {
+        for (const card of state.table) dealDelays.set(card.id, idx++ * DEAL_STEP);
+      }
+      for (const p of state.players) {
+        for (const card of p.hand) dealDelays.set(card.id, idx++ * DEAL_STEP);
+      }
+    }
+    lastHandNumberRef.current = state.handNumber;
+    lastTotalHandRef.current = totalHand;
+  }
+
+  // Detect a scopa (a player's scope count just went up) to trigger the celebration overlay.
+  useEffect(() => {
+    if (!state) return;
+    const prev = prevScopeRef.current;
+    if (prev.length === state.players.length) {
+      const scorer = state.players.find((p, i) => p.scope > (prev[i] ?? 0));
+      if (scorer) {
+        setScopaFlashName(scorer.name);
+        const t = setTimeout(() => setScopaFlashName(null), 1600);
+        prevScopeRef.current = state.players.map((p) => p.scope);
+        return () => clearTimeout(t);
+      }
+    }
+    prevScopeRef.current = state.players.map((p) => p.scope);
+  }, [state]);
+
+  // Surface action errors (illegal captures, etc.) as a transient banner.
+  useEffect(() => {
+    if (error && error !== lastErrorRef.current) {
+      lastErrorRef.current = error;
+      setActionError(error);
+      const t = setTimeout(() => setActionError(null), 3800);
+      return () => clearTimeout(t);
+    }
+  }, [error]);
+
+  // Clear any pending selection whenever the turn changes.
+  useEffect(() => {
+    setSelectedCard(null);
+    setSelectedTableIds([]);
+  }, [state?.turn, state?.phase]);
 
   if (status === 'connecting') {
     return (
@@ -88,46 +155,59 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
 
   const inviteLink = `${window.location.origin}${window.location.pathname.replace(/\/scopa\/.*/, '')}/scopa/${code}`;
 
-  const handlePlayCard = (card: CardT) => {
-    if (!isMyTurn || !me) return;
-    const options = findCaptureOptions(state.table, card.rank);
-    if (options.length <= 1) {
-      sendAction({
-        type: 'PLAY_CARD',
-        playerId: selfId!,
-        cardId: card.id,
-        captureCardIds: options[0]?.map((c) => c.id) ?? [],
-      });
+  const selectHandCard = (card: CardT) => {
+    if (!isMyTurn) return;
+    if (selectedCard?.id === card.id) {
+      setSelectedCard(null);
+      setSelectedTableIds([]);
     } else {
-      setPendingCard(card);
-      setPendingOptions(options);
+      setSelectedCard(card);
+      setSelectedTableIds([]);
     }
   };
 
-  const confirmCapture = (option: CardT[]) => {
-    if (!pendingCard || !selfId) return;
+  const toggleTableCard = (cardId: string) => {
+    if (!selectedCard) return;
+    setSelectedTableIds((ids) => (ids.includes(cardId) ? ids.filter((id) => id !== cardId) : [...ids, cardId]));
+  };
+
+  const confirmPlay = () => {
+    if (!selectedCard || !selfId) return;
     sendAction({
       type: 'PLAY_CARD',
       playerId: selfId,
-      cardId: pendingCard.id,
-      captureCardIds: option.map((c) => c.id),
+      cardId: selectedCard.id,
+      captureCardIds: selectedTableIds,
     });
-    setPendingCard(null);
-    setPendingOptions([]);
+    setSelectedCard(null);
+    setSelectedTableIds([]);
+  };
+
+  const cancelSelection = () => {
+    setSelectedCard(null);
+    setSelectedTableIds([]);
   };
 
   return (
     <div className="container scopa-room">
+      <ScopaFlash playerName={scopaFlashName} />
+      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+
       <div className="scopa-room-topbar">
         <div>
           <h1>Scopa — room {code}</h1>
-          <button
-            type="button"
-            className="btn btn-outline scopa-invite-btn"
-            onClick={() => navigator.clipboard?.writeText(inviteLink)}
-          >
-            📋 Copier le lien d'invitation
-          </button>
+          <div className="scopa-topbar-actions">
+            <button
+              type="button"
+              className="btn btn-outline scopa-invite-btn"
+              onClick={() => navigator.clipboard?.writeText(inviteLink)}
+            >
+              📋 Copier le lien d'invitation
+            </button>
+            <button type="button" className="btn btn-outline scopa-invite-btn" onClick={() => setRulesOpen(true)}>
+              📖 Règles
+            </button>
+          </div>
         </div>
         <Link to="/scopa" className="scopa-back-link">
           Quitter
@@ -139,7 +219,10 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
           <h2>En attente de joueurs ({state.players.length}/4)</h2>
           <ul className="scopa-player-list">
             {state.players.map((p) => (
-              <li key={p.id}>{p.name}{p.id === selfId ? ' (toi)' : ''}</li>
+              <li key={p.id}>
+                {p.name}
+                {p.id === selfId ? ' (toi)' : ''}
+              </li>
             ))}
           </ul>
           {isHost ? (
@@ -169,20 +252,37 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                     </p>
                     <div className="scopa-opponent-hand">
                       {Array.from({ length: p.handCount }).map((_, idx) => (
-                        <PlayingCard key={idx} card={{ id: String(idx), suit: 'denari', rank: 1 }} faceDown small />
+                        <PlayingCard
+                          key={idx}
+                          card={{ id: `${p.id}-back-${idx}`, suit: 'denari', rank: 1 }}
+                          faceDown
+                          small
+                          dealDelay={dealDelays.size > 0 ? idx * DEAL_STEP : undefined}
+                        />
                       ))}
                     </div>
+                    <CapturedPile cards={p.captured} label="Pile" />
                   </div>
                 ),
               )}
             </div>
 
             <div className="scopa-table">
-              <h3>Table</h3>
+              <div className="scopa-table-head">
+                <h3>Table</h3>
+                <DeckPile count={state.deck.length} />
+              </div>
               <div className="scopa-table-cards">
                 {state.table.length === 0 && <p className="scopa-empty">Table vide</p>}
                 {state.table.map((c) => (
-                  <PlayingCard key={c.id} card={c} />
+                  <PlayingCard
+                    key={c.id}
+                    card={c}
+                    dealDelay={dealDelays.get(c.id)}
+                    selected={selectedTableIds.includes(c.id)}
+                    selectable={Boolean(selectedCard)}
+                    onClick={selectedCard ? () => toggleTableCard(c.id) : undefined}
+                  />
                 ))}
               </div>
             </div>
@@ -193,41 +293,44 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
               </p>
             )}
 
+            {actionError && <p className="scopa-error-banner">⚠️ {actionError}</p>}
+
             {me && (
               <div className="scopa-hand">
-                <h3>Ta main</h3>
+                <div className="scopa-hand-head">
+                  <h3>Ta main</h3>
+                  <CapturedPile cards={me.captured} label="Ta pile" />
+                </div>
                 <div className="scopa-hand-cards">
                   {me.hand.map((c) => (
                     <PlayingCard
                       key={c.id}
                       card={c}
+                      dealDelay={dealDelays.get(c.id)}
                       selectable={isMyTurn}
-                      onClick={isMyTurn ? () => handlePlayCard(c) : undefined}
+                      selected={selectedCard?.id === c.id}
+                      onClick={isMyTurn ? () => selectHandCard(c) : undefined}
                     />
                   ))}
                 </div>
-              </div>
-            )}
 
-            {pendingCard && (
-              <div className="scopa-capture-modal">
-                <div className="scopa-capture-modal-inner">
-                  <h3>
-                    Choisis les cartes à capturer avec {RANK_LABEL[pendingCard.rank]} de {SUIT_LABEL[pendingCard.suit]}
-                  </h3>
-                  <div className="scopa-capture-options">
-                    {pendingOptions.map((option, idx) => (
-                      <button key={idx} type="button" className="scopa-capture-option" onClick={() => confirmCapture(option)}>
-                        {option.map((c) => (
-                          <PlayingCard key={c.id} card={c} small />
-                        ))}
+                {selectedCard && (
+                  <div className="scopa-confirm-bar">
+                    <span>
+                      {selectedTableIds.length === 0
+                        ? 'Aucune carte sélectionnée sur la table : la carte sera posée.'
+                        : `${selectedTableIds.length} carte(s) sélectionnée(s) sur la table.`}
+                    </span>
+                    <div className="scopa-confirm-actions">
+                      <button type="button" className="btn btn-outline" onClick={cancelSelection}>
+                        Annuler
                       </button>
-                    ))}
+                      <button type="button" className="btn btn-primary" onClick={confirmPlay}>
+                        Jouer
+                      </button>
+                    </div>
                   </div>
-                  <button type="button" className="btn btn-outline" onClick={() => setPendingCard(null)}>
-                    Annuler
-                  </button>
-                </div>
+                )}
               </div>
             )}
 
@@ -252,13 +355,25 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                       return (
                         <tr key={p.id}>
                           <td>{p.name}</td>
-                          <td>{detail.carte}</td>
-                          <td>{detail.denari}</td>
-                          <td>{detail.settebello}</td>
-                          <td>{detail.primiera}</td>
-                          <td>{detail.scope}</td>
                           <td>
-                            <strong>{detail.total}</strong>
+                            <AnimatedNumber value={detail.carte} />
+                          </td>
+                          <td>
+                            <AnimatedNumber value={detail.denari} />
+                          </td>
+                          <td>
+                            <AnimatedNumber value={detail.settebello} />
+                          </td>
+                          <td>
+                            <AnimatedNumber value={detail.primiera} />
+                          </td>
+                          <td>
+                            <AnimatedNumber value={detail.scope} />
+                          </td>
+                          <td>
+                            <strong>
+                              <AnimatedNumber value={detail.total} duration={1.1} />
+                            </strong>
                           </td>
                         </tr>
                       );

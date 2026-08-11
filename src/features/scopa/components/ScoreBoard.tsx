@@ -1,4 +1,5 @@
 import type { GameState } from '../engine/types';
+import { AnimatedNumber } from './AnimatedNumber';
 
 interface ScoreBoardProps {
   state: GameState;
@@ -19,7 +20,8 @@ export function ScoreBoard({ state, selfId }: ScoreBoardProps) {
               {!p.connected ? ' — déconnecté' : ''}
             </span>
             <span className="scopa-player-stats">
-              🃏 {p.captured.length} · ⚡ {p.scope} · pts {state.matchScores[i] ?? 0}
+              🃏 <AnimatedNumber value={p.captured.length} /> · ⚡ <AnimatedNumber value={p.scope} /> · pts{' '}
+              <AnimatedNumber value={state.matchScores[i] ?? 0} />
             </span>
           </li>
         ))}
