@@ -126,17 +126,16 @@ export function playCard(
   const options = findCaptureOptions(state.table, card.rank);
   let chosenCombo: CardT[] | null = null;
 
+  // A capture is only ever performed when the player explicitly designates one.
+  // Playing a card without designating anything simply lays it on the table,
+  // even if a capture was mathematically available: spotting captures is the
+  // player's job, never the game's.
   if (captureCardIds.length > 0) {
     const found = options.find(
       (opt) => opt.length === captureCardIds.length && opt.every((c) => captureCardIds.includes(c.id)),
     );
     if (!found) return { state, error: 'Capture invalide : cette sélection ne correspond à aucune capture possible.' };
     chosenCombo = found;
-  } else if (options.length > 0) {
-    return {
-      state,
-      error: 'Une capture est possible avec cette carte : sélectionne la ou les cartes de la table à capturer.',
-    };
   }
 
   const newHand = [...player.hand];

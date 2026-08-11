@@ -94,9 +94,10 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
                   </div>
                 </div>
                 <p className="scopa-rule-note">
-                  Les figures valent : Fante (F) = 8, Cavallo (C) = 9, Re (R) = 10. Si une capture est possible, elle
-                  est <strong>obligatoire</strong> — impossible de poser la carte sans capturer. À toi de repérer les
-                  combinaisons sur la table !
+                  Les figures valent : Fante (F) = 8, Cavallo (C) = 9, Re (R) = 10. Dans les règles traditionnelles,
+                  une capture possible est <strong>obligatoire</strong> — mais ici le jeu ne t'oblige à rien et ne te
+                  signale jamais rien : dépose ta carte sur une carte de la table pour la capturer, ou sur le tapis
+                  pour simplement la poser. À toi de repérer les combinaisons !
                 </p>
               </section>
 

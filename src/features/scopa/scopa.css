@@ -143,6 +143,13 @@ input[type='text']:focus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.scopa-invite-btn.is-copied {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: #fff;
 }
 
 .scopa-player-list {
@@ -274,10 +281,9 @@ input[type='text']:focus {
   --table-card-base-h: 92px;
 }
 
-.scopa-table-cards-zone .scopa-card {
+.scopa-table-cards-zone .scopa-card-holder {
   width: calc(var(--table-card-base-w, 64px) * var(--card-scale, 1));
   height: calc(var(--table-card-base-h, 92px) * var(--card-scale, 1));
-  flex-shrink: 0;
 }
 
 .scopa-empty {
@@ -388,7 +394,7 @@ input[type='text']:focus {
    transform, which Framer Motion owns for the fan-spread animation), so
    there is no leftover hit-testable box left behind at the center once the
    card visually moves to its fanned-out position. */
-.scopa-seat-hand > .scopa-card {
+.scopa-seat-hand > .scopa-card-holder {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -446,7 +452,7 @@ input[type='text']:focus {
   --hand-card-base-h: 92px;
 }
 
-.scopa-my-hand .scopa-card {
+.scopa-my-hand .scopa-card-holder {
   width: calc(var(--hand-card-base-w, 64px) * var(--hand-card-scale, 1));
   height: calc(var(--hand-card-base-h, 92px) * var(--hand-card-scale, 1));
   position: absolute;
@@ -457,9 +463,22 @@ input[type='text']:focus {
 }
 
 /* ================= Playing cards ================= */
-.scopa-card {
+
+/* The holder owns the card's footprint and placement; the card itself fills it. */
+.scopa-card-holder {
   width: 64px;
   height: 92px;
+  flex-shrink: 0;
+}
+
+.scopa-card-holder-sm {
+  width: 44px;
+  height: 64px;
+}
+
+.scopa-card {
+  width: 100%;
+  height: 100%;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   background: #fffdf9;
@@ -470,6 +489,7 @@ input[type='text']:focus {
     0 4px 8px rgba(0, 0, 0, 0.16),
     0 10px 18px rgba(0, 0, 0, 0.12);
   padding: 0;
+  display: block;
 }
 
 .scopa-card-img {
@@ -478,11 +498,6 @@ input[type='text']:focus {
   object-fit: cover;
   display: block;
   pointer-events: none;
-}
-
-.scopa-card-sm {
-  width: 44px;
-  height: 64px;
 }
 
 .scopa-card-back {
@@ -643,11 +658,6 @@ input[type='text']:focus {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-}
-
-.scopa-rule-group > div {
-  display: flex;
-  gap: 4px;
 }
 
 .scopa-rule-tag {
@@ -845,12 +855,12 @@ input[type='text']:focus {
 }
 
 @media (max-width: 520px) {
-  .scopa-card {
+  .scopa-card-holder {
     width: 52px;
     height: 76px;
   }
 
-  .scopa-card-sm {
+  .scopa-card-holder-sm {
     width: 38px;
     height: 55px;
   }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import type { PanInfo } from 'framer-motion';
-import { Link2, BookOpen, LogOut, TriangleAlert, Trophy, Sparkles } from 'lucide-react';
+import { Copy, Check, BookOpen, LogOut, TriangleAlert, Trophy, Sparkles } from 'lucide-react';
 import { useScopaRoom } from './net/useScopaRoom';
 import { PlayingCard } from './components/PlayingCard';
 import { Avatar } from './components/Avatar';
@@ -77,12 +77,15 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
   const [actionError, setActionError] = useState<string | null>(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const [scopaFlashName, setScopaFlashName] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const tableFeltRef = useRef<HTMLDivElement>(null);
   const lastErrorRef = useRef<string | null>(null);
   const prevScopeRef = useRef<number[]>([]);
   const lastHandNumberRef = useRef(0);
   const lastTotalHandRef = useRef(0);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playLockRef = useRef(false);
 
   const myIndex = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = myIndex >= 0 ? state?.players[myIndex] : undefined;
@@ -153,6 +156,10 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
     setSelectedTableIds([]);
   }, [state?.turn, state?.phase]);
 
+  useEffect(() => () => {
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+  }, []);
+
   if (status === 'connecting') {
     return (
       <div className="container scopa-status">
@@ -174,32 +181,81 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
 
   if (!state) return null;
 
-  const inviteLink = `${window.location.origin}${window.location.pathname.replace(/\/scopa\/.*/, '')}/scopa/${code}`;
+  const handleCopyCode = () => {
+    navigator.clipboard?.writeText(code);
+    setCopied(true);
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    copyTimerRef.current = setTimeout(() => setCopied(false), 1800);
+  };
 
   const toggleTableCard = (cardId: string) => {
     if (!isMyTurn) return;
     setSelectedTableIds((ids) => (ids.includes(cardId) ? ids.filter((id) => id !== cardId) : [...ids, cardId]));
   };
 
-  const commitPlay = (card: CardT) => {
-    if (!isMyTurn || !selfId) return;
+  const commitPlay = (card: CardT, captureIds?: string[]) => {
+    if (!isMyTurn || !selfId || playLockRef.current) return;
+    // Guard against a single gesture (or an impatient double-tap) sending two plays.
+    playLockRef.current = true;
+    setTimeout(() => {
+      playLockRef.current = false;
+    }, 400);
     sendAction({
       type: 'PLAY_CARD',
       playerId: selfId,
       cardId: card.id,
-      captureCardIds: selectedTableIds,
+      captureCardIds: captureIds ?? selectedTableIds,
     });
     setSelectedTableIds([]);
   };
 
-  const handleDragRelease = (card: CardT, info: PanInfo) => {
+  /**
+   * Which table card, if any, the dropped card was released on top of. Table
+   * cards render in `state.table` order inside the zone, so DOM order maps
+   * straight onto the model. Requires a solid overlap so that merely landing
+   * near a card doesn't get read as an intent to capture it.
+   */
+  const findDropTargetCardId = (rect: DOMRect | null): string | null => {
+    if (!rect || !state) return null;
+    const zone = tableFeltRef.current?.querySelector('.scopa-table-cards-zone');
+    if (!zone) return null;
+
+    let bestId: string | null = null;
+    let bestArea = 0;
+    zone.querySelectorAll('.scopa-card').forEach((node, i) => {
+      const target = state.table[i];
+      if (!target) return;
+      const r = node.getBoundingClientRect();
+      const overlapW = Math.min(rect.right, r.right) - Math.max(rect.left, r.left);
+      const overlapH = Math.min(rect.bottom, r.bottom) - Math.max(rect.top, r.top);
+      if (overlapW <= 0 || overlapH <= 0) return;
+      const area = overlapW * overlapH;
+      if (area / (r.width * r.height) > 0.3 && area > bestArea) {
+        bestArea = area;
+        bestId = target.id;
+      }
+    });
+    return bestId;
+  };
+
+  const handleDragRelease = (card: CardT, _info: PanInfo, rect: DOMRect | null) => {
     if (!isMyTurn) return;
-    const distance = Math.hypot(info.offset.x, info.offset.y);
     const felt = tableFeltRef.current?.getBoundingClientRect();
-    const overTable =
-      felt && info.point.x >= felt.left && info.point.x <= felt.right && info.point.y >= felt.top && info.point.y <= felt.bottom;
-    if (distance < 10 || overTable) {
+    if (!felt || !rect) return;
+
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const overTable = cx >= felt.left && cx <= felt.right && cy >= felt.top && cy <= felt.bottom;
+    if (!overTable) return; // released off the table: the card just snaps back
+
+    // Cards explicitly picked out on the table win (that's how sum captures over
+    // several cards are designated); otherwise dropping straight onto a card
+    // designates that one, and dropping on bare felt simply lays the card down.
+    if (selectedTableIds.length > 0) {
       commitPlay(card);
+    } else {
+      const targetId = findDropTargetCardId(rect);
+      commitPlay(card, targetId ? [targetId] : []);
     }
   };
 
@@ -214,10 +270,18 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
           <div className="scopa-topbar-actions">
             <button
               type="button"
-              className="btn btn-outline scopa-invite-btn"
-              onClick={() => navigator.clipboard?.writeText(inviteLink)}
+              className={`btn btn-outline scopa-invite-btn ${copied ? 'is-copied' : ''}`}
+              onClick={handleCopyCode}
             >
-              <Link2 size={14} /> Copier le lien
+              {copied ? (
+                <>
+                  <Check size={14} /> Copié !
+                </>
+              ) : (
+                <>
+                  <Copy size={14} /> Copier le code
+                </>
+              )}
             </button>
             <button type="button" className="btn btn-outline scopa-invite-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
@@ -359,7 +423,7 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                   zIndex={idx}
                   draggable={isMyTurn}
                   selectable={isMyTurn}
-                  onDragRelease={(info) => handleDragRelease(c, info)}
+                  onDragRelease={(info, rect) => handleDragRelease(c, info, rect)}
                   onClick={isMyTurn ? () => commitPlay(c) : undefined}
                 />
               );
