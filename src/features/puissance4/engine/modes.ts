@@ -7,6 +7,12 @@ export interface ModeConfig {
   players: number;
   cols: number;
   rows: number;
+  /**
+   * Discs each player gets for the whole game. Deliberately short of what it
+   * would take to fill their share of the grid: the run is a resource, and the
+   * powers scattered through it are what makes spending it a decision.
+   */
+  discs: number;
   /** Team of each seat, by seat order. Free-for-all gives everyone their own. */
   teams: number[];
   teamNames?: string[];
@@ -25,6 +31,7 @@ export const MODES: Record<P4Mode, ModeConfig> = {
     players: 2,
     cols: 7,
     rows: 6,
+    discs: 16,
     teams: [0, 1],
   },
   trio: {
@@ -34,6 +41,7 @@ export const MODES: Record<P4Mode, ModeConfig> = {
     players: 3,
     cols: 9,
     rows: 7,
+    discs: 14,
     teams: [0, 1, 2],
   },
   quatuor: {
@@ -43,6 +51,7 @@ export const MODES: Record<P4Mode, ModeConfig> = {
     players: 4,
     cols: 10,
     rows: 8,
+    discs: 12,
     teams: [0, 1, 2, 3],
   },
   teams: {
@@ -52,6 +61,7 @@ export const MODES: Record<P4Mode, ModeConfig> = {
     players: 4,
     cols: 8,
     rows: 7,
+    discs: 12,
     teams: [0, 1, 0, 1],
     teamNames: ['Équipe Crema', 'Équipe Menthe'],
   },

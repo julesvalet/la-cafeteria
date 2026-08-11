@@ -12,6 +12,21 @@ type WireMessage =
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'error';
 
+/**
+ * Hides which of the *other* players' discs are charged, keeping only how many
+ * they have left. You are shown your own next power, so without this the same
+ * screen would quietly hand you everyone else's — the length is public, the
+ * contents are not.
+ */
+function maskState(state: P4State, viewerId: string): P4State {
+  return {
+    ...state,
+    players: state.players.map((p) =>
+      p.id === viewerId ? p : { ...p, charges: p.charges.map(() => null) },
+    ),
+  };
+}
+
 interface UseP4RoomResult {
   state: P4State | null;
   selfId: string | null;
@@ -24,9 +39,8 @@ interface UseP4RoomResult {
 
 /**
  * Same shape as the Scopa room: the host owns the authoritative state, applies
- * every action through the pure engine, and broadcasts the result. Unlike Scopa
- * there is no hidden information on a Puissance 4 board, so the state goes out
- * to everyone unmasked.
+ * every action through the pure engine, and broadcasts the result — masked per
+ * recipient, since each player may only see their own charged discs.
  */
 export function useP4Room(
   roomCode: string,
@@ -61,14 +75,15 @@ export function useP4Room(
       peerRef.current = peer;
 
       const broadcast = (next: P4State) => {
-        for (const conn of conns.values()) {
-          if (conn.open) conn.send({ type: 'STATE', state: next } satisfies WireMessage);
+        for (const [peerId, conn] of conns) {
+          if (conn.open) conn.send({ type: 'STATE', state: maskState(next, peerId) } satisfies WireMessage);
         }
       };
 
       const commit = (next: P4State) => {
+        // The ref keeps the truth; every view of it, the host's included, is masked.
         hostStateRef.current = next;
-        setState(next);
+        setState(maskState(next, hostId));
         broadcast(next);
       };
 
@@ -81,7 +96,7 @@ export function useP4Room(
           name: nameRef.current,
         }).state;
         hostStateRef.current = initial;
-        setState(initial);
+        setState(maskState(initial, id));
         setStatus('connected');
       });
 
@@ -89,7 +104,7 @@ export function useP4Room(
         conn.on('open', () => {
           conns.set(conn.peer, conn);
           if (hostStateRef.current) {
-            conn.send({ type: 'STATE', state: hostStateRef.current } satisfies WireMessage);
+            conn.send({ type: 'STATE', state: maskState(hostStateRef.current, conn.peer) } satisfies WireMessage);
           }
         });
 
@@ -173,16 +188,16 @@ export function useP4Room(
         if (!hostStateRef.current) return;
         const { state: next, error: err } = applyAction(hostStateRef.current, action);
         hostStateRef.current = next;
-        setState(next);
-        for (const conn of connsRef.current.values()) {
-          if (conn.open) conn.send({ type: 'STATE', state: next } satisfies WireMessage);
+        setState(maskState(next, PEER_PREFIX + roomCode.trim().toUpperCase()));
+        for (const [peerId, conn] of connsRef.current) {
+          if (conn.open) conn.send({ type: 'STATE', state: maskState(next, peerId) } satisfies WireMessage);
         }
         if (err) setError(err);
       } else {
         hostConnRef.current?.send({ type: 'ACTION', action } satisfies WireMessage);
       }
     },
-    [isHost],
+    [isHost, roomCode],
   );
 
   const clearError = useCallback(() => setError(null), []);

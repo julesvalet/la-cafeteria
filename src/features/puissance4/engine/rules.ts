@@ -1,5 +1,5 @@
 import { MODES } from './modes';
-import { POWERS, initialPowers } from './powers';
+import { POWERS, rollCharges } from './powers';
 import type {
   ColumnEffect,
   Disc,
@@ -27,6 +27,7 @@ export function createInitialState(roomCode: string, hostId: string, mode: P4Mod
     phase: 'lobby',
     effects: [],
     pendingDouble: false,
+    pendingPower: null,
     discSeq: 0,
     winner: null,
     lastEvent: { seq: 0, kind: 'none' },
@@ -148,6 +149,14 @@ function resolveBoard(state: P4State, actingTeam: number | null): P4State {
   if (state.cells.every((c) => c !== null)) {
     return { ...state, phase: 'draw', log: [...state.log, 'Plateau plein : match nul.'] };
   }
+  // Runs are finite, so a game can also simply run out of discs.
+  if (state.players.length > 0 && state.players.every((p) => p.charges.length === 0)) {
+    return {
+      ...state,
+      phase: 'draw',
+      log: [...state.log, 'Plus personne n’a de jetons : match nul.'],
+    };
+  }
   return state;
 }
 
@@ -162,12 +171,18 @@ export function teamMembers(state: P4State, team: number): P4Player[] {
   return state.players.filter((p) => p.team === team);
 }
 
+/** A seat can still act if it is connected and has discs left to play. */
+function canAct(state: P4State, index: number): boolean {
+  const player = state.players[index];
+  return Boolean(player?.connected) && player.charges.length > 0;
+}
+
 function nextTurn(state: P4State): number {
   const n = state.players.length;
   if (n === 0) return 0;
   for (let step = 1; step <= n; step++) {
     const candidate = (state.turn + step) % n;
-    if (state.players[candidate].connected) return candidate;
+    if (canAct(state, candidate)) return candidate;
   }
   return (state.turn + 1) % n;
 }
@@ -206,10 +221,14 @@ function advanceTurn(state: P4State): P4State {
   return restored.length > 0 ? resolveBoard(next, null) : next;
 }
 
-/** Ends the acting player's turn, unless a double turn is banked. */
+/**
+ * Hands the turn on. Unlike the old power system there is nothing to "bank"
+ * here: a double turn simply skips this call once, so the player drops again.
+ */
 function endTurn(state: P4State): P4State {
-  if (state.pendingDouble) return { ...state, pendingDouble: false };
-  return advanceTurn(state);
+  // Re-resolved after the hand-off: passing the turn can exhaust the last run,
+  // and an expiring inversion can drop a column into a winning line.
+  return resolveBoard(advanceTurn({ ...state, pendingDouble: false }), null);
 }
 
 function bumpEvent(state: P4State, event: Omit<P4State['lastEvent'], 'seq'>): P4State {
@@ -234,7 +253,8 @@ export function addPlayer(state: P4State, id: string, name: string): P4State {
     name: name.trim() || 'Joueur',
     team: state.players.length,
     connected: true,
-    powers: initialPowers(),
+    // Filled in when the game starts; an empty run in the lobby is correct.
+    charges: [],
   };
   return withTeams({
     ...state,
@@ -267,11 +287,13 @@ export function startGame(state: P4State): { state: P4State; error?: string } {
       cols: config.cols,
       rows: config.rows,
       cells: Array<Disc | null>(config.cols * config.rows).fill(null),
-      players: state.players.map((p) => ({ ...p, powers: initialPowers() })),
+      // Each player gets their own independent roll.
+      players: state.players.map((p) => ({ ...p, charges: rollCharges(config.discs) })),
       turn: 0,
       phase: 'playing',
       effects: [],
       pendingDouble: false,
+      pendingPower: null,
       discSeq: 0,
       winner: null,
       lastEvent: { seq: state.lastEvent.seq + 1, kind: 'none' },
@@ -285,20 +307,44 @@ export interface ActionResult {
   error?: string;
 }
 
-export function dropDisc(state: P4State, playerId: string, col: number, pierce = false): ActionResult {
+/** Whether a power that needs aiming has anything legal to aim at. */
+export function hasTargetFor(state: P4State, power: PowerId, playerIndex: number): boolean {
+  if (power === 'destroy') {
+    return state.cells.some((disc) => disc && teamOf(state, disc.owner) !== teamOf(state, playerIndex));
+  }
+  if (power === 'invert') {
+    for (let col = 0; col < state.cols; col++) if (!isInverted(state, col)) return true;
+    return false;
+  }
+  if (power === 'block') {
+    for (let col = 0; col < state.cols; col++) if (!isBlocked(state, col)) return true;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Plays the player's next disc. Nobody picks a power here: the disc at the head
+ * of the run either carries one or does not, and this is where that is found
+ * out. `pierce` changes where the disc lands, `double` holds the turn, and the
+ * three aimed powers park in `pendingPower` until the player designates a
+ * target.
+ */
+export function dropDisc(state: P4State, playerId: string, col: number): ActionResult {
   const playerIndex = state.players.findIndex((p) => p.id === playerId);
   if (playerIndex === -1) return { state, error: 'Joueur inconnu.' };
   if (state.phase !== 'playing') return { state, error: "La partie n'est pas en cours." };
   if (state.turn !== playerIndex) return { state, error: "Ce n'est pas ton tour." };
+  if (state.pendingPower) return { state, error: "Termine d'abord ton pouvoir en cours." };
   if (col < 0 || col >= state.cols) return { state, error: 'Colonne invalide.' };
   if (isBlocked(state, col)) return { state, error: 'Cette colonne est bloquée.' };
   if (columnIsFull(state, col)) return { state, error: 'Cette colonne est pleine.' };
 
   const player = state.players[playerIndex];
-  if (pierce && player.powers.pierce <= 0) {
-    return { state, error: "Tu n'as plus de Traversée." };
-  }
+  if (player.charges.length === 0) return { state, error: "Tu n'as plus de jetons." };
 
+  const charged = player.charges[0];
+  const pierce = charged === 'pierce';
   const inverted = isInverted(state, col);
   const cells = [...state.cells];
   const disc: Disc = { id: `d${state.discSeq}`, owner: playerIndex };
@@ -324,26 +370,34 @@ export function dropDisc(state: P4State, playerId: string, col: number, pierce =
     cells[cellIndex(state.cols, landedRow, col)] = disc;
   }
 
+  // The disc leaves the run whatever happens next.
   const players = state.players.map((p, i) =>
-    i === playerIndex && pierce ? { ...p, powers: { ...p.powers, pierce: p.powers.pierce - 1 } } : p,
+    i === playerIndex ? { ...p, charges: p.charges.slice(1) } : p,
   );
+
+  const log = [
+    ...state.log,
+    pierce
+      ? `${player.name} traverse la colonne ${col + 1} !`
+      : `${player.name} joue en colonne ${col + 1}.`,
+  ];
 
   let next: P4State = {
     ...state,
     cells,
     players,
     discSeq: state.discSeq + 1,
-    log: [
-      ...state.log,
-      pierce
-        ? `${player.name} traverse la colonne ${col + 1}.`
-        : `${player.name} joue en colonne ${col + 1}.`,
-    ],
+    // Cleared here and re-armed below only if *this* disc is a double.
+    pendingDouble: false,
+    log,
   };
 
+  // `pierce` and `double` are their own announcement; the aimed powers keep the
+  // plain landing here and get their effect once a target is picked.
+  const announced = charged === 'pierce' || charged === 'double';
   next = bumpEvent(next, {
-    kind: pierce ? 'power' : 'drop',
-    power: pierce ? 'pierce' : undefined,
+    kind: announced ? 'power' : 'drop',
+    power: announced ? charged : undefined,
     by: playerIndex,
     col,
     cell: cellIndex(state.cols, landedRow, col),
@@ -353,25 +407,53 @@ export function dropDisc(state: P4State, playerId: string, col: number, pierce =
   next = resolveBoard(next, teamOf(state, playerIndex));
   if (next.phase !== 'playing') return { state: next };
 
+  if (charged === 'double') {
+    next = { ...next, pendingDouble: true, log: [...next.log, `${player.name} enchaîne : double-tour !`] };
+    return { state: next };
+  }
+
+  const def = charged ? POWERS[charged] : null;
+  if (def && def.target !== 'none') {
+    if (!hasTargetFor(next, charged as PowerId, playerIndex)) {
+      return {
+        state: endTurn({
+          ...next,
+          log: [...next.log, `${def.name} n'avait aucune cible : le pouvoir se perd.`],
+        }),
+      };
+    }
+    return {
+      state: {
+        ...next,
+        pendingPower: { power: charged as PowerId, by: playerIndex },
+        log: [...next.log, `${player.name} déclenche ${def.name} !`],
+      },
+    };
+  }
+
   return { state: endTurn(next) };
 }
 
-/** Named `activate` rather than `use` so it is not mistaken for a React hook. */
-export function activatePower(
+/**
+ * Aims the power of the disc that just landed. Only ever reachable while
+ * `pendingPower` is set, so there is no power to name and nothing to spend —
+ * the disc already paid for it.
+ */
+export function resolvePower(
   state: P4State,
   playerId: string,
-  power: PowerId,
   target: { col?: number; cell?: number },
 ): ActionResult {
+  const pending = state.pendingPower;
+  if (!pending) return { state, error: "Aucun pouvoir n'attend de cible." };
+
   const playerIndex = state.players.findIndex((p) => p.id === playerId);
   if (playerIndex === -1) return { state, error: 'Joueur inconnu.' };
   if (state.phase !== 'playing') return { state, error: "La partie n'est pas en cours." };
-  if (state.turn !== playerIndex) return { state, error: "Ce n'est pas ton tour." };
-  if (power === 'pierce') return { state, error: 'La Traversée se joue en choisissant une colonne.' };
+  if (pending.by !== playerIndex) return { state, error: "Ce pouvoir n'est pas le tien." };
 
+  const power = pending.power;
   const player = state.players[playerIndex];
-  if (player.powers[power] <= 0) return { state, error: `Tu n'as plus de ${POWERS[power].name}.` };
-
   const cells = [...state.cells];
   let effects = state.effects;
   let logLine = '';
@@ -413,21 +495,15 @@ export function activatePower(
     effects = [...effects, { col, kind: 'blocked', turnsLeft: state.players.length, by: playerIndex }];
     eventCol = col;
     logLine = `${player.name} bloque la colonne ${col + 1}.`;
-  } else if (power === 'double') {
-    if (state.pendingDouble) return { state, error: 'Tu as déjà un double-tour en attente.' };
-    logLine = `${player.name} enchaîne un double-tour !`;
+  } else {
+    return { state, error: `${POWERS[power].name} ne se vise pas.` };
   }
-
-  const players = state.players.map((p, i) =>
-    i === playerIndex ? { ...p, powers: { ...p.powers, [power]: p.powers[power] - 1 } } : p,
-  );
 
   let next: P4State = {
     ...state,
     cells,
-    players,
     effects,
-    pendingDouble: power === 'double' ? true : state.pendingDouble,
+    pendingPower: null,
     log: [...state.log, logLine],
   };
 
@@ -436,7 +512,9 @@ export function activatePower(
   next = resolveBoard(next, teamOf(state, playerIndex));
   if (next.phase !== 'playing') return { state: next };
 
-  return { state: POWERS[power].endsTurn ? endTurn(next) : next };
+  // A drop clears `pendingDouble` before re-arming it, so a double turn and an
+  // aimed power can never be outstanding together: the turn always passes here.
+  return { state: endTurn(next) };
 }
 
 export function rematch(state: P4State): ActionResult {
@@ -455,9 +533,9 @@ export function applyAction(state: P4State, action: P4Action): ActionResult {
     case 'START':
       return startGame(state);
     case 'DROP':
-      return dropDisc(state, action.playerId, action.col, action.pierce);
-    case 'USE_POWER':
-      return activatePower(state, action.playerId, action.power, { col: action.col, cell: action.cell });
+      return dropDisc(state, action.playerId, action.col);
+    case 'RESOLVE_POWER':
+      return resolvePower(state, action.playerId, { col: action.col, cell: action.cell });
     case 'REMATCH':
       return rematch(state);
     case 'LEAVE': {
@@ -470,11 +548,13 @@ export function applyAction(state: P4State, action: P4Action): ActionResult {
         };
       }
       const players = state.players.map((p) => (p.id === action.playerId ? { ...p, connected: false } : p));
-      const next = { ...state, players };
-      // Do not leave the table waiting on someone who is gone.
       const leaverIndex = state.players.findIndex((p) => p.id === action.playerId);
-      if (state.phase === 'playing' && leaverIndex === state.turn) {
-        return { state: advanceTurn(next) };
+      // Never leave the table waiting on someone who is gone — including on a
+      // power they walked out mid-aim, which would deadlock every other seat.
+      const abandoned = state.pendingPower?.by === leaverIndex;
+      const next = { ...state, players, pendingPower: abandoned ? null : state.pendingPower };
+      if (state.phase === 'playing' && (leaverIndex === state.turn || abandoned)) {
+        return { state: endTurn(next) };
       }
       return { state: next };
     }

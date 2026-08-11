@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { POWERS } from '../engine/powers';
 import { POWER_ICONS } from './powerIcons';
 import type { PowerId } from '../engine/types';
@@ -15,35 +15,31 @@ export interface FxShot {
 
 interface PowerFxProps {
   shot: FxShot | null;
-  onDone: () => void;
 }
 
 /**
  * The "special move" layer. Each power gets its own signature: a beam, a
- * shockwave, a rising tide, a slam. It sits over the board, ignores pointer
- * events, and tears itself down when the banner finishes.
+ * shockwave, a rising tide, a slam. It sits over the board and ignores pointer
+ * events.
+ *
+ * No AnimatePresence: on a guest — whose state arrives from a PeerJS callback
+ * rather than a React event — the exit animation would stall and every effect
+ * ever fired stayed in the DOM, stacking up over the board. Each shot already
+ * fades itself out through its own keyframes, and the room clears `shot` on a
+ * timer, so teardown is deterministic and unmounting is instant.
  */
-export function PowerFx({ shot, onDone }: PowerFxProps) {
+export function PowerFx({ shot }: PowerFxProps) {
+  if (!shot) return null;
+
   return (
-    <AnimatePresence onExitComplete={onDone}>
-      {shot && (
-        <motion.div
-          key={shot.key}
-          className="p4-fx"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <ShotBody shot={shot} />
-          {/* Centred by flex, not by a translate: framer-motion writes its own
-              `transform`, which would wipe out a CSS centring translate. */}
-          <span className="p4-fx-banner-slot">
-            <Banner shot={shot} />
-          </span>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <motion.div key={shot.key} className="p4-fx" initial={{ opacity: 1 }} animate={{ opacity: 1 }}>
+      <ShotBody shot={shot} />
+      {/* Centred by flex, not by a translate: framer-motion writes its own
+          `transform`, which would wipe out a CSS centring translate. */}
+      <span className="p4-fx-banner-slot">
+        <Banner shot={shot} />
+      </span>
+    </motion.div>
   );
 }
 

@@ -5,7 +5,7 @@ Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs f
 ## Features
 
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
-- **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Cinq pouvoirs à usage limité — Traversée, Destruction, Inversion de gravité, Double-tour, Blocage de colonne. Même système de rooms que la Scopa.
+- **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Personne ne *choisit* ses pouvoirs : chaque joueur reçoit une réserve de jetons pour la partie, dont une minorité tirée au sort est chargée d'un pouvoir — Traversée, Destruction, Inversion de gravité, Double-tour ou Blocage de colonne. Tu joues ta colonne normalement ; si ce jeton-là était chargé, l'effet part à l'impact. Même système de rooms que la Scopa.
 - D'autres features arriveront plus tard (Buckshot Roulette, Le Salon, Le Flipper, La Boîte à Idées). Leurs planètes sont déjà visibles sur la page d'accueil, grisées et non cliquables.
 
 ## La page d'accueil

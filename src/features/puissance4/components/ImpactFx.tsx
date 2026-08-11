@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export interface Impact {
   key: number;
@@ -13,16 +13,21 @@ export interface Impact {
 
 interface ImpactFxProps {
   impact: Impact | null;
-  onDone: () => void;
 }
 
 const SPARKS = 10;
 
-/** Dust and sparks kicked up where a disc lands. */
-export function ImpactFx({ impact, onDone }: ImpactFxProps) {
+/**
+ * Dust and sparks kicked up where a disc lands.
+ *
+ * Like `PowerFx`, deliberately without AnimatePresence: a stalled exit left one
+ * of these behind for every disc ever played. The room clears `impact` on a
+ * timer instead.
+ */
+export function ImpactFx({ impact }: ImpactFxProps) {
+  if (!impact) return null;
+
   return (
-    <AnimatePresence onExitComplete={onDone}>
-      {impact && (
         <motion.span
           key={impact.key}
           className="p4-impact"
@@ -31,8 +36,6 @@ export function ImpactFx({ impact, onDone }: ImpactFxProps) {
             top: `calc(${impact.rows - 1 - impact.row + 0.5} * (100% / ${impact.rows}))`,
           }}
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
         >
           <motion.span
             className="p4-impact-ring"
@@ -62,7 +65,5 @@ export function ImpactFx({ impact, onDone }: ImpactFxProps) {
             );
           })}
         </motion.span>
-      )}
-    </AnimatePresence>
   );
 }

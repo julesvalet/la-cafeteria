@@ -45,7 +45,7 @@ export function P4Lobby() {
 
   return (
     <div className="container p4-lobby">
-      <P4RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      <P4RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} mode={mode} />
 
       <header className="p4-lobby-header">
         <h1>Puissance 4</h1>

@@ -14,7 +14,21 @@ export interface P4Player {
   /** Free-for-all modes give everyone their own team, so win checks are uniform. */
   team: number;
   connected: boolean;
-  powers: Record<PowerId, number>;
+  /**
+   * The player's remaining discs, in the order they will be played: index 0 is
+   * the very next one. A `PowerId` means that disc is charged and will fire
+   * when it lands; `null` means it is an ordinary disc. Nobody picks which —
+   * the whole run is rolled once at the start of the game.
+   *
+   * Length doubles as the disc counter, so playing one is just a shift.
+   */
+  charges: (PowerId | null)[];
+}
+
+/** A charged disc has landed and its power is waiting for a target. */
+export interface PendingPower {
+  power: PowerId;
+  by: number;
 }
 
 export type ColumnEffectKind = 'blocked' | 'inverted';
@@ -64,8 +78,10 @@ export interface P4State {
   turn: number;
   phase: P4Phase;
   effects: ColumnEffect[];
-  /** The player to move gets a second drop before the turn passes. */
+  /** The player to move owes one more drop before the turn passes. */
   pendingDouble: boolean;
+  /** Set while a landed power waits for its target; blocks everything else. */
+  pendingPower: PendingPower | null;
   discSeq: number;
   winner: P4Winner | null;
   lastEvent: P4Event;
@@ -76,7 +92,9 @@ export type P4Action =
   | { type: 'JOIN'; playerId: string; name: string }
   | { type: 'SET_MODE'; mode: P4Mode }
   | { type: 'START' }
-  | { type: 'DROP'; playerId: string; col: number; pierce?: boolean }
-  | { type: 'USE_POWER'; playerId: string; power: PowerId; col?: number; cell?: number }
+  /** Drop the next disc. Whether it is charged is the engine's business. */
+  | { type: 'DROP'; playerId: string; col: number }
+  /** Aim the power of the disc that just landed. */
+  | { type: 'RESOLVE_POWER'; playerId: string; col?: number; cell?: number }
   | { type: 'REMATCH' }
   | { type: 'LEAVE'; playerId: string };

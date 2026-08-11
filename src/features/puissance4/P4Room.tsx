@@ -6,13 +6,12 @@ import { MODES, MODE_ORDER, discColor } from './engine/modes';
 import { POWERS } from './engine/powers';
 import { teamLabel } from './engine/rules';
 import { Board } from './components/Board';
-import { ConfirmPowerModal } from './components/ConfirmPowerModal';
 import { P4RulesModal } from './components/P4RulesModal';
-import { PowerBar } from './components/PowerBar';
+import { NextDisc } from './components/NextDisc';
 import { VictoryOverlay } from './components/VictoryOverlay';
 import type { Impact } from './components/ImpactFx';
 import type { FxShot } from './components/PowerFx';
-import type { P4Mode, PowerId } from './engine/types';
+import type { P4Mode } from './engine/types';
 
 interface LocationState {
   isHost?: boolean;
@@ -82,8 +81,6 @@ function P4GameView({
   const { state, selfId, status, error, clearError, sendAction } = useP4Room(code, name, isHost, mode);
 
   const [rulesOpen, setRulesOpen] = useState(false);
-  const [confirming, setConfirming] = useState<PowerId | null>(null);
-  const [armed, setArmed] = useState<PowerId | null>(null);
   const [impact, setImpact] = useState<Impact | null>(null);
   const [fxShot, setFxShot] = useState<FxShot | null>(null);
   const [shakeKey, setShakeKey] = useState(0);
@@ -109,6 +106,9 @@ function P4GameView({
   );
   const me = seat >= 0 ? state?.players[seat] : undefined;
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+  /* The power of a disc I just landed, waiting for me to aim it. */
+  const aiming = state?.pendingPower?.by === seat ? (state.pendingPower?.power ?? null) : null;
+  const nextCharge = me?.charges[0] ?? null;
 
   /*
    * Every animation is driven off `lastEvent.seq` rather than off diffing the
@@ -134,7 +134,11 @@ function P4GameView({
       timers.push(setTimeout(() => setFxShot(null), 1400));
     }
 
-    const landed = event.kind === 'drop' || (event.kind === 'power' && event.power === 'pierce');
+    // A disc physically landed: a plain drop, or one of the two powers that
+    // announce themselves *as* the drop. An aimed power resolves later and
+    // carries its target cell, not a landing, so it gets no impact.
+    const landed =
+      event.kind === 'drop' || (event.kind === 'power' && (event.power === 'pierce' || event.power === 'double'));
     if (landed && event.cell !== undefined) {
       const cell = event.cell;
       timers.push(
@@ -154,12 +158,6 @@ function P4GameView({
       timers.push(setTimeout(() => setImpact(null), FALL_MS + 700));
     }
   }, [state]);
-
-  // An armed power must never survive the turn it was armed on.
-  useEffect(() => {
-    setArmed(null);
-    setConfirming(null);
-  }, [state?.turn, state?.phase]);
 
   useEffect(() => {
     if (!error) return;
@@ -188,44 +186,29 @@ function P4GameView({
     [],
   );
 
+  /*
+   * A column click means one of two things, and the engine's `pendingPower`
+   * decides which: aim the power of the disc that just landed, or simply play
+   * the next disc. Nothing here needs to know what that disc carries.
+   */
   const handleColumn = useCallback(
     (col: number) => {
       if (!state || !selfId || !myTurn) return;
       guardedSend(() => {
-        if (armed === 'pierce') {
-          sendAction({ type: 'DROP', playerId: selfId, col, pierce: true });
-        } else if (armed === 'invert' || armed === 'block') {
-          sendAction({ type: 'USE_POWER', playerId: selfId, power: armed, col });
-        } else if (!armed) {
-          sendAction({ type: 'DROP', playerId: selfId, col });
-        }
-        setArmed(null);
+        if (aiming) sendAction({ type: 'RESOLVE_POWER', playerId: selfId, col });
+        else sendAction({ type: 'DROP', playerId: selfId, col });
       });
     },
-    [state, selfId, myTurn, armed, sendAction, guardedSend],
+    [state, selfId, myTurn, aiming, sendAction, guardedSend],
   );
 
   const handleCell = useCallback(
     (cell: number) => {
-      if (!selfId || armed !== 'destroy') return;
-      guardedSend(() => {
-        sendAction({ type: 'USE_POWER', playerId: selfId, power: 'destroy', cell });
-        setArmed(null);
-      });
+      if (!selfId || !aiming) return;
+      guardedSend(() => sendAction({ type: 'RESOLVE_POWER', playerId: selfId, cell }));
     },
-    [selfId, armed, sendAction, guardedSend],
+    [selfId, aiming, sendAction, guardedSend],
   );
-
-  const confirmPower = useCallback(() => {
-    if (!confirming || !selfId) return;
-    const def = POWERS[confirming];
-    setConfirming(null);
-    if (def.target === 'none') {
-      sendAction({ type: 'USE_POWER', playerId: selfId, power: confirming });
-    } else {
-      setArmed(confirming);
-    }
-  }, [confirming, selfId, sendAction]);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(code);
@@ -277,13 +260,7 @@ function P4GameView({
 
   return (
     <div className="container p4-room">
-      <P4RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
-      <ConfirmPowerModal
-        power={confirming}
-        usesLeft={confirming && me ? me.powers[confirming] : 0}
-        onConfirm={confirmPower}
-        onCancel={() => setConfirming(null)}
-      />
+      <P4RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} mode={state.mode} />
 
       <div className="p4-room-topbar">
         <div>
@@ -405,45 +382,48 @@ function P4GameView({
               seat={seat >= 0 ? seat : null}
               myTurn={Boolean(myTurn)}
               targeting={
-                armed ? { power: armed, mode: POWERS[armed].target === 'disc' ? 'disc' : 'column' } : null
+                aiming ? { power: aiming, mode: POWERS[aiming].target === 'disc' ? 'disc' : 'column' } : null
               }
+              nextCharge={myTurn && !aiming ? nextCharge : null}
               onColumn={handleColumn}
               onCell={handleCell}
               highlight={state.winner?.cells ?? []}
               shakeKey={shakeKey}
               impact={impact}
-              onImpactDone={() => setImpact(null)}
               fxShot={fxShot}
-              onFxDone={() => setFxShot(null)}
             />
           </div>
 
           {state.phase === 'playing' && (
             <p className="p4-turn-hint">
               {myTurn ? (
-                armed ? (
+                aiming ? (
                   <>
-                    <strong>{POWERS[armed].name}</strong> — {POWERS[armed].target === 'disc'
-                      ? 'choisis un jeton adverse'
-                      : 'choisis une colonne'}
+                    <strong>{POWERS[aiming].name}</strong> — {POWERS[aiming].target === 'disc'
+                      ? 'désigne un jeton adverse'
+                      : 'désigne une colonne'}
                   </>
                 ) : (
-                  <>À toi de jouer{state.pendingDouble ? ' — double-tour actif !' : ''}</>
+                  <>À toi de jouer{state.pendingDouble ? ' — double-tour, tu rejoues !' : ''}</>
                 )
+              ) : state.pendingPower ? (
+                <>
+                  {state.players[state.pendingPower.by]?.name} déclenche{' '}
+                  <strong>{POWERS[state.pendingPower.power].name}</strong>...
+                </>
               ) : (
                 <>Au tour de {state.players[state.turn]?.name}...</>
               )}
             </p>
           )}
 
-          {me && (
-            <PowerBar
-              player={me}
-              enabled={Boolean(myTurn) && !armed}
-              armed={armed}
-              pendingDouble={state.pendingDouble}
-              onPick={setConfirming}
-              onCancel={() => setArmed(null)}
+          {me && seat >= 0 && (
+            <NextDisc
+              mode={state.mode}
+              seat={seat}
+              charge={nextCharge}
+              discsLeft={me.charges.length}
+              active={Boolean(myTurn) && !aiming}
             />
           )}
 

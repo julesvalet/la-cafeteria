@@ -3,19 +3,32 @@ import { motion, useAnimationControls } from 'framer-motion';
 import { ArrowUp, Lock } from 'lucide-react';
 import { discColor } from '../engine/modes';
 import { canDrop, cellIndex, isBlocked, isInverted, landingRow, teamMembers } from '../engine/rules';
+import { POWERS } from '../engine/powers';
+import { POWER_ICONS } from './powerIcons';
 import type { P4State, PowerId } from '../engine/types';
 import { ImpactFx, type Impact } from './ImpactFx';
 import { PowerFx, type FxShot } from './PowerFx';
 
 export type TargetMode = 'none' | 'column' | 'disc';
 
+function GhostBadge({ power }: { power: PowerId }) {
+  const Icon = POWER_ICONS[power];
+  return (
+    <span className="p4-ghost-badge" style={{ color: POWERS[power].color }}>
+      <Icon size={15} strokeWidth={2.6} />
+    </span>
+  );
+}
+
 interface BoardProps {
   state: P4State;
   /** Seat index of the local player, or null when spectating. */
   seat: number | null;
   myTurn: boolean;
-  /** Set while a targeted power is armed and waiting for a click. */
+  /** Set while a landed power is waiting for this player to aim it. */
   targeting: { power: PowerId; mode: TargetMode } | null;
+  /** Power on this player's next disc, previewed on the landing ghost. */
+  nextCharge: PowerId | null;
   onColumn: (col: number) => void;
   onCell: (cell: number) => void;
   /** Cells that just won, so they can outshine everything else. */
@@ -24,9 +37,7 @@ interface BoardProps {
   /* Effects live inside the grid so their geometry lines up with the cells;
      the room only decides *when* they fire. */
   impact: Impact | null;
-  onImpactDone: () => void;
   fxShot: FxShot | null;
-  onFxDone: () => void;
 }
 
 /** Cell size in px, measured so discs can be placed with pure transforms. */
@@ -51,14 +62,13 @@ export function Board({
   seat,
   myTurn,
   targeting,
+  nextCharge,
   onColumn,
   onCell,
   highlight,
   shakeKey,
   impact,
-  onImpactDone,
   fxShot,
-  onFxDone,
 }: BoardProps) {
   const { cols, rows } = state;
   const gridRef = useRef<HTMLDivElement>(null);
@@ -204,9 +214,12 @@ export function Board({
                   <span className="p4-hole" />
                   {isGhost && (
                     <span
-                      className="p4-ghost"
+                      className={`p4-ghost${nextCharge ? ' is-charged' : ''}`}
                       style={{ background: seat === null ? 'transparent' : discColor(state.mode, seat) }}
-                    />
+                    >
+                      {/* Reminds you what this drop is about to unleash. */}
+                      {nextCharge && <GhostBadge power={nextCharge} />}
+                    </span>
                   )}
                 </button>
               );
@@ -262,17 +275,18 @@ export function Board({
           </div>
 
           <div className="p4-fx-layer" aria-hidden="true">
-            <ImpactFx impact={impact} onDone={onImpactDone} />
-            <PowerFx shot={fxShot} onDone={onFxDone} />
+            <ImpactFx impact={impact} />
+            <PowerFx shot={fxShot} />
           </div>
         </div>
       </motion.div>
 
-      {pickingColumn && <p className="p4-target-hint">Choisis une colonne</p>}
-      {pickingDisc && (
-        <p className="p4-target-hint">
-          Choisis un jeton adverse
-          {myTeam !== null && teamMembers(state, myTeam).length > 1 ? ' (pas ceux de ton équipe)' : ''}
+      {targeting && (pickingColumn || pickingDisc) && (
+        <p className="p4-target-hint" style={{ '--p4-power-color': POWERS[targeting.power].color } as React.CSSProperties}>
+          <strong>{POWERS[targeting.power].name}</strong>
+          {pickingDisc
+            ? ` — désigne un jeton adverse${myTeam !== null && teamMembers(state, myTeam).length > 1 ? ' (pas ceux de ton équipe)' : ''}`
+            : ' — désigne une colonne'}
         </p>
       )}
     </div>
