@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "test:p4": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/puissance4/engine/rules.test.mts"
   },
   "dependencies": {
     "@react-three/fiber": "^9.7.0",

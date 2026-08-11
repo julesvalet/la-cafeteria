@@ -73,8 +73,10 @@ export const PLANETS: PlanetDef[] = [
   {
     id: 'puissance4',
     name: 'Puissance 4',
-    description: 'Aligne quatre jetons avant ton adversaire. Le classique de la cour de récré.',
+    description:
+      'Aligne quatre jetons avant tes adversaires. Avec des pouvoirs spéciaux, de 2 à 4 joueurs, en équipes ou chacun pour soi.',
     icon: Grid3x3,
+    to: '/puissance4',
     landscape: { screen: [-0.6, 0.2], size: 0.15 },
     portrait: { screen: [-0.62, 0.3], size: 0.105 },
     depth: -1,

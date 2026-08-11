@@ -5,7 +5,8 @@ Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs f
 ## Features
 
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
-- D'autres features arriveront plus tard (Puissance 4, Buckshot Roulette, Le Salon, Le Flipper, La Boîte à Idées). Leurs planètes sont déjà visibles sur la page d'accueil, grisées et non cliquables.
+- **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Cinq pouvoirs à usage limité — Traversée, Destruction, Inversion de gravité, Double-tour, Blocage de colonne. Même système de rooms que la Scopa.
+- D'autres features arriveront plus tard (Buckshot Roulette, Le Salon, Le Flipper, La Boîte à Idées). Leurs planètes sont déjà visibles sur la page d'accueil, grisées et non cliquables.
 
 ## La page d'accueil
 
@@ -23,7 +24,7 @@ Quelques principes, si tu touches à [src/components/planets/](src/components/pl
 - [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/) pour la navigation
 - [Three.js](https://threejs.org/) + [React Three Fiber](https://r3f.docs.pmnd.rs/) pour le système de planètes de l'accueil
-- [PeerJS](https://peerjs.com/) (WebRTC) pour le multijoueur temps réel de Scopa — aucun serveur de jeu à héberger
+- [PeerJS](https://peerjs.com/) (WebRTC) pour le multijoueur temps réel — aucun serveur de jeu à héberger. Dans chaque jeu, l'hôte fait autorité : il applique toutes les actions via un moteur de règles pur, puis diffuse l'état.
 - Déploiement statique automatique sur GitHub Pages via GitHub Actions
 
 ## Développement local
@@ -39,6 +40,16 @@ npm run dev
 npm run build
 npm run preview
 ```
+
+## Tests
+
+Le moteur de règles du Puissance 4 (gravité, pouvoirs, détection d'alignement) est du code pur, sans React ni réseau — il se teste beaucoup mieux là qu'à la souris :
+
+```bash
+npm run test:p4
+```
+
+Aucun framework de test : Node exécute le TypeScript directement, [scripts/register-ts.mjs](scripts/register-ts.mjs) se contentant de reproduire la résolution d'imports que Vite applique déjà.
 
 ## Ajouter une nouvelle feature
 

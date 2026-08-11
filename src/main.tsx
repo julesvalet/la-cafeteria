@@ -4,6 +4,7 @@ import './index.css'
 import './styles/layout.css'
 import './components/planets/planets.css'
 import './features/scopa/scopa.css'
+import './features/puissance4/puissance4.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
