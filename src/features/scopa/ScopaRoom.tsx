@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import type { PanInfo } from 'framer-motion';
 import { Link2, BookOpen, LogOut, TriangleAlert, Trophy, Sparkles } from 'lucide-react';
@@ -10,7 +10,7 @@ import { DeckPile } from './components/DeckPile';
 import { ScopaFlash } from './components/ScopaFlash';
 import { RulesModal } from './components/RulesModal';
 import { AnimatedNumber } from './components/AnimatedNumber';
-import { fanTransform, scatterTransform } from './utils/layout';
+import { fanTransform, scatterTransform, tableCardScale } from './utils/layout';
 import type { CardT } from './engine/types';
 
 interface LocationState {
@@ -276,23 +276,26 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
 
           <div className="scopa-table-felt" ref={tableFeltRef}>
             <DeckPile count={state.deck.length} />
-            <div className="scopa-table-cards-zone">
+            <div
+              className="scopa-table-cards-zone"
+              style={{ '--card-scale': tableCardScale(state.table.length) } as CSSProperties}
+            >
               {state.table.length === 0 && <p className="scopa-empty">Table vide</p>}
               {state.table.map((c, idx) => {
                 const scatter = scatterTransform(c.id);
                 return (
-                  <div key={c.id} className="scopa-card-slot" style={{ zIndex: idx }}>
-                    <PlayingCard
-                      card={c}
-                      dealDelay={dealDelays.get(c.id)}
-                      restX={scatter.x}
-                      restY={scatter.y}
-                      restRotate={scatter.rotate}
-                      selected={selectedTableIds.includes(c.id)}
-                      selectable={isMyTurn}
-                      onClick={isMyTurn ? () => toggleTableCard(c.id) : undefined}
-                    />
-                  </div>
+                  <PlayingCard
+                    key={c.id}
+                    card={c}
+                    dealDelay={dealDelays.get(c.id)}
+                    restX={scatter.x}
+                    restY={scatter.y}
+                    restRotate={scatter.rotate}
+                    zIndex={idx}
+                    selected={selectedTableIds.includes(c.id)}
+                    selectable={isMyTurn}
+                    onClick={isMyTurn ? () => toggleTableCard(c.id) : undefined}
+                  />
                 );
               })}
             </div>

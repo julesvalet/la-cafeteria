@@ -17,16 +17,31 @@ function hashString(str: string): number {
   return h;
 }
 
-/** Deterministic pseudo-random scatter offset for a table card, seeded by its id. */
+/**
+ * Small deterministic pseudo-random jitter for a table card, seeded by its id.
+ * Cards are laid out in a flowing grid (flexbox); this only nudges each card a
+ * few pixels/degrees for a "dropped by hand" feel — never enough to overlap
+ * a neighbour given the grid's gap.
+ */
 export function scatterTransform(id: string) {
   const h = hashString(id);
-  const angle = (h % 360) * (Math.PI / 180);
-  const radiusSeed = (h >> 8) % 100;
-  const rotSeed = (h >> 16) % 100;
-  const radius = 14 + (radiusSeed / 100) * 44;
+  const angleSeed = (h % 100) / 100;
+  const radiusSeed = ((h >> 8) % 100) / 100;
+  const rotSeed = ((h >> 16) % 100) / 100;
+  const angle = angleSeed * Math.PI * 2;
+  const radius = 2 + radiusSeed * 5;
   return {
     x: Math.cos(angle) * radius,
-    y: Math.sin(angle) * radius * 0.5,
-    rotate: -14 + (rotSeed / 100) * 28,
+    y: Math.sin(angle) * radius,
+    rotate: -7 + rotSeed * 14,
   };
+}
+
+/** Scale factor applied to table cards so a crowded table shrinks instead of overlapping. */
+export function tableCardScale(count: number): number {
+  if (count <= 4) return 1;
+  if (count <= 6) return 0.9;
+  if (count <= 8) return 0.8;
+  if (count <= 10) return 0.72;
+  return 0.64;
 }
