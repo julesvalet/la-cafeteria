@@ -1,0 +1,128 @@
+:root {
+  --color-primary: #c9975e;
+  --color-primary-dark: #a97844;
+  --color-primary-darker: #7a5730;
+  --color-primary-light: #e8c9a0;
+  --color-primary-tint: #f6e9d8;
+  --color-bg: #fffcf8;
+  --color-surface: #ffffff;
+  --color-text: #3b2a1e;
+  --color-text-muted: #8a7563;
+  --color-border: #ecdfcc;
+  --color-success: #5a8a5a;
+  --color-danger: #b5533f;
+
+  --font-heading: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --shadow-sm: 0 1px 3px rgba(59, 42, 30, 0.08);
+  --shadow-md: 0 4px 16px rgba(59, 42, 30, 0.1);
+  --shadow-lg: 0 12px 32px rgba(59, 42, 30, 0.16);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(180deg, var(--color-primary-tint) 0%, var(--color-bg) 320px);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-primary-darker);
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--color-primary-light);
+  color: var(--color-primary-darker);
+}
+
+.container {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--color-primary-light);
+  color: var(--color-primary-darker);
+}
+
+.btn-outline:hover {
+  background: var(--color-primary-tint);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}

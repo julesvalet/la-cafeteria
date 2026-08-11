@@ -1,0 +1,468 @@
+.scopa-lobby {
+  padding: 48px 24px 80px;
+  max-width: 760px;
+}
+
+.scopa-lobby-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.scopa-lobby-header h1 {
+  font-size: 42px;
+}
+
+.scopa-lobby-header p {
+  color: var(--color-text-muted);
+  margin-top: 8px;
+}
+
+.scopa-lobby-name {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+  margin: 0 auto 32px;
+}
+
+.scopa-lobby-name label {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.scopa-lobby-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.scopa-lobby-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.scopa-lobby-card h2 {
+  font-size: 20px;
+}
+
+.scopa-lobby-card p {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+input[type='text'] {
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  font-size: 15px;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+input[type='text']:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.scopa-code-input {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.scopa-form-error {
+  color: var(--color-danger);
+  font-size: 13px;
+  margin: 0;
+}
+
+.scopa-back-link {
+  display: inline-block;
+  margin-top: 24px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.scopa-back-link:hover {
+  color: var(--color-primary-dark);
+}
+
+.scopa-status {
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.scopa-room {
+  padding: 24px 24px 80px;
+  max-width: 1100px;
+}
+
+.scopa-room-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.scopa-room-topbar h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.scopa-invite-btn {
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.scopa-player-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scopa-board {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 24px;
+  align-items: start;
+}
+
+.scopa-board-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scopa-opponents {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scopa-opponent {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.scopa-opponent.is-active {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-tint);
+}
+
+.scopa-opponent-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.scopa-opponent-hand {
+  display: flex;
+  gap: 4px;
+}
+
+.scopa-table {
+  background: linear-gradient(160deg, #e9b978 0%, var(--color-primary) 100%);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  min-height: 160px;
+  box-shadow: var(--shadow-md);
+}
+
+.scopa-table h3 {
+  color: #fff;
+  font-size: 15px;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.scopa-table-cards,
+.scopa-hand-cards {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.scopa-empty {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.scopa-turn-indicator {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-primary-darker);
+}
+
+.scopa-hand {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.scopa-hand h3 {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+/* Playing cards */
+.scopa-card {
+  width: 64px;
+  height: 92px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: #fffdf9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  padding: 4px;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.scopa-card-sm {
+  width: 44px;
+  height: 64px;
+}
+
+.scopa-card-symbol {
+  font-size: 26px;
+}
+
+.scopa-card-sm .scopa-card-symbol {
+  font-size: 18px;
+}
+
+.scopa-card-corner {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+}
+
+.scopa-card-corner-top {
+  top: 6px;
+  left: 8px;
+}
+
+.scopa-card-corner-bottom {
+  bottom: 6px;
+  right: 8px;
+}
+
+.scopa-suit-denari {
+  color: #b5842a;
+}
+
+.scopa-suit-coppe {
+  color: #b5533f;
+}
+
+.scopa-suit-spade {
+  color: #4a5a6a;
+}
+
+.scopa-suit-bastoni {
+  color: #5a8a5a;
+}
+
+.scopa-card-back {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--color-primary),
+    var(--color-primary) 6px,
+    var(--color-primary-dark) 6px,
+    var(--color-primary-dark) 12px
+  );
+  border: 1px solid var(--color-primary-dark);
+}
+
+.scopa-card.is-selectable {
+  cursor: pointer;
+}
+
+.scopa-card.is-selectable:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+
+.scopa-card:disabled {
+  cursor: default;
+}
+
+.scopa-capture-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(59, 42, 30, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.scopa-capture-modal-inner {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.scopa-capture-modal-inner h3 {
+  font-size: 17px;
+  margin-bottom: 16px;
+}
+
+.scopa-capture-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.scopa-capture-option {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.scopa-capture-option:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.scopa-handend {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  text-align: center;
+}
+
+.scopa-score-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 14px;
+}
+
+.scopa-score-table th,
+.scopa-score-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.scopa-scoreboard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: sticky;
+  top: 24px;
+}
+
+.scopa-scoreboard h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.scopa-scoreboard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scopa-scoreboard li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.scopa-scoreboard li.is-active {
+  background: var(--color-primary-tint);
+}
+
+.scopa-player-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-success);
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.scopa-player-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.scopa-player-stats {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.scopa-target {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 860px) {
+  .scopa-board {
+    grid-template-columns: 1fr;
+  }
+
+  .scopa-lobby-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scopa-scoreboard {
+    position: static;
+  }
+}
+
+@media (max-width: 520px) {
+  .scopa-card {
+    width: 52px;
+    height: 76px;
+  }
+
+  .scopa-card-symbol {
+    font-size: 20px;
+  }
+}
