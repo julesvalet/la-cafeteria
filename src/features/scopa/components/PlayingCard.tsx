@@ -74,7 +74,16 @@ export function PlayingCard({
       dragElastic={0.12}
       whileDrag={{ scale: 1.1, zIndex: 80, boxShadow: '0 24px 40px rgba(0,0,0,0.35)' }}
       onDragEnd={(_e, info) => onDragRelease?.(info)}
-      whileHover={selectable ? { y: restY - 8 } : undefined}
+      whileHover={
+        selectable
+          ? { y: restY - 16, scale: 1.1, zIndex: 60, boxShadow: '0 18px 30px rgba(0,0,0,0.3)' }
+          : undefined
+      }
+      whileTap={
+        selectable
+          ? { y: restY - 16, scale: 1.1, zIndex: 60, boxShadow: '0 18px 30px rgba(0,0,0,0.3)' }
+          : undefined
+      }
       className={`scopa-card scopa-suit-${card.suit} ${selected ? 'is-selected' : ''} ${
         selectable ? 'is-selectable' : ''
       } ${draggable ? 'is-draggable' : ''} ${small ? 'scopa-card-sm' : ''}`}

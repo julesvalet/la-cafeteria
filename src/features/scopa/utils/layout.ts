@@ -1,5 +1,5 @@
 /** Fan-out transform for a card at `index` among `total` cards held in a hand. */
-export function fanTransform(index: number, total: number, spread = 34, tilt = 6) {
+export function fanTransform(index: number, total: number, spread = 58, tilt = 9) {
   const mid = (total - 1) / 2;
   const offset = index - mid;
   return {
@@ -44,4 +44,16 @@ export function tableCardScale(count: number): number {
   if (count <= 8) return 0.8;
   if (count <= 10) return 0.72;
   return 0.64;
+}
+
+/**
+ * Scale factor for the player's own hand: shrinks cards a little once there
+ * are enough of them that the fan spread would otherwise start overlapping
+ * within the available width, instead of tightening the spread.
+ */
+export function handCardScale(count: number): number {
+  if (count <= 3) return 1;
+  if (count <= 5) return 0.9;
+  if (count <= 7) return 0.8;
+  return 0.7;
 }

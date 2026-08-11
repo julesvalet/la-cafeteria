@@ -10,7 +10,7 @@ import { DeckPile } from './components/DeckPile';
 import { ScopaFlash } from './components/ScopaFlash';
 import { RulesModal } from './components/RulesModal';
 import { AnimatedNumber } from './components/AnimatedNumber';
-import { fanTransform, scatterTransform, tableCardScale } from './utils/layout';
+import { fanTransform, handCardScale, scatterTransform, tableCardScale } from './utils/layout';
 import type { CardT } from './engine/types';
 
 interface LocationState {
@@ -316,17 +316,17 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                 {Array.from({ length: p.handCount }).map((_, idx) => {
                   const fan = fanTransform(idx, p.handCount, 12, 5);
                   return (
-                    <div key={idx} className="scopa-card-slot" style={{ zIndex: idx }}>
-                      <PlayingCard
-                        card={{ id: `${p.id}-back-${idx}`, suit: 'denari', rank: 1 }}
-                        faceDown
-                        small
-                        restX={fan.x}
-                        restY={fan.y}
-                        restRotate={fan.rotate}
-                        dealDelay={dealDelays.size > 0 ? idx * DEAL_STEP : undefined}
-                      />
-                    </div>
+                    <PlayingCard
+                      key={idx}
+                      card={{ id: `${p.id}-back-${idx}`, suit: 'denari', rank: 1 }}
+                      faceDown
+                      small
+                      restX={fan.x}
+                      restY={fan.y}
+                      restRotate={fan.rotate}
+                      zIndex={idx}
+                      dealDelay={dealDelays.size > 0 ? idx * DEAL_STEP : undefined}
+                    />
                   );
                 })}
               </div>
@@ -342,23 +342,26 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
             <CapturedPile cards={me.captured} />
           </div>
 
-          <div className="scopa-my-hand">
+          <div
+            className="scopa-my-hand"
+            style={{ '--hand-card-scale': handCardScale(me.hand.length) } as CSSProperties}
+          >
             {me.hand.map((c, idx) => {
               const fan = fanTransform(idx, me.hand.length);
               return (
-                <div key={c.id} className="scopa-card-slot" style={{ zIndex: idx }}>
-                  <PlayingCard
-                    card={c}
-                    dealDelay={dealDelays.get(c.id)}
-                    restX={fan.x}
-                    restY={fan.y}
-                    restRotate={fan.rotate}
-                    draggable={isMyTurn}
-                    selectable={isMyTurn}
-                    onDragRelease={(info) => handleDragRelease(c, info)}
-                    onClick={isMyTurn ? () => commitPlay(c) : undefined}
-                  />
-                </div>
+                <PlayingCard
+                  key={c.id}
+                  card={c}
+                  dealDelay={dealDelays.get(c.id)}
+                  restX={fan.x}
+                  restY={fan.y}
+                  restRotate={fan.rotate}
+                  zIndex={idx}
+                  draggable={isMyTurn}
+                  selectable={isMyTurn}
+                  onDragRelease={(info) => handleDragRelease(c, info)}
+                  onClick={isMyTurn ? () => commitPlay(c) : undefined}
+                />
               );
             })}
           </div>

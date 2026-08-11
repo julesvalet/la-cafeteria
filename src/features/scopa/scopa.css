@@ -286,15 +286,6 @@ input[type='text']:focus {
   font-style: italic;
 }
 
-/* Anchors a card at the center of its zone; the card's own transform
-   (fan spread / table scatter) offsets it from there. */
-.scopa-card-slot {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
 .scopa-turn-hint {
   position: absolute;
   bottom: 196px;
@@ -393,6 +384,18 @@ input[type='text']:focus {
   height: 60px;
 }
 
+/* Each card centers itself at the hand's anchor point via margin (not
+   transform, which Framer Motion owns for the fan-spread animation), so
+   there is no leftover hit-testable box left behind at the center once the
+   card visually moves to its fanned-out position. */
+.scopa-seat-hand > .scopa-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: -22px;
+  margin-top: -32px;
+}
+
 .scopa-avatar {
   display: flex;
   align-items: center;
@@ -436,9 +439,21 @@ input[type='text']:focus {
   bottom: 78px;
   left: 50%;
   transform: translateX(-50%);
-  width: 320px;
-  height: 108px;
+  width: 340px;
+  height: 118px;
   z-index: 20;
+  --hand-card-base-w: 64px;
+  --hand-card-base-h: 92px;
+}
+
+.scopa-my-hand .scopa-card {
+  width: calc(var(--hand-card-base-w, 64px) * var(--hand-card-scale, 1));
+  height: calc(var(--hand-card-base-h, 92px) * var(--hand-card-scale, 1));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin-left: calc(var(--hand-card-base-w, 64px) * var(--hand-card-scale, 1) / -2);
+  margin-top: calc(var(--hand-card-base-h, 92px) * var(--hand-card-scale, 1) / -2);
 }
 
 /* ================= Playing cards ================= */
@@ -812,9 +827,11 @@ input[type='text']:focus {
   }
 
   .scopa-my-hand {
-    width: 260px;
-    height: 92px;
+    width: 300px;
+    height: 100px;
     bottom: 66px;
+    --hand-card-base-w: 58px;
+    --hand-card-base-h: 84px;
   }
 
   .scopa-seat-bottom {
@@ -856,9 +873,11 @@ input[type='text']:focus {
   }
 
   .scopa-my-hand {
-    width: 220px;
-    height: 84px;
+    width: 260px;
+    height: 96px;
     bottom: 58px;
+    --hand-card-base-w: 52px;
+    --hand-card-base-h: 76px;
   }
 
   .scopa-turn-hint,
