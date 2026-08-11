@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BookOpen } from 'lucide-react';
 import { RulesModal } from './components/RulesModal';
 
 function randomRoomCode(): string {
@@ -43,7 +44,7 @@ export function ScopaLobby() {
         <h1>Scopa</h1>
         <p>Le jeu de cartes italien, en ligne, entre potes. 2, 3 ou 4 joueurs.</p>
         <button type="button" className="btn btn-outline scopa-rules-link" onClick={() => setRulesOpen(true)}>
-          📖 Règles du jeu
+          <BookOpen size={15} /> Règles du jeu
         </button>
       </header>
 

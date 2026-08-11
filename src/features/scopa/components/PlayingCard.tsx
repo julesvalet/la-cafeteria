@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { RANK_LABEL, SUIT_LABEL, SUIT_SYMBOL } from '../engine/deck';
+import { motion, type PanInfo } from 'framer-motion';
+import { RANK_LABEL, SUIT_LABEL, cardImageUrl } from '../engine/deck';
 import type { CardT } from '../engine/types';
 
 interface PlayingCardProps {
@@ -10,24 +10,48 @@ interface PlayingCardProps {
   small?: boolean;
   /** Delay (in seconds) used for the staggered deal-in entrance animation. */
   dealDelay?: number;
+  /** Resting position offset (fan spread, table scatter, ...). */
+  restX?: number;
+  restY?: number;
+  restRotate?: number;
+  zIndex?: number;
+  draggable?: boolean;
+  onDragRelease?: (info: PanInfo) => void;
   onClick?: () => void;
 }
 
-const dealTransition = (delay: number) => ({
-  type: 'spring' as const,
-  stiffness: 260,
-  damping: 20,
-  delay,
-});
+export function PlayingCard({
+  card,
+  selected,
+  selectable,
+  faceDown,
+  small,
+  dealDelay,
+  restX = 0,
+  restY = 0,
+  restRotate = 0,
+  zIndex,
+  draggable,
+  onDragRelease,
+  onClick,
+}: PlayingCardProps) {
+  const isDeal = dealDelay !== undefined;
+  const restState = { opacity: 1, x: restX, y: restY, rotate: restRotate, scale: 1 };
+  const initialState = isDeal
+    ? { opacity: 0, x: restX - 50, y: restY - 90, rotate: restRotate - 14, scale: 0.75 }
+    : false;
+  const transition = isDeal
+    ? { type: 'spring' as const, stiffness: 260, damping: 20, delay: dealDelay }
+    : { type: 'spring' as const, stiffness: 320, damping: 24 };
 
-export function PlayingCard({ card, selected, selectable, faceDown, small, dealDelay, onClick }: PlayingCardProps) {
   if (faceDown) {
     return (
       <motion.div
         layout
-        initial={dealDelay !== undefined ? { opacity: 0, y: -50, x: -30, rotate: -10, scale: 0.8 } : false}
-        animate={{ opacity: 1, y: 0, x: 0, rotate: 0, scale: 1 }}
-        transition={dealTransition(dealDelay ?? 0)}
+        initial={initialState}
+        animate={restState}
+        transition={transition}
+        style={{ zIndex }}
         className={`scopa-card scopa-card-back ${small ? 'scopa-card-sm' : ''}`}
         aria-hidden="true"
       />
@@ -39,21 +63,26 @@ export function PlayingCard({ card, selected, selectable, faceDown, small, dealD
       layout
       layoutId={card.id}
       type="button"
-      initial={dealDelay !== undefined ? { opacity: 0, y: -50, x: -30, rotate: -10, scale: 0.8 } : false}
-      animate={{ opacity: 1, y: 0, x: 0, rotate: 0, scale: 1 }}
+      initial={initialState}
+      animate={restState}
       exit={{ opacity: 0, scale: 0.8 }}
-      transition={dealDelay !== undefined ? dealTransition(dealDelay) : { type: 'spring', stiffness: 320, damping: 22 }}
-      whileHover={selectable ? { y: -6 } : undefined}
+      transition={transition}
+      style={{ zIndex, touchAction: draggable ? 'none' : undefined }}
+      drag={draggable}
+      dragSnapToOrigin
+      dragMomentum={false}
+      dragElastic={0.12}
+      whileDrag={{ scale: 1.1, zIndex: 80, boxShadow: '0 24px 40px rgba(0,0,0,0.35)' }}
+      onDragEnd={(_e, info) => onDragRelease?.(info)}
+      whileHover={selectable ? { y: restY - 8 } : undefined}
       className={`scopa-card scopa-suit-${card.suit} ${selected ? 'is-selected' : ''} ${
         selectable ? 'is-selectable' : ''
-      } ${small ? 'scopa-card-sm' : ''}`}
-      onClick={onClick}
-      disabled={!onClick}
+      } ${draggable ? 'is-draggable' : ''} ${small ? 'scopa-card-sm' : ''}`}
+      onTap={onClick}
+      disabled={!onClick && !draggable}
       title={`${RANK_LABEL[card.rank]} de ${SUIT_LABEL[card.suit]}`}
     >
-      <span className="scopa-card-corner scopa-card-corner-top">{RANK_LABEL[card.rank]}</span>
-      <span className="scopa-card-symbol">{SUIT_SYMBOL[card.suit]}</span>
-      <span className="scopa-card-corner scopa-card-corner-bottom">{RANK_LABEL[card.rank]}</span>
+      <img src={cardImageUrl(card)} alt="" draggable={false} className="scopa-card-img" />
     </motion.button>
   );
 }

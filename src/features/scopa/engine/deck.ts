@@ -41,9 +41,19 @@ export const SUIT_LABEL: Record<Suit, string> = {
   bastoni: 'Bastoni',
 };
 
-export const SUIT_SYMBOL: Record<Suit, string> = {
-  denari: '🪙',
-  coppe: '🏆',
-  spade: '⚔️',
-  bastoni: '🌿',
+const RANK_FILE: Record<number, string> = {
+  1: '1',
+  2: '2',
+  3: '3',
+  4: '4',
+  5: '5',
+  6: '6',
+  7: '7',
+  8: 'fante',
+  9: 'cavallo',
+  10: 're',
 };
+
+export function cardImageUrl(card: Pick<CardT, 'suit' | 'rank'>): string {
+  return `${import.meta.env.BASE_URL}assets/cards/${card.suit}-${RANK_FILE[card.rank]}.png`;
+}

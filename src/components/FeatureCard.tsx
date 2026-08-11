@@ -1,18 +1,19 @@
 import { Link } from 'react-router-dom';
+import type { LucideIcon } from 'lucide-react';
 
 interface FeatureCardProps {
   title: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
   to?: string;
   comingSoon?: boolean;
 }
 
-export function FeatureCard({ title, description, icon, to, comingSoon }: FeatureCardProps) {
+export function FeatureCard({ title, description, icon: Icon, to, comingSoon }: FeatureCardProps) {
   const content = (
     <>
       <span className="feature-card-icon" aria-hidden="true">
-        {icon}
+        <Icon size={26} strokeWidth={1.6} />
       </span>
       <h3>{title}</h3>
       <p>{description}</p>

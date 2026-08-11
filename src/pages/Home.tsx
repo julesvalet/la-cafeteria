@@ -1,28 +1,29 @@
+import { Spade, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
 import { FeatureCard } from '../components/FeatureCard';
 
 const FEATURES = [
   {
     title: 'Scopa',
     description: "Le jeu de cartes italien, à 2, 3 ou 4 joueurs. Crée une room ou rejoins-en une avec un code.",
-    icon: '🃏',
+    icon: Spade,
     to: '/scopa',
   },
   {
     title: 'Le Salon',
     description: "Un espace de discussion pour papoter entre potes, sans quitter La Cafétéria.",
-    icon: '💬',
+    icon: MessageCircle,
     comingSoon: true,
   },
   {
     title: 'Le Flipper',
     description: "Un mini-jeu d'arcade rapide à partager en attendant que tout le monde arrive.",
-    icon: '🕹️',
+    icon: Gamepad2,
     comingSoon: true,
   },
   {
     title: 'La Boîte à Idées',
     description: 'Propose et vote pour la prochaine soirée, le prochain jeu, ou le prochain café.',
-    icon: '🗳️',
+    icon: Lightbulb,
     comingSoon: true,
   },
 ];

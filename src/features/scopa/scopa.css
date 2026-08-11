@@ -21,6 +21,9 @@
   margin-top: 16px;
   font-size: 13px;
   padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .scopa-lobby-name {
@@ -92,7 +95,9 @@ input[type='text']:focus {
 }
 
 .scopa-back-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-top: 24px;
   color: var(--color-text-muted);
   font-size: 14px;
@@ -108,8 +113,8 @@ input[type='text']:focus {
 }
 
 .scopa-room {
-  padding: 24px 24px 80px;
-  max-width: 1140px;
+  padding: 24px 24px 60px;
+  max-width: 1200px;
 }
 
 .scopa-room-topbar {
@@ -117,12 +122,12 @@ input[type='text']:focus {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
 }
 
 .scopa-room-topbar h1 {
-  font-size: 28px;
+  font-size: 26px;
   margin-bottom: 10px;
 }
 
@@ -135,6 +140,9 @@ input[type='text']:focus {
 .scopa-invite-btn {
   font-size: 13px;
   padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .scopa-player-list {
@@ -146,59 +154,86 @@ input[type='text']:focus {
   gap: 6px;
 }
 
-.scopa-board {
-  display: grid;
-  grid-template-columns: 1fr 260px;
-  gap: 24px;
-  align-items: start;
+/* ================= Game scene ================= */
+
+.scopa-scene {
+  position: relative;
+  min-height: 660px;
+  margin-top: 8px;
+  padding-bottom: 4px;
 }
 
-.scopa-board-main {
+.scopa-score-bar {
   display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.scopa-opponents {
-  display: flex;
-  gap: 16px;
+  align-items: center;
   flex-wrap: wrap;
-}
-
-.scopa-opponent {
-  background: var(--color-surface);
+  gap: 4px 10px;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  flex: 1;
-  min-width: 170px;
+  border-radius: 999px;
+  padding: 6px 14px;
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  margin-bottom: 10px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.scopa-score-row {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.35s ease, box-shadow 0.35s ease, background-color 0.25s ease;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
 }
 
-.scopa-opponent.is-active {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-tint), 0 0 18px color-mix(in srgb, var(--color-primary) 45%, transparent);
+.scopa-score-row.is-active {
+  background: var(--color-primary-tint);
 }
 
-.scopa-opponent-name {
-  font-size: 13px;
+.scopa-score-row.is-active .scopa-score-name,
+.scopa-score-row.is-active .scopa-score-pts {
+  color: var(--color-primary-darker);
+}
+
+.scopa-score-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-success);
+  flex-shrink: 0;
+}
+
+.scopa-score-name {
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text);
+  white-space: nowrap;
 }
 
-.scopa-opponent-hand {
-  display: flex;
-  gap: 4px;
+.scopa-score-pts {
+  padding-left: 6px;
+  color: var(--color-heading);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.scopa-score-target {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  padding-left: 10px;
+  border-left: 1px solid var(--color-border);
+  margin-top: 2px;
 }
 
 /* --- Table: felt + wood frame --- */
-.scopa-table {
-  position: relative;
-  padding: 22px;
-  border-radius: var(--radius-lg);
+.scopa-table-felt {
+  position: absolute;
+  top: 96px;
+  bottom: 172px;
+  left: 13%;
+  right: 13%;
+  border-radius: 100px;
   background:
     radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.08) 0, transparent 45%),
     radial-gradient(circle at 80% 85%, rgba(0, 0, 0, 0.12) 0, transparent 50%),
@@ -208,11 +243,10 @@ input[type='text']:focus {
     inset 0 0 0 10px #3a2413,
     inset 0 0 40px rgba(0, 0, 0, 0.45),
     var(--shadow-lg);
-  min-height: 170px;
   transition: box-shadow 0.25s ease;
 }
 
-:root[data-theme='dark'] .scopa-table {
+:root[data-theme='dark'] .scopa-table-felt {
   background:
     radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.05) 0, transparent 45%),
     radial-gradient(circle at 80% 85%, rgba(0, 0, 0, 0.3) 0, transparent 50%),
@@ -224,157 +258,203 @@ input[type='text']:focus {
     var(--shadow-lg);
 }
 
-.scopa-table-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-
-.scopa-table h3 {
-  color: rgba(255, 250, 240, 0.92);
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.scopa-table-cards,
-.scopa-hand-cards {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  min-height: 92px;
+.scopa-table-cards-zone {
+  position: absolute;
+  inset: 0;
 }
 
 .scopa-empty {
-  color: rgba(255, 255, 255, 0.65);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   font-style: italic;
 }
 
-.scopa-turn-indicator {
+/* Anchors a card at the center of its zone; the card's own transform
+   (fan spread / table scatter) offsets it from there. */
+.scopa-card-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.scopa-turn-hint {
+  position: absolute;
+  bottom: 196px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
   font-weight: 600;
+  font-size: 13px;
   color: var(--color-heading);
+  background: color-mix(in srgb, var(--color-surface) 85%, transparent);
+  padding: 5px 14px;
+  border-radius: 999px;
+  z-index: 12;
+  white-space: nowrap;
 }
 
 .scopa-error-banner {
+  position: absolute;
+  bottom: 196px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 16%, var(--color-surface));
   color: var(--color-danger);
-  border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
-  border-radius: var(--radius-sm);
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.scopa-hand {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-.scopa-hand-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.scopa-hand h3 {
-  font-size: 15px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.scopa-confirm-bar {
-  margin-top: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  background: var(--color-primary-tint);
-  border: 1px solid var(--color-primary-light);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--color-danger) 40%, transparent);
+  border-radius: 16px;
+  padding: 7px 16px;
   font-size: 13px;
-  color: var(--color-heading);
+  font-weight: 600;
+  z-index: 13;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: min(420px, 92%);
+  text-align: left;
 }
 
-.scopa-confirm-actions {
+/* --- Seats --- */
+.scopa-seat {
+  position: absolute;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 8;
 }
 
-/* --- Playing cards --- */
+.scopa-seat-top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.scopa-seat-top-left {
+  top: 4px;
+  left: 4%;
+}
+
+.scopa-seat-top-right {
+  top: 4px;
+  right: 4%;
+}
+
+.scopa-seat-left {
+  top: 38%;
+  left: 0;
+}
+
+.scopa-seat-right {
+  top: 38%;
+  right: 0;
+}
+
+.scopa-seat-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px 12px 3px 3px;
+  box-shadow: var(--shadow-sm);
+}
+
+.scopa-seat-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.scopa-seat-hand {
+  position: relative;
+  width: 90px;
+  height: 60px;
+}
+
+.scopa-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  flex-shrink: 0;
+  transition: box-shadow 0.35s ease, background-color 0.35s ease;
+}
+
+.scopa-avatar.is-active {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 30%, transparent), 0 0 16px color-mix(in srgb, var(--color-primary) 55%, transparent);
+  animation: scopa-avatar-pulse 1.8s ease-in-out infinite;
+}
+
+.scopa-avatar.is-disconnected {
+  opacity: 0.4;
+}
+
+@keyframes scopa-avatar-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 30%, transparent), 0 0 12px color-mix(in srgb, var(--color-primary) 45%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 18%, transparent), 0 0 20px color-mix(in srgb, var(--color-primary) 65%, transparent); }
+}
+
+/* --- Bottom seat (me) + hand --- */
+.scopa-seat-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: row;
+  gap: 10px;
+}
+
+.scopa-my-hand {
+  position: absolute;
+  bottom: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 108px;
+  z-index: 20;
+}
+
+/* ================= Playing cards ================= */
 .scopa-card {
   width: 64px;
   height: 92px;
   border-radius: 8px;
   border: 1px solid var(--color-border);
   background: #fffdf9;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   position: relative;
+  overflow: hidden;
   box-shadow:
     0 1px 1px rgba(0, 0, 0, 0.12),
     0 4px 8px rgba(0, 0, 0, 0.16),
     0 10px 18px rgba(0, 0, 0, 0.12);
-  padding: 4px;
+  padding: 0;
+}
+
+.scopa-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
 }
 
 .scopa-card-sm {
   width: 44px;
   height: 64px;
-}
-
-.scopa-card-symbol {
-  font-size: 26px;
-}
-
-.scopa-card-sm .scopa-card-symbol {
-  font-size: 18px;
-}
-
-.scopa-card-corner {
-  position: absolute;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: var(--font-heading);
-  color: inherit;
-}
-
-.scopa-card-corner-top {
-  top: 6px;
-  left: 8px;
-}
-
-.scopa-card-corner-bottom {
-  bottom: 6px;
-  right: 8px;
-}
-
-.scopa-suit-denari {
-  color: #a06a1a;
-}
-
-.scopa-suit-coppe {
-  color: #a3402c;
-}
-
-.scopa-suit-spade {
-  color: #3c4b5c;
-}
-
-.scopa-suit-bastoni {
-  color: #3f6b3f;
 }
 
 .scopa-card-back {
@@ -393,6 +473,14 @@ input[type='text']:focus {
   cursor: pointer;
 }
 
+.scopa-card.is-draggable {
+  cursor: grab;
+}
+
+.scopa-card.is-draggable:active {
+  cursor: grabbing;
+}
+
 .scopa-card.is-selected {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
@@ -405,7 +493,7 @@ input[type='text']:focus {
   cursor: default;
 }
 
-/* --- Generic modal (rules, etc.) --- */
+/* ================= Generic modal (rules, hand-end, ...) ================= */
 .scopa-modal-overlay {
   position: fixed;
   inset: 0;
@@ -439,12 +527,17 @@ input[type='text']:focus {
 
 .scopa-modal-header h2 {
   font-size: 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .scopa-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
-  font-size: 18px;
   color: var(--color-text-muted);
   width: 32px;
   height: 32px;
@@ -453,7 +546,7 @@ input[type='text']:focus {
 
 .scopa-modal-close:hover {
   background: var(--color-primary-tint);
-  color: var(--color-heading);
+  color: var(--color-primary-darker);
 }
 
 .scopa-modal-body {
@@ -462,11 +555,23 @@ input[type='text']:focus {
   display: flex;
   flex-direction: column;
   gap: 22px;
+  text-align: center;
+}
+
+.scopa-rule-section {
+  text-align: left;
 }
 
 .scopa-rule-section h3 {
   font-size: 16px;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scopa-rule-icon {
+  color: var(--color-primary);
 }
 
 .scopa-rule-section p {
@@ -478,7 +583,7 @@ input[type='text']:focus {
   margin-top: 8px;
   font-size: 12.5px;
   background: var(--color-primary-tint);
-  color: var(--color-heading);
+  color: var(--color-primary-darker);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
 }
@@ -531,19 +636,14 @@ input[type='text']:focus {
   font-weight: 700;
 }
 
-/* --- Hand-end / match-end panels --- */
-.scopa-handend {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
+.scopa-handend-modal .scopa-score-table {
   text-align: center;
 }
 
 .scopa-score-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 16px 0;
+  margin: 4px 0 16px;
   font-size: 14px;
 }
 
@@ -554,110 +654,50 @@ input[type='text']:focus {
   text-align: center;
 }
 
-/* --- Scoreboard --- */
-.scopa-scoreboard {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  position: sticky;
-  top: 24px;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
-}
-
-.scopa-scoreboard h3 {
-  font-size: 15px;
-  margin-bottom: 12px;
-}
-
-.scopa-scoreboard ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.scopa-scoreboard li {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  transition: background-color 0.35s ease, box-shadow 0.35s ease;
-}
-
-.scopa-scoreboard li.is-active {
-  background: var(--color-primary-tint);
-  box-shadow: inset 2px 0 0 var(--color-primary);
-}
-
-.scopa-player-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-success);
-  display: inline-block;
-  margin-right: 6px;
-}
-
-.scopa-player-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.scopa-player-stats {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.scopa-target {
-  margin-top: 12px;
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-/* --- Captured pile --- */
+/* ================= Captured pile ================= */
 .scopa-pile {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.scopa-pile-stack {
-  position: relative;
-  height: 64px;
-  min-width: 44px;
+  height: 52px;
+  min-width: 40px;
 }
 
 .scopa-pile-card-slot {
   position: absolute;
-  top: 0;
+  top: 50%;
+  left: 6px;
+  transform-origin: center;
+  margin-top: -32px;
 }
 
-.scopa-pile-empty {
-  width: 44px;
-  height: 64px;
-  border: 1.5px dashed var(--color-border);
-  border-radius: 6px;
+.scopa-pile-count {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  z-index: 20;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-.scopa-pile-label {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-/* --- Deck pile --- */
+/* ================= Deck pile ================= */
 .scopa-deck {
-  position: relative;
+  position: absolute;
+  top: 14px;
+  right: 20px;
   width: 44px;
   height: 64px;
-  flex-shrink: 0;
+  z-index: 6;
 }
 
 .scopa-deck-card {
@@ -689,7 +729,7 @@ input[type='text']:focus {
   z-index: 5;
 }
 
-/* --- Scopa celebration --- */
+/* ================= Scopa celebration ================= */
 .scopa-flash {
   position: fixed;
   inset: 0;
@@ -734,17 +774,37 @@ input[type='text']:focus {
   background: var(--color-primary-light);
 }
 
+/* ================= Responsive ================= */
 @media (max-width: 860px) {
-  .scopa-board {
-    grid-template-columns: 1fr;
-  }
-
   .scopa-lobby-grid {
     grid-template-columns: 1fr;
   }
 
-  .scopa-scoreboard {
-    position: static;
+  .scopa-scene {
+    min-height: 560px;
+  }
+
+  .scopa-table-felt {
+    top: 84px;
+    bottom: 150px;
+    left: 6%;
+    right: 6%;
+    border-radius: 60px;
+  }
+
+  .scopa-my-hand {
+    width: 260px;
+    height: 92px;
+    bottom: 66px;
+  }
+
+  .scopa-seat-bottom {
+    bottom: 0;
+  }
+
+  .scopa-turn-hint,
+  .scopa-error-banner {
+    bottom: 170px;
   }
 }
 
@@ -754,8 +814,35 @@ input[type='text']:focus {
     height: 76px;
   }
 
-  .scopa-card-symbol {
-    font-size: 20px;
+  .scopa-card-sm {
+    width: 38px;
+    height: 55px;
+  }
+
+  .scopa-scene {
+    min-height: 500px;
+  }
+
+  .scopa-table-felt {
+    top: 78px;
+    bottom: 132px;
+    border-radius: 40px;
+  }
+
+  .scopa-my-hand {
+    width: 220px;
+    height: 84px;
+    bottom: 58px;
+  }
+
+  .scopa-turn-hint,
+  .scopa-error-banner {
+    bottom: 150px;
+    font-size: 12px;
+  }
+
+  .scopa-seat-name {
+    font-size: 11px;
   }
 
   .scopa-rule-example {

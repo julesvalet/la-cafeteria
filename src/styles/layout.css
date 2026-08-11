@@ -133,7 +133,14 @@
 }
 
 .feature-card-icon {
-  font-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
 }
 
 .feature-card h3 {

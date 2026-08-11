@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { Target, X, Coins } from 'lucide-react';
 import { PlayingCard } from './PlayingCard';
 import type { CardT } from '../engine/types';
 
@@ -33,13 +34,15 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
             <div className="scopa-modal-header">
               <h2>Règles du Scopa</h2>
               <button type="button" className="scopa-modal-close" onClick={onClose} aria-label="Fermer">
-                ✕
+                <X size={18} />
               </button>
             </div>
 
             <div className="scopa-modal-body">
               <section className="scopa-rule-section">
-                <h3>🎯 Objectif</h3>
+                <h3>
+                  <Target size={17} className="scopa-rule-icon" /> Objectif
+                </h3>
                 <p>
                   Sois le premier à atteindre <strong>11 points</strong>, cumulés sur plusieurs manches, en capturant
                   des cartes sur la table.
@@ -113,7 +116,8 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
                     <strong>Carte</strong> — 1 pt au joueur avec le plus de cartes capturées.
                   </li>
                   <li>
-                    <strong>Denari</strong> — 1 pt au joueur avec le plus de cartes de la couleur Denari (🪙).
+                    <strong>Denari</strong> — 1 pt au joueur avec le plus de cartes de la couleur Denari (
+                    <Coins size={13} className="scopa-rule-icon" />).
                   </li>
                   <li>
                     <strong>Settebello</strong> — 1 pt à qui a capturé le 7 de Denari.
