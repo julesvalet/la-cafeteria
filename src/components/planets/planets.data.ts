@@ -1,4 +1,4 @@
-import { Spade, Grid3x3, Skull, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
+import { Spade, Grid3x3, Disc, Skull, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface PlanetRing {
@@ -87,6 +87,25 @@ export const PLANETS: PlanetDef[] = [
     bands: 0,
     tilt: -0.3,
     spin: 0.045,
+  },
+  {
+    id: 'puissance4-original',
+    name: 'Original',
+    description:
+      'Le Puissance 4 classique, sans pouvoirs : aligne 4 jetons sur une grille 7 × 6, à 2, 3 ou 4 joueurs.',
+    icon: Disc,
+    to: '/puissance4-original',
+    // A small moon in orbit of Puissance 4, up and to its right.
+    landscape: { screen: [-0.44, 0.34], size: 0.07 },
+    portrait: { screen: [-0.4, 0.13], size: 0.055 },
+    depth: -0.75,
+    // A plain grey moonrock — deliberately calmer than its flashy neighbour.
+    colors: { deep: '#28262a', mid: '#706e76', high: '#dcdadf', accent: '#9694a0' },
+    seed: 7.8,
+    noiseScale: 2.6,
+    bands: 0,
+    tilt: 0.15,
+    spin: 0.05,
   },
   {
     id: 'buckshot',

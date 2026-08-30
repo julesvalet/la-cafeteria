@@ -6,6 +6,8 @@ import { ScopaLobby } from './features/scopa/ScopaLobby';
 import { ScopaRoom } from './features/scopa/ScopaRoom';
 import { P4Lobby } from './features/puissance4/P4Lobby';
 import { P4Room } from './features/puissance4/P4Room';
+import { OriginalLobby } from './features/puissance4/original/OriginalLobby';
+import { OriginalRoom } from './features/puissance4/original/OriginalRoom';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="/scopa/:code" element={<ScopaRoom />} />
           <Route path="/puissance4" element={<P4Lobby />} />
           <Route path="/puissance4/:code" element={<P4Room />} />
+          <Route path="/puissance4-original" element={<OriginalLobby />} />
+          <Route path="/puissance4-original/:code" element={<OriginalRoom />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

@@ -69,6 +69,56 @@ export const MODES: Record<P4Mode, ModeConfig> = {
 
 export const MODE_ORDER: P4Mode[] = ['duel', 'trio', 'quatuor', 'teams'];
 
+/**
+ * The classic variant: same four player counts, but always the standard
+ * 7 × 6 grid — no scaling with player count, since there are no powers to
+ * balance against. `discs` is set to the whole board so a run never empties
+ * before the grid does; the game always ends on an alignment or a full board.
+ */
+export const ORIGINAL_MODES: Record<P4Mode, ModeConfig> = {
+  duel: {
+    id: 'duel',
+    label: '1 v 1',
+    tagline: 'Le duel classique, grille 7 × 6.',
+    players: 2,
+    cols: 7,
+    rows: 6,
+    discs: 42,
+    teams: [0, 1],
+  },
+  trio: {
+    id: 'trio',
+    label: '1 v 1 v 1',
+    tagline: 'Trois joueurs, chacun pour soi, grille 7 × 6.',
+    players: 3,
+    cols: 7,
+    rows: 6,
+    discs: 42,
+    teams: [0, 1, 2],
+  },
+  quatuor: {
+    id: 'quatuor',
+    label: '1 v 1 v 1 v 1',
+    tagline: 'Quatre joueurs, chacun pour soi, grille 7 × 6.',
+    players: 4,
+    cols: 7,
+    rows: 6,
+    discs: 42,
+    teams: [0, 1, 2, 3],
+  },
+  teams: {
+    id: 'teams',
+    label: '2 v 2',
+    tagline: 'Deux équipes, un alignement commun, grille 7 × 6.',
+    players: 4,
+    cols: 7,
+    rows: 6,
+    discs: 42,
+    teams: [0, 1, 0, 1],
+    teamNames: ['Équipe Crema', 'Équipe Menthe'],
+  },
+};
+
 /** Free-for-all palette: four hues that stay distinct on the beige board. */
 const SOLO_COLORS = ['#e0a33c', '#3f9e8c', '#c8503f', '#8b6bc4'];
 

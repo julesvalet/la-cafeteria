@@ -1,4 +1,4 @@
-import { MODES } from './modes';
+import { MODES, type ModeConfig } from './modes';
 import { POWERS, rollCharges } from './powers';
 import type {
   ColumnEffect,
@@ -13,8 +13,13 @@ import type {
 
 const WIN_LENGTH = 4;
 
-export function createInitialState(roomCode: string, hostId: string, mode: P4Mode = 'duel'): P4State {
-  const config = MODES[mode];
+export function createInitialState(
+  roomCode: string,
+  hostId: string,
+  mode: P4Mode = 'duel',
+  modes: Record<P4Mode, ModeConfig> = MODES,
+): P4State {
+  const config = modes[mode];
   return {
     roomCode,
     hostId,
@@ -263,9 +268,13 @@ export function addPlayer(state: P4State, id: string, name: string): P4State {
   });
 }
 
-export function setMode(state: P4State, mode: P4Mode): { state: P4State; error?: string } {
+export function setMode(
+  state: P4State,
+  mode: P4Mode,
+  modes: Record<P4Mode, ModeConfig> = MODES,
+): { state: P4State; error?: string } {
   if (state.phase !== 'lobby') return { state, error: 'La partie a déjà commencé.' };
-  const config = MODES[mode];
+  const config = modes[mode];
   if (state.players.length > config.players) {
     return { state, error: `Ce mode n'accepte que ${config.players} joueurs. Il y en a déjà ${state.players.length}.` };
   }
@@ -274,8 +283,12 @@ export function setMode(state: P4State, mode: P4Mode): { state: P4State; error?:
   };
 }
 
-export function startGame(state: P4State): { state: P4State; error?: string } {
-  const config = MODES[state.mode];
+export function startGame(
+  state: P4State,
+  modes: Record<P4Mode, ModeConfig> = MODES,
+  powersEnabled = true,
+): { state: P4State; error?: string } {
+  const config = modes[state.mode];
   if (state.phase !== 'lobby') return { state, error: 'La partie a déjà commencé.' };
   if (state.players.length !== config.players) {
     return { state, error: `Ce mode demande exactement ${config.players} joueurs.` };
@@ -287,8 +300,12 @@ export function startGame(state: P4State): { state: P4State; error?: string } {
       cols: config.cols,
       rows: config.rows,
       cells: Array<Disc | null>(config.cols * config.rows).fill(null),
-      // Each player gets their own independent roll.
-      players: state.players.map((p) => ({ ...p, charges: rollCharges(config.discs) })),
+      // Each player gets their own independent roll. The classic variant never
+      // charges anything: every disc plays exactly like a plain one.
+      players: state.players.map((p) => ({
+        ...p,
+        charges: powersEnabled ? rollCharges(config.discs) : Array<null>(config.discs).fill(null),
+      })),
       turn: 0,
       phase: 'playing',
       effects: [],
@@ -517,27 +534,36 @@ export function resolvePower(
   return { state: endTurn(next) };
 }
 
-export function rematch(state: P4State): ActionResult {
+export function rematch(
+  state: P4State,
+  modes: Record<P4Mode, ModeConfig> = MODES,
+  powersEnabled = true,
+): ActionResult {
   if (state.phase !== 'won' && state.phase !== 'draw') {
     return { state, error: "La partie n'est pas terminée." };
   }
-  return startGame({ ...state, phase: 'lobby' });
+  return startGame({ ...state, phase: 'lobby' }, modes, powersEnabled);
 }
 
-export function applyAction(state: P4State, action: P4Action): ActionResult {
+export function applyAction(
+  state: P4State,
+  action: P4Action,
+  modes: Record<P4Mode, ModeConfig> = MODES,
+  powersEnabled = true,
+): ActionResult {
   switch (action.type) {
     case 'JOIN':
       return { state: addPlayer(state, action.playerId, action.name) };
     case 'SET_MODE':
-      return setMode(state, action.mode);
+      return setMode(state, action.mode, modes);
     case 'START':
-      return startGame(state);
+      return startGame(state, modes, powersEnabled);
     case 'DROP':
       return dropDisc(state, action.playerId, action.col);
     case 'RESOLVE_POWER':
       return resolvePower(state, action.playerId, { col: action.col, cell: action.cell });
     case 'REMATCH':
-      return rematch(state);
+      return rematch(state, modes, powersEnabled);
     case 'LEAVE': {
       if (state.phase === 'lobby') {
         return {

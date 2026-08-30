@@ -1,9 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Peer, { type DataConnection } from 'peerjs';
+import { MODES, ORIGINAL_MODES } from '../engine/modes';
 import { applyAction, createInitialState } from '../engine/rules';
 import type { P4Action, P4Mode, P4State } from '../engine/types';
 
-const PEER_PREFIX = 'la-cafeteria-p4-';
+export type P4Variant = 'powers' | 'original';
+
+/**
+ * Separate peer namespaces per variant: a room code is only unique within its
+ * own game, so "WL993" in Puissance 4 Original must not collide with the
+ * powers version's room of the same code.
+ */
+const PEER_PREFIXES: Record<P4Variant, string> = {
+  powers: 'la-cafeteria-p4-',
+  original: 'la-cafeteria-p4o-',
+};
 
 type WireMessage =
   | { type: 'ACTION'; action: P4Action }
@@ -47,6 +58,7 @@ export function useP4Room(
   playerName: string,
   isHost: boolean,
   mode: P4Mode,
+  variant: P4Variant = 'powers',
 ): UseP4RoomResult {
   const [state, setState] = useState<P4State | null>(null);
   const [selfId, setSelfId] = useState<string | null>(null);
@@ -64,13 +76,17 @@ export function useP4Room(
   const modeRef = useRef(mode);
   modeRef.current = mode;
 
+  const modes = variant === 'original' ? ORIGINAL_MODES : MODES;
+  const powersEnabled = variant !== 'original';
+  const peerPrefix = PEER_PREFIXES[variant];
+
   useEffect(() => {
     let cancelled = false;
     const code = roomCode.trim().toUpperCase();
     const conns = connsRef.current;
 
     if (isHost) {
-      const hostId = PEER_PREFIX + code;
+      const hostId = peerPrefix + code;
       const peer = new Peer(hostId);
       peerRef.current = peer;
 
@@ -90,11 +106,12 @@ export function useP4Room(
       peer.on('open', (id) => {
         if (cancelled) return;
         setSelfId(id);
-        const initial = applyAction(createInitialState(code, id, modeRef.current), {
-          type: 'JOIN',
-          playerId: id,
-          name: nameRef.current,
-        }).state;
+        const initial = applyAction(
+          createInitialState(code, id, modeRef.current, modes),
+          { type: 'JOIN', playerId: id, name: nameRef.current },
+          modes,
+          powersEnabled,
+        ).state;
         hostStateRef.current = initial;
         setState(maskState(initial, id));
         setStatus('connected');
@@ -113,7 +130,7 @@ export function useP4Room(
           if (msg.type !== 'ACTION' || !hostStateRef.current) return;
           // Never trust a client's claim about who it is.
           const action = { ...msg.action, playerId: conn.peer } as P4Action;
-          const { state: next, error: err } = applyAction(hostStateRef.current, action);
+          const { state: next, error: err } = applyAction(hostStateRef.current, action, modes, powersEnabled);
           commit(next);
           if (err && conn.open) conn.send({ type: 'ERROR', message: err } satisfies WireMessage);
         });
@@ -121,7 +138,7 @@ export function useP4Room(
         conn.on('close', () => {
           conns.delete(conn.peer);
           if (!hostStateRef.current) return;
-          commit(applyAction(hostStateRef.current, { type: 'LEAVE', playerId: conn.peer }).state);
+          commit(applyAction(hostStateRef.current, { type: 'LEAVE', playerId: conn.peer }, modes, powersEnabled).state);
         });
       });
 
@@ -141,7 +158,7 @@ export function useP4Room(
       peer.on('open', (id) => {
         if (cancelled) return;
         setSelfId(id);
-        const conn = peer.connect(PEER_PREFIX + code, { reliable: true });
+        const conn = peer.connect(peerPrefix + code, { reliable: true });
         hostConnRef.current = conn;
 
         conn.on('open', () => {
@@ -180,15 +197,15 @@ export function useP4Room(
       peerRef.current?.destroy();
       conns.clear();
     };
-  }, [roomCode, isHost]);
+  }, [roomCode, isHost, variant, modes, powersEnabled, peerPrefix]);
 
   const sendAction = useCallback(
     (action: P4Action) => {
       if (isHost) {
         if (!hostStateRef.current) return;
-        const { state: next, error: err } = applyAction(hostStateRef.current, action);
+        const { state: next, error: err } = applyAction(hostStateRef.current, action, modes, powersEnabled);
         hostStateRef.current = next;
-        setState(maskState(next, PEER_PREFIX + roomCode.trim().toUpperCase()));
+        setState(maskState(next, peerPrefix + roomCode.trim().toUpperCase()));
         for (const [peerId, conn] of connsRef.current) {
           if (conn.open) conn.send({ type: 'STATE', state: maskState(next, peerId) } satisfies WireMessage);
         }
@@ -197,7 +214,7 @@ export function useP4Room(
         hostConnRef.current?.send({ type: 'ACTION', action } satisfies WireMessage);
       }
     },
-    [isHost, roomCode],
+    [isHost, roomCode, modes, powersEnabled, peerPrefix],
   );
 
   const clearError = useCallback(() => setError(null), []);
