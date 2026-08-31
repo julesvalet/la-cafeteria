@@ -178,8 +178,12 @@ console.log('\n== UNO declaration and its penalty ==');
   let s = setup(2);
   s = setTop(s, num('top', 'red', 5));
   s = setHand(s, 0, [num('a', 'red', 1), num('b', 'red', 2)]);
+  // A shout is never illegal — it always reaches the table so every client can
+  // play the announcement — but only a real one protects you.
   const tooEarly = applyAction(s, { type: 'DECLARE_UNO', playerId: seat(s, 0) });
-  check('cannot declare on two cards', Boolean(tooEarly.error), tooEarly.error);
+  check('shouting on two cards is allowed', !tooEarly.error, tooEarly.error);
+  check('but records no declaration', !tooEarly.state.players[0].hasDeclaredUno);
+  check('and still broadcasts, flagged as hollow', tooEarly.state.lastEvent.kind === 'uno' && tooEarly.state.lastEvent.success === false, tooEarly.state.lastEvent);
 
   s = setHand(s, 0, [num('a', 'red', 1)]);
   s = run(s, { type: 'DECLARE_UNO', playerId: seat(s, 0) });
@@ -218,6 +222,17 @@ console.log('\n== Contre UNO cuts both ways ==');
   const callerBefore = t.players[0].hand.length;
   t = run(t, { type: 'CONTRE_UNO', playerId: seat(t, 0) });
   check('a wrong call punishes the caller', t.players[0].hand.length === callerBefore + UNO_PENALTY);
+
+  // A hollow shout made earlier must not shield you once you really are down
+  // to one card — otherwise pre-shouting would be a free permanent immunity.
+  let v = setup(3);
+  v = setTop(v, num('top', 'red', 5));
+  v = setHand(v, 1, [num('a', 'red', 1), num('b', 'red', 2)]);
+  v = run(v, { type: 'DECLARE_UNO', playerId: seat(v, 1) }); // hollow: two cards
+  v = setHand(v, 1, [num('a', 'red', 1)]); // now genuinely on one
+  const exposed = v.players[1].hand.length;
+  v = run(v, { type: 'CONTRE_UNO', playerId: seat(v, 0) });
+  check('a hollow shout grants no immunity', v.players[1].hand.length === exposed + UNO_PENALTY, v.players[1].hand.length);
 
   // Calling on someone who *did* declare.
   let u = setup(3);

@@ -8,6 +8,7 @@ import { UnoHand } from './components/UnoHand';
 import { UnoRulesModal } from './components/UnoRulesModal';
 import { ColorPicker } from './components/ColorPicker';
 import { MysteryReveal, type MysteryShot } from './components/MysteryReveal';
+import { UnoFlash, type UnoShot } from './components/UnoFlash';
 import { UnoVictory } from './components/UnoVictory';
 import type { UnoCard, UnoColor } from './engine/types';
 
@@ -96,6 +97,7 @@ function UnoGameView({
   const [rulesOpen, setRulesOpen] = useState(false);
   const [pendingWild, setPendingWild] = useState<UnoCard | null>(null);
   const [mystery, setMystery] = useState<MysteryShot | null>(null);
+  const [unoShot, setUnoShot] = useState<UnoShot | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -126,6 +128,18 @@ function UnoGameView({
         who: state.players[event.by ?? 0]?.name ?? '',
       });
       fxTimersRef.current.push(setTimeout(() => setMystery(null), 3600));
+    }
+
+    // Broadcast, so every seat sees the same announcement — including the
+    // hollow ones, which are half the fun.
+    if (event.kind === 'uno') {
+      setUnoShot({
+        key: event.seq,
+        who: state.players[event.by ?? 0]?.name ?? '',
+        legit: event.success !== false,
+      });
+      // Just past the 2.8s sequence, so the fade-out finishes on screen.
+      fxTimersRef.current.push(setTimeout(() => setUnoShot(null), 3000));
     }
   }, [state]);
 
@@ -221,6 +235,7 @@ function UnoGameView({
       />
       <ColorPicker open={pendingWild !== null} onPick={handleColor} onCancel={() => setPendingWild(null)} />
       <MysteryReveal shot={mystery} />
+      <UnoFlash shot={unoShot} />
 
       <div className="p4-room-topbar">
         <div>

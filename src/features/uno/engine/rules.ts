@@ -565,8 +565,14 @@ export function pass(state: UnoState, playerId: string): ActionResult {
 }
 
 /**
- * The UNO declaration. Only meaningful with exactly one card in hand — anywhere
- * else it is noise, and the engine says so rather than silently accepting it.
+ * The UNO declaration.
+ *
+ * Shouting is never an illegal move — it is a shout. Anyone may do it at any
+ * time, and it always reaches the table (which is what lets every client play
+ * the announcement animation). What it does *not* always do is protect you:
+ * only a shout made while genuinely holding one card records the declaration,
+ * so crying UNO on a full hand is pure theatre and leaves you as catchable as
+ * before.
  */
 export function declareUno(state: UnoState, playerId: string): ActionResult {
   const playerIndex = state.players.findIndex((p) => p.id === playerId);
@@ -574,17 +580,21 @@ export function declareUno(state: UnoState, playerId: string): ActionResult {
   if (state.phase !== 'playing') return { state, error: "La partie n'est pas en cours." };
 
   const player = state.players[playerIndex];
-  if (player.hand.length !== 1) {
-    return { state, error: 'Tu ne peux annoncer UNO qu’avec exactement une carte en main.' };
-  }
-  if (player.hasDeclaredUno) return { state, error: 'Tu as déjà annoncé UNO.' };
+  const legitimate = player.hand.length === 1;
 
   let next: UnoState = {
     ...state,
-    players: state.players.map((p, i) => (i === playerIndex ? { ...p, hasDeclaredUno: true } : p)),
-    log: [...state.log, `${player.name} annonce UNO !`],
+    players: state.players.map((p, i) =>
+      i === playerIndex && legitimate ? { ...p, hasDeclaredUno: true } : p,
+    ),
+    log: [
+      ...state.log,
+      legitimate
+        ? `${player.name} annonce UNO !`
+        : `${player.name} crie UNO... avec ${player.hand.length} cartes en main.`,
+    ],
   };
-  next = bumpEvent(next, { kind: 'uno', by: playerIndex });
+  next = bumpEvent(next, { kind: 'uno', by: playerIndex, success: legitimate });
   return { state: next };
 }
 

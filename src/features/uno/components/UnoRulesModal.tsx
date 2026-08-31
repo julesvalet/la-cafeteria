@@ -42,7 +42,7 @@ export function UnoRulesModal({ open, onClose, stackingEnabled, mysteryEnabled }
             <p>
               Débarrasse-toi de toutes tes cartes avant les autres. À ton tour, pose une carte de la{' '}
               <strong>même couleur</strong> ou du <strong>même symbole</strong> que celle du dessus de la pile, ou un
-              joker. Si tu n'as rien à jouer, tu piochesune carte — et tu peux la jouer aussitôt si elle correspond.
+              joker. Si tu n'as rien à jouer, tu pioches une carte — et tu peux la jouer aussitôt si elle correspond.
             </p>
             <ul className="p4-rule-list">
               <li>
@@ -119,6 +119,11 @@ export function UnoRulesModal({ open, onClose, stackingEnabled, mysteryEnabled }
               <strong>UNO</strong> — quand il ne te reste qu'<strong>une seule carte</strong>, tu dois cliquer le
               bouton UNO avant de jouer ton dernier coup. Bien annoncé, il ne se passe rien : c'est le protocole. Si
               tu l'oublies et que tu poses quand même, tu prends <strong>+{UNO_PENALTY} cartes</strong>.
+            </p>
+            <p className="p4-rule-note">
+              Rien ne t'empêche de crier UNO n'importe quand — toute la table voit l'annonce, et c'est fait pour.
+              Mais un cri lancé avec plusieurs cartes en main ne te <em>protège</em> pas : il ne compte pas comme
+              une annonce, et tu restes dénonçable une fois vraiment descendu à une carte.
             </p>
             <p>
               <strong>Contre UNO</strong> — à tout moment, tu peux dénoncer un adversaire qui n'a qu'une carte sans
