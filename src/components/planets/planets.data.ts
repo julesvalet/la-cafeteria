@@ -1,4 +1,4 @@
-import { Spade, Grid3x3, Disc, Layers, Skull, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
+import { Spade, Grid3x3, Disc, Layers } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface PlanetRing {
@@ -47,10 +47,19 @@ export interface PlanetDef {
 }
 
 /**
- * The roster. Order matters only for the fallback grid and for tab order.
+ * The roster — playable features only. A planet with no game behind it was
+ * costing the composition more than the promise was worth.
  *
  * To ship a planet: add its route to `App.tsx`, then set `to` here. Everything
  * else (grey-out, "bientôt disponible", click handling) follows from that.
+ *
+ * Placement, in both compositions, is a balance of three things: no two discs
+ * may overlap, a label hangs ~0.1 half-heights *below* its planet and must
+ * clear whatever is under it, and the HUD owns the top centre while the hint
+ * owns the very bottom. Watch the units — `screen.x` is in half-*widths* and
+ * `size` is a fraction of the half-*height*, so a horizontal gap is worth
+ * `aspect` times what the same number buys vertically. That is why the
+ * portrait arrangement stacks rather than spreads.
  */
 export const PLANETS: PlanetDef[] = [
   {
@@ -59,8 +68,9 @@ export const PLANETS: PlanetDef[] = [
     description: 'Le jeu de cartes italien, à 2, 3 ou 4 joueurs. Crée une room ou rejoins-en une avec un code.',
     icon: Spade,
     to: '/scopa',
-    landscape: { screen: [0, -0.16], size: 0.295 },
-    portrait: { screen: [0, -0.2], size: 0.2 },
+    // Anchors the left flank on wide screens; the centre of the stack on phones.
+    landscape: { screen: [-0.6, -0.1], size: 0.27 },
+    portrait: { screen: [0, -0.08], size: 0.165 },
     depth: 1.2,
     // The house planet: roasted coffee lows, crema mids, foam highs.
     colors: { deep: '#2e1c10', mid: '#a97844', high: '#f0d9b6', accent: '#c9975e' },
@@ -77,8 +87,9 @@ export const PLANETS: PlanetDef[] = [
       'Aligne quatre jetons avant tes adversaires. Avec des pouvoirs spéciaux, de 2 à 4 joueurs, en équipes ou chacun pour soi.',
     icon: Grid3x3,
     to: '/puissance4',
-    landscape: { screen: [-0.6, 0.2], size: 0.15 },
-    portrait: { screen: [-0.62, 0.3], size: 0.105 },
+    // Upper right, kept below the HUD block rather than beside it.
+    landscape: { screen: [0.32, 0.28], size: 0.17 },
+    portrait: { screen: [-0.44, 0.4], size: 0.105 },
     depth: -1,
     // Blue board, yellow and red counters.
     colors: { deep: '#0b1a4a', mid: '#2f57c4', high: '#f2c63c', accent: '#e2523c' },
@@ -95,9 +106,19 @@ export const PLANETS: PlanetDef[] = [
       'Le Puissance 4 classique, sans pouvoirs : aligne 4 jetons sur une grille 7 × 6, à 2, 3 ou 4 joueurs.',
     icon: Disc,
     to: '/puissance4-original',
-    // A small moon in orbit of Puissance 4, up and to its right.
-    landscape: { screen: [-0.44, 0.34], size: 0.07 },
-    portrait: { screen: [-0.4, 0.13], size: 0.055 },
+    /*
+     * Proximity to Puissance 4 is the only thing saying "moon", so it has to
+     * stay that planet's nearest neighbour at *every* aspect ratio — and that
+     * is why it sits above Puissance 4 rather than below.
+     *
+     * A horizontal gap is worth `spreadX` times a vertical one, so an offset
+     * that reads as tight on a laptop stretches on an ultrawide: park the moon
+     * between Puissance 4 and UNO and it drifts into UNO's orbit on wide
+     * screens. Placing it on the far side, with UNO's whole height between
+     * them, holds the relationship however the window is shaped.
+     */
+    landscape: { screen: [0.62, 0.42], size: 0.075 },
+    portrait: { screen: [-0.04, 0.6], size: 0.052 },
     depth: -0.75,
     // A plain grey moonrock — deliberately calmer than its flashy neighbour.
     colors: { deep: '#28262a', mid: '#706e76', high: '#dcdadf', accent: '#9694a0' },
@@ -114,9 +135,10 @@ export const PLANETS: PlanetDef[] = [
       'Débarrasse-toi de toutes tes cartes. Avec cartes mystère, surenchère des + et le duel UNO / Contre UNO, de 2 à 4 joueurs.',
     icon: Layers,
     to: '/uno',
-    // The left flank, clear of both Puissance 4 above and Le Salon below.
-    landscape: { screen: [-0.85, -0.14], size: 0.115 },
-    portrait: { screen: [0.58, -0.02], size: 0.085 },
+    // Lower right, closing the triangle — and high enough that its label
+    // clears the "choisis une planète" hint pinned to the bottom edge.
+    landscape: { screen: [0.52, -0.44], size: 0.16 },
+    portrait: { screen: [0, -0.62], size: 0.115 },
     depth: -0.5,
     // The deck itself: red body, yellow highs, a blue accent.
     colors: { deep: '#1a0d0d', mid: '#d8232a', high: '#f4c500', accent: '#0a6cb8' },
@@ -125,73 +147,6 @@ export const PLANETS: PlanetDef[] = [
     bands: 0,
     tilt: 0.28,
     spin: 0.058,
-  },
-  {
-    id: 'buckshot',
-    name: 'Buckshot Roulette',
-    description: 'Roulette russe au fusil à pompe. Bluff, comptage de balles, et beaucoup de sang-froid.',
-    icon: Skull,
-    landscape: { screen: [0.58, 0.16], size: 0.155 },
-    portrait: { screen: [0.6, 0.48], size: 0.11 },
-    depth: -1.4,
-    // Gunmetal crust, dried blood, ember cracks.
-    colors: { deep: '#100c0b', mid: '#54211c', high: '#c23a25', accent: '#e04a2c' },
-    seed: 5.4,
-    noiseScale: 2.7,
-    bands: 0,
-    tilt: 0.45,
-    spin: 0.038,
-  },
-  {
-    id: 'salon',
-    name: 'Le Salon',
-    description: 'Un espace de discussion pour papoter entre potes, sans quitter La Cafétéria.',
-    icon: MessageCircle,
-    landscape: { screen: [-0.64, -0.56], size: 0.12 },
-    portrait: { screen: [-0.58, -0.6], size: 0.09 },
-    depth: -0.3,
-    // Calm sage/teal, like a mint tea.
-    colors: { deep: '#08312e', mid: '#2f8375', high: '#b6e8d3', accent: '#4fc7a8' },
-    seed: 6.9,
-    noiseScale: 2.4,
-    bands: 0,
-    tilt: -0.16,
-    spin: 0.05,
-  },
-  {
-    id: 'flipper',
-    name: 'Le Flipper',
-    description: "Un mini-jeu d'arcade rapide à partager en attendant que tout le monde arrive.",
-    icon: Gamepad2,
-    landscape: { screen: [0.62, -0.54], size: 0.125 },
-    portrait: { screen: [0.56, -0.54], size: 0.085 },
-    depth: -0.7,
-    // Neon arcade cabinet: violet body, magenta lights.
-    colors: { deep: '#240c40', mid: '#8836bd', high: '#ff9ae8', accent: '#c25af0' },
-    seed: 2.3,
-    noiseScale: 1.9,
-    bands: 7,
-    tilt: 0.38,
-    spin: 0.07,
-    ring: { inner: 1.45, outer: 2.25, color: '#d98ae8', opacity: 0.5 },
-  },
-  {
-    id: 'idees',
-    name: 'La Boîte à Idées',
-    description: 'Propose et vote pour la prochaine soirée, le prochain jeu, ou le prochain café.',
-    icon: Lightbulb,
-    landscape: { screen: [0.8, 0.58], size: 0.08 },
-    // Kept off the left column: stacked under Puissance 4, its label ran into
-    // that planet. Horizontal separation is what buys the label its room.
-    portrait: { screen: [-0.14, 0.6], size: 0.07 },
-    depth: -2.4,
-    // A filament about to switch on.
-    colors: { deep: '#3d2705', mid: '#c1841a', high: '#ffe9a3', accent: '#f7bb2b' },
-    seed: 4.6,
-    noiseScale: 2.9,
-    bands: 0,
-    tilt: -0.5,
-    spin: 0.06,
   },
 ];
 

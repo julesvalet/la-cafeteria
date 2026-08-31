@@ -6,7 +6,9 @@ Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs f
 
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
 - **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Personne ne *choisit* ses pouvoirs : chaque joueur reçoit une réserve de jetons pour la partie, dont une minorité tirée au sort est chargée d'un pouvoir — Traversée, Destruction, Inversion de gravité, Double-tour ou Blocage de colonne. Tu joues ta colonne normalement ; si ce jeton-là était chargé, l'effet part à l'impact. Même système de rooms que la Scopa.
-- D'autres features arriveront plus tard (Buckshot Roulette, Le Salon, Le Flipper, La Boîte à Idées). Leurs planètes sont déjà visibles sur la page d'accueil, grisées et non cliquables.
+- **Puissance 4 Original** — la même chose, sans aucun pouvoir : le Puissance 4 classique sur une grille 7 × 6, dans les quatre mêmes formats. Sa planète est la petite lune en orbite de Puissance 4.
+- **UNO** — le jeu de cartes, de 2 à 4 joueurs, avec deux ajouts : deux **cartes mystère** mélangées à la pioche, qui déclenchent un effet-surprise dès qu'on les tire (aucune en duel — sans public, la surprise ne vaut rien), et une option de **surenchère des +** que l'hôte active avant la partie, où un +2 peut être relancé jusqu'à ce que quelqu'un encaisse la pile. Les boutons **UNO** et **Contre UNO** sont à double tranchant : oublier d'annoncer coûte deux cartes, dénoncer à tort aussi.
+- La page d'accueil ne montre que des jeux jouables. Une feature en chantier n'a pas de planète tant qu'elle n'a pas de route : `to` vide la grise et la rend inerte, mais mieux vaut ne l'ajouter au roster qu'une fois jouable.
 
 ## La page d'accueil
 
