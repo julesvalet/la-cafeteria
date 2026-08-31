@@ -1,4 +1,4 @@
-import { Spade, Grid3x3, Disc, Skull, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
+import { Spade, Grid3x3, Disc, Layers, Skull, MessageCircle, Gamepad2, Lightbulb } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface PlanetRing {
@@ -106,6 +106,25 @@ export const PLANETS: PlanetDef[] = [
     bands: 0,
     tilt: 0.15,
     spin: 0.05,
+  },
+  {
+    id: 'uno',
+    name: 'UNO',
+    description:
+      'Débarrasse-toi de toutes tes cartes. Avec cartes mystère, surenchère des + et le duel UNO / Contre UNO, de 2 à 4 joueurs.',
+    icon: Layers,
+    to: '/uno',
+    // The left flank, clear of both Puissance 4 above and Le Salon below.
+    landscape: { screen: [-0.85, -0.14], size: 0.115 },
+    portrait: { screen: [0.58, -0.02], size: 0.085 },
+    depth: -0.5,
+    // The deck itself: red body, yellow highs, a blue accent.
+    colors: { deep: '#1a0d0d', mid: '#d8232a', high: '#f4c500', accent: '#0a6cb8' },
+    seed: 8.5,
+    noiseScale: 3,
+    bands: 0,
+    tilt: 0.28,
+    spin: 0.058,
   },
   {
     id: 'buckshot',
