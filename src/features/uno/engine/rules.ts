@@ -433,7 +433,7 @@ export function playCard(
       log: [...next.log, `${player.name} a oublié d'annoncer UNO : +${UNO_PENALTY} cartes !`],
     };
     next = bumpEvent(next, { kind: 'penalty', by: playerIndex, count: UNO_PENALTY });
-    return { state: advanceAfterPlay(next, card, playerIndex) };
+    return { state: advanceAfterPlay(next, card) };
   }
 
   // A declaration covers exactly one trip down to the last card; holding more
@@ -448,7 +448,7 @@ export function playCard(
   next = checkWin(next, playerIndex);
   if (next.phase === 'won') return { state: next };
 
-  return { state: advanceAfterPlay(next, card, playerIndex) };
+  return { state: advanceAfterPlay(next, card) };
 }
 
 function describe(card: UnoCard, chosenColor?: UnoColor): string {
@@ -467,8 +467,13 @@ function describe(card: UnoCard, chosenColor?: UnoColor): string {
   return chosenColor ? `${base} (${COLOR_LABEL[chosenColor].toLowerCase()})` : base;
 }
 
-/** Applies a played card's own effect, then hands the turn on. */
-function advanceAfterPlay(state: UnoState, card: UnoCard, playerIndex: number): UnoState {
+/**
+ * Applies a played card's own effect, then hands the turn on.
+ *
+ * Takes no player index on purpose: every effect here is relative to whoever is
+ * currently to move, which `state.turn` already holds.
+ */
+function advanceAfterPlay(state: UnoState, card: UnoCard): UnoState {
   let next = state;
 
   switch (card.kind) {
