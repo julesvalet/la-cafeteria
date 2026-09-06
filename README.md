@@ -74,3 +74,5 @@ Les positions sont en coordonnées écran (`x` en demi-largeurs, `y` en demi-hau
 ## Déploiement
 
 Le site se déploie automatiquement sur GitHub Pages à chaque push sur `main` (voir [.github/workflows/deploy.yml](.github/workflows/deploy.yml)). Le repo doit avoir Pages activé avec la source "GitHub Actions" (Settings → Pages).
+
+Le build copie également l’entrée compilée vers `404.html`, pour que les liens directs de jeux et de rooms soient résolus par React Router sur GitHub Pages.
