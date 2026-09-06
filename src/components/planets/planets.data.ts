@@ -1,4 +1,4 @@
-import { Spade, Grid3x3, Disc, Layers } from 'lucide-react';
+import { Spade, Grid3x3, Disc, Layers, Dices } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface PlanetRing {
@@ -62,6 +62,17 @@ export interface PlanetDef {
  * portrait arrangement stacks rather than spreads.
  */
 export const PLANETS: PlanetDef[] = [
+  {
+    id: 'flip7', name: 'Flip 7',
+    description: 'Une carte de plus ? Évite les doublons et tente le Flip 7. Entre amis, face aux bots ou en solo.',
+    icon: Dices, to: '/flip7',
+    landscape: { screen: [-0.08, -0.48], size: 0.16 },
+    portrait: { screen: [0.5, 0.35], size: 0.12 },
+    depth: 0.2,
+    colors: { deep: '#09291c', mid: '#28724b', high: '#e0c06d', accent: '#f5dda1' },
+    seed: 12.7, noiseScale: 3.3, bands: 0.5, tilt: -0.32, spin: 0.052,
+    ring: { inner: 1.25, outer: 1.45, color: '#d4af57', opacity: 0.55 },
+  },
   {
     id: 'scopa',
     name: 'Scopa',

@@ -4,6 +4,8 @@ Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs f
 
 ## Features
 
+- **Flip 7** — un plateau casino, de 2 à 5 amis en ligne, 1 à 3 bots (trois difficultés), ou un entraînement solo illimité. Une roulette révèle chaque carte ; arrête pour sécuriser tes points, ou tente les sept numéros différents. Règles officielles (94 cartes, objectif 200 points) et variante Cafétéria (62 cartes et effets personnalisés) disponibles au salon. Chat intégré, sons et musique activables, statistiques locales, thèmes clair/sombre et mode d’animation léger.
+
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
 - **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Personne ne *choisit* ses pouvoirs : chaque joueur reçoit une réserve de jetons pour la partie, dont une minorité tirée au sort est chargée d'un pouvoir — Traversée, Destruction, Inversion de gravité, Double-tour ou Blocage de colonne. Tu joues ta colonne normalement ; si ce jeton-là était chargé, l'effet part à l'impact. Même système de rooms que la Scopa.
 - **Puissance 4 Original** — la même chose, sans aucun pouvoir : le Puissance 4 classique sur une grille 7 × 6, dans les quatre mêmes formats. Sa planète est la petite lune en orbite de Puissance 4.
@@ -44,6 +46,14 @@ npm run preview
 ```
 
 ## Tests
+
+```bash
+npm run test:flip7
+```
+
+Le moteur Flip 7 possède des tests déterministes : composition des paquets, doublons, ordre des bonus, cartes spéciales et cascades de Flip Three, distribution initiale, déconnexions, autorisation des actions, fin de manche, égalités et parties complètes simulées avec conservation des cartes. Node 24 est utilisé en CI.
+
+Les détails des règles et de l’implémentation sont dans [src/features/flip7/README.md](src/features/flip7/README.md).
 
 Le moteur de règles du Puissance 4 (gravité, pouvoirs, détection d'alignement) est du code pur, sans React ni réseau — il se teste beaucoup mieux là qu'à la souris :
 
