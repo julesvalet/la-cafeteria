@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Handshake, RotateCcw, Trophy } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { teamColor } from '../engine/modes';
 import { teamLabel, teamMembers } from '../engine/rules';
 import type { P4State } from '../engine/types';
@@ -9,6 +10,8 @@ interface VictoryOverlayProps {
   /** Only the host can deal a new game. */
   canRematch: boolean;
   onRematch: () => void;
+  /** Slipped under the result — the points tally, in practice. */
+  children?: ReactNode;
 }
 
 /**
@@ -16,7 +19,7 @@ interface VictoryOverlayProps {
  * behind it stays zoomed on the winning line (that part lives in the stage's
  * CSS, so the discs themselves remain visible under the overlay).
  */
-export function VictoryOverlay({ state, canRematch, onRematch }: VictoryOverlayProps) {
+export function VictoryOverlay({ state, canRematch, onRematch, children }: VictoryOverlayProps) {
   const done = state.phase === 'won' || state.phase === 'draw';
   const won = state.phase === 'won' && state.winner !== null;
   const team = state.winner?.team ?? 0;
@@ -75,6 +78,8 @@ export function VictoryOverlay({ state, canRematch, onRematch }: VictoryOverlayP
                 <span>Le plateau est plein, personne n'a aligné quatre jetons.</span>
               </p>
             )}
+
+            {children}
 
             {canRematch ? (
               <button type="button" className="btn btn-primary p4-victory-again" onClick={onRematch}>

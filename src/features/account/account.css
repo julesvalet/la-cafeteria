@@ -1,0 +1,588 @@
+/*
+ * Pages de compte — la mécanique néon du cahier des charges, en ambre.
+ *
+ * Le principe du néon est repris tel quel : un halo au repos, renforcé au
+ * survol, et un éclat au clic. Seule la teinte change, parce qu'un cyan sur
+ * fond noir aurait fait des pages compte une enclave étrangère au reste du
+ * site — Scopa, UNO et Puissance 4 partagent tous la palette brun/beige.
+ *
+ * La difficulté tient au thème clair : un halo lumineux ne se voit pas sur un
+ * fond crème. Plutôt que de renoncer au thème clair sur ces pages, l'intensité
+ * du halo est une variable — discrète et chaude en clair, franchement
+ * lumineuse en sombre, où elle porte enfin son nom.
+ */
+
+.acc-scope {
+  --accent: var(--color-primary);
+  --accent-strong: var(--color-primary-dark);
+  --glow: 201 151 94;
+
+  /* Opacités du halo, par état. Relevées en thème sombre plus bas. */
+  --glow-rest: 0.26;
+  --glow-hover: 0.44;
+  --glow-active: 0.62;
+  /* Diffusion du halo. Plus serrée en clair, où un flou large vire au sale. */
+  --glow-blur: 14px;
+  --glow-blur-hover: 22px;
+}
+
+:root[data-theme='dark'] .acc-scope {
+  --glow-rest: 0.4;
+  --glow-hover: 0.75;
+  --glow-active: 1;
+  --glow-blur: 18px;
+  --glow-blur-hover: 30px;
+}
+
+/* --- Mise en page ---------------------------------------------------------- */
+
+.acc-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 24px 72px;
+  min-height: calc(100vh - 220px);
+}
+
+.acc-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+ * Le « background subtle animation » du cahier des charges : une nappe chaude
+ * qui dérive lentement derrière la carte, plutôt qu'un champ de particules.
+ * Une seule propriété animée, composée par le GPU, et rien qui ne bouge sous
+ * le texte.
+ */
+.acc-card::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  background: radial-gradient(
+    circle at 30% 20%,
+    rgb(var(--glow) / 0.18),
+    transparent 55%
+  );
+  animation: acc-drift 18s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes acc-drift {
+  from { transform: translate3d(-6%, -4%, 0) scale(1); }
+  to   { transform: translate3d(8%, 6%, 0) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acc-card::before { animation: none; }
+}
+
+.acc-card > * { position: relative; }
+
+.acc-title {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  margin-bottom: 4px;
+}
+
+.acc-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  margin-bottom: 24px;
+}
+
+.acc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.acc-switch {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.acc-switch a {
+  color: var(--accent-strong);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- Champs ---------------------------------------------------------------- */
+
+.neon-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.neon-field-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.neon-input {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: var(--font-body);
+  font-size: 0.96rem;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.neon-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.65;
+}
+
+.neon-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 var(--glow-blur) rgb(var(--glow) / var(--glow-hover)),
+              inset 0 0 8px rgb(var(--glow) / 0.1);
+}
+
+.neon-field[data-invalid='true'] .neon-input {
+  border-color: var(--color-danger);
+}
+
+.neon-field[data-invalid='true'] .neon-input:focus {
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-danger) 45%, transparent);
+}
+
+.neon-error {
+  font-size: 0.82rem;
+  color: var(--color-danger);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.neon-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* --- Boutons --------------------------------------------------------------- */
+
+.neon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 26px;
+  font-size: 0.96rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  color: var(--accent-strong);
+  background: transparent;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  transition: box-shadow 0.25s ease, transform 0.15s ease, background-color 0.25s ease;
+  box-shadow: 0 0 var(--glow-blur) rgb(var(--glow) / var(--glow-rest)),
+              inset 0 0 10px rgb(var(--glow) / 0.08);
+}
+
+:root[data-theme='dark'] .neon-btn {
+  color: var(--color-primary-light);
+}
+
+.neon-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  background: rgb(var(--glow) / 0.08);
+  box-shadow: 0 0 var(--glow-blur-hover) rgb(var(--glow) / var(--glow-hover)),
+              inset 0 0 18px rgb(var(--glow) / 0.16);
+}
+
+.neon-btn:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: 0 0 calc(var(--glow-blur-hover) + 10px) rgb(var(--glow) / var(--glow-active)),
+              inset 0 0 20px rgb(var(--glow) / 0.26);
+}
+
+.neon-btn:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 3px;
+}
+
+.neon-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.neon-btn[data-variant='solid'] {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.neon-btn[data-variant='solid']:hover:not(:disabled) {
+  background: var(--accent-strong);
+}
+
+.neon-btn[data-variant='ghost'] {
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--color-text-muted);
+}
+
+.neon-btn[data-variant='ghost']:hover:not(:disabled) {
+  color: var(--accent-strong);
+  background: rgb(var(--glow) / 0.1);
+  box-shadow: none;
+}
+
+.neon-btn[data-variant='danger'] {
+  --glow: 181 83 63;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.neon-btn[data-block='true'] {
+  width: 100%;
+}
+
+/* Le disque qui tourne pendant une requête. */
+.neon-spin {
+  animation: acc-spin 0.9s linear infinite;
+}
+
+@keyframes acc-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-btn { transition: none; }
+  .neon-btn:hover:not(:disabled),
+  .neon-btn:active:not(:disabled) { transform: none; }
+  .neon-spin { animation-duration: 2.4s; }
+}
+
+/* --- Bandeaux de message --------------------------------------------------- */
+
+.acc-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  border: 1px solid;
+}
+
+.acc-banner[data-tone='error'] {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+}
+
+.acc-banner[data-tone='success'] {
+  color: var(--color-success);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+}
+
+.acc-banner[data-tone='info'] {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-primary) 7%, transparent);
+}
+
+.acc-banner svg { flex: none; margin-top: 1px; }
+
+/* --- Profil ---------------------------------------------------------------- */
+
+.acc-page-wide {
+  max-width: 820px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.acc-card-wide {
+  max-width: 100%;
+}
+
+.acc-profile-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 20px;
+  align-items: start;
+}
+
+/* L'initiale du pseudo tient lieu d'avatar tant que l'envoi d'image n'existe
+   pas : un disque vide ne dirait rien, et une image par défaut identique pour
+   tous rendrait deux joueurs impossibles à distinguer du coin de l'oeil. */
+.acc-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-heading);
+  font-size: 1.9rem;
+  color: #fff;
+  background: linear-gradient(140deg, var(--color-primary-light), var(--color-primary-darker));
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 var(--glow-blur) rgb(var(--glow) / var(--glow-rest));
+  flex: none;
+}
+
+.acc-profile-id { min-width: 0; }
+.acc-profile-id .acc-subtitle { margin-bottom: 6px; }
+
+.acc-profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.acc-edit {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border);
+}
+
+.acc-edit-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.acc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin-bottom: 18px;
+}
+
+/* --- Statistiques ---------------------------------------------------------- */
+
+.acc-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 14px;
+  margin: 0;
+}
+
+.acc-stat {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.acc-stat dt {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.acc-stat dd {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  color: var(--color-heading);
+}
+
+.acc-stat-hero {
+  color: var(--accent-strong) !important;
+  text-shadow: 0 0 calc(var(--glow-blur) - 4px) rgb(var(--glow) / var(--glow-hover));
+}
+
+:root[data-theme='dark'] .acc-stat-hero {
+  color: var(--color-primary-light) !important;
+}
+
+/* --- Historique ------------------------------------------------------------ */
+
+/* Cinq colonnes ne tiennent pas sur un téléphone : le tableau défile dans son
+   propre conteneur plutôt que de pousser la page entière à défiler de côté. */
+.acc-table-scroll {
+  overflow-x: auto;
+  margin: 0 -4px;
+  padding: 0 4px;
+}
+
+.acc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.acc-table th {
+  text-align: left;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 0 12px 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.acc-table td {
+  padding: 11px 12px 11px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.acc-table tr:last-child td { border-bottom: none; }
+
+.acc-outcome {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.acc-outcome[data-won='true'] { color: var(--color-success); }
+
+.acc-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  font-size: 0.74rem;
+  color: var(--accent-strong);
+  vertical-align: middle;
+}
+
+/* --- Téléphone ------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+  .acc-page { padding: 28px 0 56px; }
+
+  /* L'avatar et les actions passent au-dessus et en dessous du bloc d'identité
+     plutôt que de comprimer le pseudo entre eux. */
+  .acc-profile-head {
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+  }
+
+  .acc-profile-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .acc-card { padding: 24px 20px; }
+}
+
+/* --- Contrôle de compte dans l'en-tête -------------------------------------- */
+
+/* Calé sur le gabarit de .theme-toggle : les deux commandes se tiennent côte à
+   côte et doivent partager la même hauteur et le même rayon. */
+.account-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.account-chip:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 14px rgb(201 151 94 / 0.35);
+}
+
+.account-chip:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+.account-chip-avatar {
+  width: 40px;
+  padding: 0;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: #fff;
+  background: linear-gradient(140deg, var(--color-primary-light), var(--color-primary-darker));
+  border-color: var(--color-primary);
+}
+
+.account-chip[data-placeholder='true'] {
+  width: 40px;
+  padding: 0;
+  opacity: 0.4;
+}
+
+/* Le libellé cède la place au téléphone ; l'icône, elle, reste toujours
+   lisible et le lien garde sa cible tactile de 40px. */
+@media (max-width: 560px) {
+  .account-chip-label { display: none; }
+  .account-chip-signin { width: 40px; padding: 0; }
+}
+
+/* --- Retour d'enregistrement en fin de partie -------------------------------- */
+
+/* Posé dans les écrans de victoire des quatre jeux, qui ont chacun leur propre
+   habillage : le composant n'apporte donc aucun fond ni bordure, seulement un
+   rythme et une couleur. */
+.game-record {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+}
+
+.game-record a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:root[data-theme='dark'] .game-record a { color: var(--color-primary-light); }
+
+.game-record[data-tone='win'] {
+  color: var(--color-primary-dark);
+  font-size: 0.95rem;
+}
+
+:root[data-theme='dark'] .game-record[data-tone='win'] { color: var(--color-primary-light); }
+
+.game-record[data-tone='warn'] { color: var(--color-danger); }
+
+.game-record-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid currentColor;
+}

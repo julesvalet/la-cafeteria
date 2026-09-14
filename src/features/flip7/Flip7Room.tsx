@@ -11,6 +11,9 @@ import { FACE_MS, REVEAL_MS } from './utils/animation';
 import { CasinoAudio } from './utils/sound';
 import { readPreference, recordRound, savePreference } from './utils/storage';
 import { numbers } from './engine/rules';
+import { useRecordGame } from '../account/useRecordGame';
+import { flip7Outcome } from '../account/gameOutcomes';
+import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import type { PlayerAction, PublicState } from './engine/types';
 import './flip7.css';
 
@@ -27,6 +30,10 @@ export function Flip7Room() {
 
 function GameSession(options: SessionOptions) {
   const { state, selfId, status, error, clearError, sendAction } = useFlip7Game(options);
+  // Vaut `null` hors partie en ligne terminée — le solo et les parties contre
+  // des bots ne comptent pas. Pas de useMemo : le hook se repère à la clé de
+  // session, une chaîne, et non à l'identité de l'objet.
+  const record = useRecordGame(flip7Outcome(state, selfId));
   const [visible, setVisible] = useState<PublicState | null>(null);
   const [busy, setBusy] = useState(false);
   const [rules, setRules] = useState(false);
@@ -107,7 +114,7 @@ function GameSession(options: SessionOptions) {
       {error && <div className="f7-notice" role="alert">{error}<button onClick={clearError} aria-label="Fermer le message">×</button></div>}
       <div className={`f7-room-layout ${options.mode === 'online' ? 'has-chat' : ''}`}>
         {state.phase === 'lobby' ? <section className="f7-waiting"><div className="f7-waiting-cards"><FlipCard back /><FlipCard card={{ id: 'wait7', kind: 'number', value: 7 }} /></div><p className="f7-eyebrow">LES AMIS FONT LES BONNES TABLES</p><h1>On attend la bande.</h1><p>Partage le code, les autres n’ont plus qu’à s’installer.</p><button className="f7-invite-code" onClick={copy}>{options.code} {copied ? <Check size={21} /> : <Copy size={21} />}</button><p>{state.players.length} / {state.options.maxPlayers} joueurs</p><div className="f7-waiting-players">{state.players.map(p => <span key={p.id}><i className="f7-live-dot" />{p.name}{p.id === state.hostId ? ' · hôte' : ''}</span>)}</div>{selfId === state.hostId ? <button className="f7-primary" disabled={state.players.length !== state.options.maxPlayers} onClick={() => act({ type: 'START' })}>Lancer la partie →</button> : <p>L’hôte lancera la partie quand tout le monde sera là.</p>}</section>
-          : view.players.some(p => p.id === selfId) && <GameBoard state={view} selfId={selfId} busy={busy} sendAction={act} />}
+          : view.players.some(p => p.id === selfId) && <GameBoard state={view} selfId={selfId} busy={busy} sendAction={act} footer={<GameRecordBadge state={record} />} />}
         {options.mode === 'online' && <ChatPanel messages={state.chat} onSend={text => act({ type: 'CHAT', text })} selfId={selfId} />}
       </div>
       <footer className="f7-room-footer"><span>♠ UNE CARTE. UN CHOIX. UN FRISSON.</span><span>La Cafétéria · Flip 7</span></footer>

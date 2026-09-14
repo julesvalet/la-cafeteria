@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from './ThemeToggle';
+import { AccountMenu } from '../features/account/components/AccountMenu';
 
 export function Header() {
   return (
@@ -10,6 +11,7 @@ export function Header() {
           <span>La Cafétéria</span>
         </Link>
         <div className="site-header-actions">
+          <AccountMenu />
           <ThemeToggle />
         </div>
       </div>

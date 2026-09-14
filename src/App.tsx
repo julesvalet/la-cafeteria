@@ -11,6 +11,10 @@ import { OriginalLobby } from './features/puissance4/original/OriginalLobby';
 import { OriginalRoom } from './features/puissance4/original/OriginalRoom';
 import { UnoLobby } from './features/uno/UnoLobby';
 import { UnoRoom } from './features/uno/UnoRoom';
+import { AuthProvider } from './features/account/AuthProvider';
+import { LoginPage } from './features/account/LoginPage';
+import { RegisterPage } from './features/account/RegisterPage';
+import { ProfilePage } from './features/account/ProfilePage';
 
 const Flip7Lobby = lazy(() => import('./features/flip7/Flip7Lobby').then(m => ({ default: m.Flip7Lobby })));
 const Flip7Room = lazy(() => import('./features/flip7/Flip7Room').then(m => ({ default: m.Flip7Room })));
@@ -18,6 +22,9 @@ const Flip7Room = lazy(() => import('./features/flip7/Flip7Room').then(m => ({ d
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      {/* Le provider enveloppe l'en-tête autant que les pages : c'est lui qui
+          alimente le raccourci de compte, visible partout sur le site. */}
+      <AuthProvider>
       <Header />
       <main className="site-main">
         <Suspense fallback={<div className="container" role="status" style={{ padding: 40 }}>La table se prépare…</div>}><Routes>
@@ -32,9 +39,13 @@ function App() {
           <Route path="/uno/:code" element={<UnoRoom />} />
           <Route path="/flip7" element={<Flip7Lobby />} />
           <Route path="/flip7/:code" element={<Flip7Room />} />
+          <Route path="/connexion" element={<LoginPage />} />
+          <Route path="/inscription" element={<RegisterPage />} />
+          <Route path="/compte" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes></Suspense>
       </main>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

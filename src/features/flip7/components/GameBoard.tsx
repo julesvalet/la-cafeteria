@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ShieldCheck, Snowflake, Trophy } from 'lucide-react';
 import { FlipCard } from './FlipCard';
@@ -23,7 +23,7 @@ function AnimatedScore({ value }: { value: number }) {
   }, [value, reduced]);
   return <span>{display}</span>;
 }
-export function GameBoard({ state, selfId, busy, sendAction }: { state: PublicState; selfId: string; busy: boolean; sendAction: (a: PlayerAction) => void }) {
+export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: PublicState; selfId: string; busy: boolean; sendAction: (a: PlayerAction) => void; footer?: ReactNode }) {
   const [selected, setSelected] = useState<string | null>(null);
   const turnPlayer = state.players[state.turn];
   const me = state.players.find(p => p.id === selfId)!;
@@ -81,6 +81,7 @@ export function GameBoard({ state, selfId, busy, sendAction }: { state: PublicSt
     </div>}
     {ended && <section className="f7-results"><Trophy size={30} /><p className="f7-eyebrow">{state.phase === 'finished' ? 'LA PARTIE EST TERMINÉE' : `FIN DE LA MANCHE ${state.round}`}</p><h2>{state.winnerId ? `${state.players.find(p => p.id === state.winnerId)?.name} remporte la partie !` : state.lastEvent.kind === 'flip7' ? 'Sept cartes. Un joli coup.' : 'Les jeux sont faits.'}</h2>
       <div className="f7-result-rows">{[...state.players].sort((a, b) => b.total - a.total).map((p, i) => <div key={p.id}><span>{i + 1 < 10 ? '0' : ''}{i + 1}</span><b>{p.name}{p.id === selfId ? ' · toi' : ''}</b><span>+{p.roundPoints}</span><strong>{p.total} pts</strong></div>)}</div>
+      {footer}
       {selfId === state.hostId ? <button className="f7-primary" disabled={busy || (state.options.mode !== 'solo' && state.players.filter(p => p.connected).length < 2)} onClick={() => sendAction({ type: state.phase === 'finished' ? 'REMATCH' : 'NEXT_ROUND' })}>{state.phase === 'finished' ? 'Rejouer' : 'Manche suivante'} →</button> : <p>L’hôte prépare la prochaine manche.</p>}
       {state.options.mode !== 'solo' && state.players.filter(p => p.connected).length < 2 && <p>Il faut au moins deux joueurs. Reviens au salon pour ouvrir une nouvelle table.</p>}
     </section>}

@@ -29,6 +29,7 @@ Quelques principes, si tu touches à [src/components/planets/](src/components/pl
 - [React Router](https://reactrouter.com/) pour la navigation
 - [Three.js](https://threejs.org/) + [React Three Fiber](https://r3f.docs.pmnd.rs/) pour le système de planètes de l'accueil
 - [PeerJS](https://peerjs.com/) (WebRTC) pour le multijoueur temps réel — aucun serveur de jeu à héberger. Dans chaque jeu, l'hôte fait autorité : il applique toutes les actions via un moteur de règles pur, puis diffuse l'état.
+- [Supabase](https://supabase.com/) (Postgres + Auth) pour les comptes, les statistiques et les classements — voir « Comptes et statistiques » plus bas
 - Déploiement statique automatique sur GitHub Pages via GitHub Actions
 
 ## Développement local
@@ -62,6 +63,67 @@ npm run test:p4
 ```
 
 Aucun framework de test : Node exécute le TypeScript directement, [scripts/register-ts.mjs](scripts/register-ts.mjs) se contentant de reproduire la résolution d'imports que Vite applique déjà.
+
+## Comptes et statistiques
+
+Les comptes sont une couche **additive** posée sur un site qui reste statique et
+P2P : sans configuration Supabase, tout le site fonctionne exactement comme
+avant, simplement sans bouton « Se connecter ».
+
+### Configuration
+
+Deux variables, dans [.env](.env) (versionné) :
+
+| Variable | Rôle |
+| --- | --- |
+| `VITE_SUPABASE_URL` | URL du projet Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé publique du client |
+
+Ces valeurs ne sont pas des secrets : le site étant un build statique, tout ce
+que le navigateur doit connaître finit dans le bundle publié, et la clé
+*publishable* est faite pour ça. Ce qui protège les données, c'est la Row Level
+Security en base — jamais la confidentialité de cette clé. **Ne jamais placer
+ici la clé `service_role`**, qui, elle, contourne la RLS.
+
+### Schéma
+
+[supabase/migrations/0001_accounts_and_stats.sql](supabase/migrations/0001_accounts_and_stats.sql)
+décrit l'état complet du schéma et peut être rejoué sans risque sur une base
+déjà à jour.
+
+- `profiles` — pseudo, bio, préférences. Créé par un trigger sur `auth.users`,
+  donc un compte ne peut pas exister sans profil.
+- `game_sessions` / `game_results` — une partie, et une ligne par joueur.
+- `game_types` — le barème de points, ajustable par un simple `UPDATE`.
+- `profile_stats` — vue agrégée (parties, victoires, points, jeu favori).
+
+### Comment une partie est comptée
+
+Il n'y a pas de serveur pour arbitrer : chaque joueur connecté enregistre sa
+propre ligne via `record_game_result()`, seule voie d'écriture autorisée. Les
+points sont calculés en base, jamais fournis par le client.
+
+Pour que quatre joueurs se retrouvent rattachés à la *même* partie, chaque jeu
+produit une **signature** de son état final — faite de champs que tous les pairs
+voient à l'identique, et qui change à la revanche. Voir
+[src/features/account/gameOutcomes.ts](src/features/account/gameOutcomes.ts).
+
+Conséquence assumée : en P2P, un client modifié peut déclarer une victoire qui
+n'a pas eu lieu. Le garde-fou en base plafonne le nombre de vainqueurs par
+partie, ce qui attrape les incohérences accidentelles — pas un tricheur
+déterminé. C'est le bon niveau d'effort pour un site entre amis.
+
+Le mode solo et les parties contre des bots de Flip 7 ne sont pas enregistrés :
+ils se gagnent à volonté, et les compter mettrait en tête du classement le plus
+patient plutôt que le meilleur joueur.
+
+### Classements
+
+`get_leaderboard(période, jeu, limite)` agrège à la lecture, avec remise à zéro
+à 00:00 UTC (jour, semaine ISO commençant le lundi, mois). Aucune tâche
+planifiée à surveiller : le classement ne peut pas être en retard sur les
+parties.
+
 
 ## Ajouter une nouvelle feature
 

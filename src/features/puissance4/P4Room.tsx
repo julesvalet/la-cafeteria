@@ -9,6 +9,9 @@ import { Board } from './components/Board';
 import { P4RulesModal } from './components/P4RulesModal';
 import { NextDisc } from './components/NextDisc';
 import { VictoryOverlay } from './components/VictoryOverlay';
+import { useRecordGame } from '../account/useRecordGame';
+import { p4Outcome } from '../account/gameOutcomes';
+import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import type { Impact } from './components/ImpactFx';
 import type { FxShot } from './components/PowerFx';
 import type { P4Mode } from './engine/types';
@@ -106,6 +109,12 @@ function P4GameView({
   );
   const me = seat >= 0 ? state?.players[seat] : undefined;
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+
+  // Null until the board resolves. A draw is recorded too — nobody scores, but
+  // the game still counts towards a player's total.
+  const outcome = useMemo(() => p4Outcome(state, selfId, code, 'puissance4'), [state, selfId, code]);
+  const record = useRecordGame(outcome);
+
   /* The power of a disc I just landed, waiting for me to aim it. */
   const aiming = state?.pendingPower?.by === seat ? (state.pendingPower?.power ?? null) : null;
   const nextCharge = me?.charges[0] ?? null;
@@ -437,7 +446,9 @@ function P4GameView({
             state={state}
             canRematch={isHost}
             onRematch={() => sendAction({ type: 'REMATCH' })}
-          />
+          >
+            <GameRecordBadge state={record} />
+          </VictoryOverlay>
         </>
       )}
 

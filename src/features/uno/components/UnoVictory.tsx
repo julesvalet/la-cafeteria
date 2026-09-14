@@ -1,11 +1,14 @@
 import { motion } from 'framer-motion';
 import { RotateCcw, Trophy } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { UnoState } from '../engine/types';
 
 interface UnoVictoryProps {
   state: UnoState;
   canRematch: boolean;
   onRematch: () => void;
+  /** Glissé sous le nom du vainqueur — le bilan de points, en pratique. */
+  children?: ReactNode;
 }
 
 /**
@@ -13,7 +16,7 @@ interface UnoVictoryProps {
  * Puissance 4 overlay: a stalled exit would leave this covering the next game
  * and swallowing every click.
  */
-export function UnoVictory({ state, canRematch, onRematch }: UnoVictoryProps) {
+export function UnoVictory({ state, canRematch, onRematch, children }: UnoVictoryProps) {
   if (state.phase !== 'won' || state.winner === null) return null;
   const winner = state.players[state.winner];
 
@@ -51,6 +54,8 @@ export function UnoVictory({ state, canRematch, onRematch }: UnoVictoryProps) {
           <strong>{winner?.name ?? 'Quelqu’un'}</strong>
           <span>a posé sa dernière carte</span>
         </p>
+
+        {children}
 
         {canRematch ? (
           <button type="button" className="btn btn-primary p4-victory-again" onClick={onRematch}>

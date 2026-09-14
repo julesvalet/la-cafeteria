@@ -10,6 +10,9 @@ import { ColorPicker } from './components/ColorPicker';
 import { MysteryReveal, type MysteryShot } from './components/MysteryReveal';
 import { UnoFlash, type UnoShot } from './components/UnoFlash';
 import { UnoVictory } from './components/UnoVictory';
+import { useRecordGame } from '../account/useRecordGame';
+import { unoOutcome } from '../account/gameOutcomes';
+import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import type { UnoCard, UnoColor } from './engine/types';
 
 interface LocationState {
@@ -112,6 +115,11 @@ function UnoGameView({
   const seat = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = seat >= 0 ? state?.players[seat] : undefined;
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+
+  // Vaut `null` tant que personne n'a posé sa dernière carte. La revanche
+  // produit une nouvelle signature, donc un nouvel enregistrement.
+  const outcome = useMemo(() => unoOutcome(state, selfId, code), [state, selfId, code]);
+  const record = useRecordGame(outcome);
 
   // Every announcement is driven off `lastEvent.seq` rather than off diffing
   // the state: the same effect can legitimately fire twice in a row.
@@ -366,7 +374,9 @@ function UnoGameView({
             </p>
           )}
 
-          <UnoVictory state={state} canRematch={isHost} onRematch={() => sendAction({ type: 'REMATCH' })} />
+          <UnoVictory state={state} canRematch={isHost} onRematch={() => sendAction({ type: 'REMATCH' })}>
+            <GameRecordBadge state={record} />
+          </UnoVictory>
         </>
       )}
     </div>

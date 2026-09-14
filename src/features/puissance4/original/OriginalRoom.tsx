@@ -7,6 +7,9 @@ import { teamLabel } from '../engine/rules';
 import { Board } from '../components/Board';
 import { OriginalRulesModal } from './OriginalRulesModal';
 import { VictoryOverlay } from '../components/VictoryOverlay';
+import { useRecordGame } from '../../account/useRecordGame';
+import { p4Outcome } from '../../account/gameOutcomes';
+import { GameRecordBadge } from '../../account/components/GameRecordBadge';
 import type { Impact } from '../components/ImpactFx';
 import type { P4Mode } from '../engine/types';
 
@@ -91,6 +94,14 @@ function OriginalGameView({
 
   const seat = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+
+  // La variante sans pouvoirs a son propre identifiant de jeu : un classement
+  // « Puissance 4 » ne doit pas mélanger deux jeux aux règles différentes.
+  const outcome = useMemo(
+    () => p4Outcome(state, selfId, code, 'puissance4-original'),
+    [state, selfId, code],
+  );
+  const record = useRecordGame(outcome);
 
   useEffect(() => {
     if (!state) return;
@@ -339,7 +350,9 @@ function OriginalGameView({
             </p>
           )}
 
-          <VictoryOverlay state={state} canRematch={isHost} onRematch={() => sendAction({ type: 'REMATCH' })} />
+          <VictoryOverlay state={state} canRematch={isHost} onRematch={() => sendAction({ type: 'REMATCH' })}>
+            <GameRecordBadge state={record} />
+          </VictoryOverlay>
         </>
       )}
 

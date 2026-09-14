@@ -11,6 +11,9 @@ import { ScopaFlash } from './components/ScopaFlash';
 import { RulesModal } from './components/RulesModal';
 import { AnimatedNumber } from './components/AnimatedNumber';
 import { fanTransform, handCardScale, scatterTransform, tableCardScale } from './utils/layout';
+import { useRecordGame } from '../account/useRecordGame';
+import { scopaOutcome } from '../account/gameOutcomes';
+import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import type { CardT } from './engine/types';
 
 interface LocationState {
@@ -90,6 +93,11 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
   const myIndex = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = myIndex >= 0 ? state?.players[myIndex] : undefined;
   const isMyTurn = state?.phase === 'playing' && state.turn === myIndex;
+
+  // Vaut `null` tant que la partie n'est pas finie : le hook ne fait donc rien
+  // jusqu'au dernier pli, puis enregistre une fois.
+  const outcome = useMemo(() => scopaOutcome(state, selfId, code), [state, selfId, code]);
+  const record = useRecordGame(outcome);
 
   const orderedOpponents = useMemo(() => {
     if (!state || myIndex < 0) return [];
@@ -520,6 +528,7 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                         : `Égalité entre ${winners.map((w) => w.name).join(', ')} à ${maxScore} points !`;
                     })()}
                   </p>
+                  <GameRecordBadge state={record} />
                   <Link to="/scopa" className="btn btn-primary">
                     <Sparkles size={15} /> Rejouer
                   </Link>

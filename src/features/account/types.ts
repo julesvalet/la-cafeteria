@@ -1,0 +1,70 @@
+/** Les identifiants de jeu tels qu'ils vivent dans `game_types` en base. */
+export type GameTypeId = 'flip7' | 'scopa' | 'uno' | 'puissance4' | 'puissance4-original';
+
+export type ThemePreference = 'light' | 'dark' | 'system';
+
+export interface ProfilePreferences {
+  theme: ThemePreference;
+  notifications: boolean;
+  language: 'fr' | 'en';
+}
+
+/** Une ligne de `public.profiles`. L'e-mail n'y est pas : il reste dans auth.users. */
+export interface Profile {
+  id: string;
+  username: string;
+  avatar: string | null;
+  bio: string | null;
+  preferences: ProfilePreferences;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Une ligne de la vue `public.profile_stats`. */
+export interface ProfileStats {
+  user_id: string;
+  username: string;
+  avatar: string | null;
+  created_at: string;
+  games_played: number;
+  wins: number;
+  losses: number;
+  points: number;
+  favorite_game: GameTypeId | null;
+}
+
+/** Une ligne rendue par `public.get_leaderboard()`. */
+export interface LeaderboardRow {
+  position: number;
+  user_id: string;
+  username: string;
+  avatar: string | null;
+  points: number;
+  wins: number;
+  games: number;
+}
+
+/** Ce que `public.record_game_result()` renvoie. */
+export interface RecordedGame {
+  session_id: string;
+  points: number;
+  streak: number;
+  streak_bonus: boolean;
+  /** Vrai quand la partie était déjà enregistrée : rien n'a été ajouté. */
+  already: boolean;
+}
+
+export const DEFAULT_PREFERENCES: ProfilePreferences = {
+  theme: 'system',
+  notifications: true,
+  language: 'fr',
+};
+
+/** Libellés d'affichage, alignés sur la colonne `label` de `game_types`. */
+export const GAME_LABELS: Record<GameTypeId, string> = {
+  flip7: 'Flip 7',
+  scopa: 'Scopa',
+  uno: 'UNO',
+  puissance4: 'Puissance 4',
+  'puissance4-original': 'Puissance 4 Original',
+};
