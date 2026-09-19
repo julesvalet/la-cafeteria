@@ -8,26 +8,34 @@ Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs f
 
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
 - **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Personne ne *choisit* ses pouvoirs : chaque joueur reçoit une réserve de jetons pour la partie, dont une minorité tirée au sort est chargée d'un pouvoir — Traversée, Destruction, Inversion de gravité, Double-tour ou Blocage de colonne. Tu joues ta colonne normalement ; si ce jeton-là était chargé, l'effet part à l'impact. Même système de rooms que la Scopa.
-- **Puissance 4 Original** — la même chose, sans aucun pouvoir : le Puissance 4 classique sur une grille 7 × 6, dans les quatre mêmes formats. Sa planète est la petite lune en orbite de Puissance 4.
+- **Puissance 4 Original** — la même chose, sans aucun pouvoir : le Puissance 4 classique sur une grille 7 × 6, dans les quatre mêmes formats.
 - **UNO** — le jeu de cartes, de 2 à 4 joueurs, avec deux ajouts : deux **cartes mystère** mélangées à la pioche, qui déclenchent un effet-surprise dès qu'on les tire (aucune en duel — sans public, la surprise ne vaut rien), et une option de **surenchère des +** que l'hôte active avant la partie, où un +2 peut être relancé jusqu'à ce que quelqu'un encaisse la pile. Les boutons **UNO** et **Contre UNO** sont à double tranchant : oublier d'annoncer coûte deux cartes, dénoncer à tort aussi.
-- La page d'accueil ne montre que des jeux jouables. Une feature en chantier n'a pas de planète tant qu'elle n'a pas de route : `to` vide la grise et la rend inerte, mais mieux vaut ne l'ajouter au roster qu'une fois jouable.
 
 ## La page d'accueil
 
-L'accueil est un petit système solaire en 3D : une planète par feature, qui tourne lentement sur elle-même. Cliquer sur une planète disponible déclenche un zoom cinématique façon Google Earth, puis un flash qui enchaîne sur la page du jeu.
+D'après la maquette Illustrator (`interface la cafétéria.ai`) : bienvenue et logo
+à gauche, les jeux au centre — le **jeu tendance** (le plus joué des 7 derniers
+jours, `trending_game()`) en tête, en vert —, le joueur, son niveau et ses amis
+à droite, avec l'ajout d'un ami par pseudo. Pour un joueur connecté, le tableau
+de bord (tables des amis, classement de la semaine, dernières parties, groupes)
+suit juste en dessous. Code : [src/pages/Home.tsx](src/pages/Home.tsx) et
+[src/pages/home/](src/pages/home/).
 
-Quelques principes, si tu touches à [src/components/planets/](src/components/planets/) :
+À la première visite, l'écran « LA CAFETERIA — chargement… » laisse place à
+l'interface par un zoom flouté. Le niveau affiché est tiré des points
+(`level.ts`), rien n'est stocké.
 
-- **Tout est procédural.** Les surfaces sont générées dans un shader (bruit fBm), il n'y a aucune texture à télécharger. L'identité d'une planète, c'est sa palette et son seed dans [planets.data.ts](src/components/planets/planets.data.ts).
-- **Les planètes sont placées en coordonnées écran**, pas en coordonnées monde, puis converties selon leur profondeur. Sinon une planète lointaine se retrouve cachée derrière une proche. Deux compositions : `landscape` et `portrait`.
-- **Trois replis** sont en place : grille de cards classique si le navigateur n'a pas WebGL (ou si le contexte est perdu), rotations et zoom désactivés si `prefers-reduced-motion`, et qualité réduite (moins d'étoiles, moins d'octaves de bruit, DPR plafonné) sur petit écran ou machine modeste.
-- Three.js n'est chargé que sur l'accueil (`React.lazy`), pour qu'un lien direct vers une room reste léger.
+**Fonds du site** (engrenage de l'en-tête) : or luxe, marron casino ou Terre.
+Le choix est gardé dans `localStorage.userTheme` et appliqué avant le premier
+rendu. `data-backdrop` choisit le décor ; `data-theme` reste `light` / `dark`,
+ce dont dépendent tous les jeux. L'image de la Terre a été extraite du fichier
+Illustrator (`public/assets/backdrops/`).
 
 ## Stack technique
 
 - [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/) pour la navigation
-- [Three.js](https://threejs.org/) + [React Three Fiber](https://r3f.docs.pmnd.rs/) pour le système de planètes de l'accueil
+- [Three.js](https://threejs.org/) + [React Three Fiber](https://r3f.docs.pmnd.rs/) pour la roulette de Flip 7
 - [PeerJS](https://peerjs.com/) (WebRTC) pour le multijoueur temps réel — aucun serveur de jeu à héberger. Dans chaque jeu, l'hôte fait autorité : il applique toutes les actions via un moteur de règles pur, puis diffuse l'état.
 - [Supabase](https://supabase.com/) (Postgres + Auth) pour les comptes, les statistiques et les classements — voir « Comptes et statistiques » plus bas
 - Déploiement statique automatique sur GitHub Pages via GitHub Actions
@@ -193,6 +201,15 @@ réserve la prochaine place : quand un joueur est parti, son siège revient au
 premier observateur en attente au début de la manche ou de la revanche
 suivante. Code commun : [src/features/rooms/spectators.ts](src/features/rooms/spectators.ts).
 
+**Trophées.** Schéma [0004_achievements.sql](supabase/migrations/0004_achievements.sql) :
+20 trophées (victoires, par jeu, sociabilité, défis), calculés en base après
+chaque partie (`record_game_result`) et à l'ouverture de l'accueil ou du profil
+(`refresh_my_achievements`, pour les groupes et le podium de la semaine passée).
+Un déblocage émet une notification `achievement` : pop-up doré, petite fanfare.
+Les compteurs propres à un jeu (scopas, cartes spéciales UNO, arrêts à la
+première carte au Flip 7) viennent du client, bornés : un client modifié peut
+les gonfler, comme il peut déjà déclarer une victoire en P2P.
+
 **Photo de profil.** Recadrée en cercle et réencodée en 512 × 512 dans le
 navigateur (métadonnées GPS perdues au passage), puis déposée dans le bucket
 public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
@@ -201,11 +218,10 @@ public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
 
 ## Ajouter une nouvelle feature
 
-Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour lui donner sa planète, ajoute une entrée au tableau `PLANETS` de [src/components/planets/planets.data.ts](src/components/planets/planets.data.ts) : un nom, une description, une icône, une palette, et une position pour chacune des deux compositions (`landscape` et `portrait`).
-
-Laisse `to` vide tant que la feature n'est pas prête — c'est la seule chose qui la marque « bientôt disponible » : le grisé, le flou, le halo éteint et le clic inerte en découlent tous. Une fois la route branchée dans [src/App.tsx](src/App.tsx), renseigne `to: '/ta-route'` et la planète s'allume.
-
-Les positions sont en coordonnées écran (`x` en demi-largeurs, `y` en demi-hauteurs, `0` au centre) et `size` est le rayon apparent en fraction de la demi-hauteur — donc ce que tu écris est ce que tu vois, quelle que soit la profondeur. Vérifie juste qu'aucune planète (ni son label, qui pend en dessous) n'en chevauche une autre dans les deux compositions.
+Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour
+qu'elle apparaisse sur l'accueil, ajoute-la au tableau `GAMES` de
+[src/features/games.ts](src/features/games.ts), et à `game_types` en base si
+ses parties doivent compter.
 
 ## Déploiement
 

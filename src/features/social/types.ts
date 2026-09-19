@@ -82,7 +82,8 @@ export type NotificationKind =
   | 'group_invite'
   | 'group_removed'
   | 'group_deleted'
-  | 'game_invite';
+  | 'game_invite'
+  | 'achievement';
 
 export interface AppNotification {
   id: number;
@@ -96,6 +97,10 @@ export interface AppNotification {
     group_name?: string;
     game_type?: GameTypeId;
     room_code?: string;
+    achievement_id?: string;
+    title?: string;
+    icon?: string;
+    tier?: string;
   };
   created_at: string;
   read_at: string | null;

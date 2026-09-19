@@ -12,6 +12,7 @@ import { RulesModal } from './components/RulesModal';
 import { AnimatedNumber } from './components/AnimatedNumber';
 import { fanTransform, handCardScale, scatterTransform, tableCardScale } from './utils/layout';
 import { useRecordGame } from '../account/useRecordGame';
+import { useGameTally, withTally } from '../account/gameTally';
 import { scopaOutcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
@@ -139,7 +140,10 @@ function ScopaGameView({
 
   // Vaut `null` tant que la partie n'est pas finie : le hook ne fait donc rien
   // jusqu'au dernier pli, puis enregistre une fois.
-  const outcome = useMemo(() => scopaOutcome(state, selfId, code), [state, selfId, code]);
+  // Scopas réussies sur tout le match, pour le trophée « Scopeur ».
+  const tally = useGameTally(state?.phase, ['match-end']);
+  if (state && myIndex >= 0) tally.track(String(state.handNumber), state.players[myIndex].scope, 'scopas');
+  const outcome = withTally(scopaOutcome(state, selfId, code), tally.counts);
   const record = useRecordGame(outcome);
 
   const orderedOpponents = useMemo(() => {

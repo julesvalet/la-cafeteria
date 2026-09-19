@@ -52,6 +52,8 @@ export interface RecordedGame {
   streak_bonus: boolean;
   /** Vrai quand la partie était déjà enregistrée : rien n'a été ajouté. */
   already: boolean;
+  /** Trophées débloqués par cette partie (le pop-up passe par les notifications). */
+  unlocked?: { id: string; title: string }[];
 }
 
 export const DEFAULT_PREFERENCES: ProfilePreferences = {

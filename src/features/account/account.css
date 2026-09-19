@@ -15,7 +15,7 @@
 .acc-scope {
   --accent: var(--color-primary);
   --accent-strong: var(--color-primary-dark);
-  --glow: 201 151 94;
+  --glow: 201 169 97;
 
   /* Opacités du halo, par état. Relevées en thème sombre plus bas. */
   --glow-rest: 0.26;
@@ -511,7 +511,7 @@
 
 .account-chip:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 0 14px rgb(201 151 94 / 0.35);
+  box-shadow: 0 0 14px rgb(201 169 97 / 0.35);
 }
 
 .account-chip:focus-visible {

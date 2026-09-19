@@ -9,18 +9,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
     <script>
       (function () {
-        var stored = localStorage.getItem('cafeteria-theme');
-        var theme = stored === 'light' || stored === 'dark'
-          ? stored
-          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        // Le fond choisi (voir src/hooks/useTheme.ts), appliqué avant le
+        // premier rendu pour éviter un éclair du mauvais fond.
+        var b = 'earth';
+        try {
+          var v = localStorage.getItem('userTheme');
+          var legacy = localStorage.getItem('cafeteria-theme');
+          if (v === 'gold' || v === 'dark' || v === 'earth') b = v;
+          else if (legacy === 'light') b = 'gold';
+          else if (legacy === 'dark') b = 'dark';
+        } catch (e) {}
+        document.documentElement.setAttribute('data-backdrop', b);
+        document.documentElement.setAttribute('data-theme', b === 'gold' ? 'light' : 'dark');
       })();
     </script>
     <div id="root"></div>

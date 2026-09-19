@@ -1,9 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, Flame, MailOpen, MessagesSquare, Radio, Trophy, UserPlus, Users } from 'lucide-react';
 import { useAuth } from '../../account/useAuth';
 import { useProfileStats } from '../../account/useProfileStats';
 import { GAME_LABELS } from '../../account/types';
-import { SocialPage } from '../components/SocialPage';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 import { UserAvatar } from '../components/UserAvatar';
 import { ChallengeButton } from '../components/ChallengeButton';
@@ -13,20 +12,30 @@ import { useGroups } from '../useGroups';
 import { useLeaderboard } from '../useLeaderboard';
 import { timeAgo } from '../format';
 
+/** L'ancien tableau de bord vit désormais sur l'accueil, sous la maquette. */
 export function DashboardPage() {
+  return <Navigate to="/" replace />;
+}
+
+/**
+ * Les sections du tableau de bord, posées sous l'écran d'accueil pour un
+ * joueur connecté. `withFriends` : l'accueil montre déjà les amis dans sa
+ * colonne de droite, inutile de les répéter.
+ */
+export function DashboardSections({ withFriends = true }: { withFriends?: boolean }) {
   const { profile } = useAuth();
   return (
-    <SocialPage
-      title={profile ? `Salut ${profile.username}` : 'Tableau de bord'}
-      subtitle="Qui est là, où en sont les classements, et tes dernières parties."
-      wide
-    >
-      <Dashboard />
-    </SocialPage>
+    <div className="acc-scope home-more">
+      <header className="soc-page-head">
+        <h2 className="acc-title">{profile ? `Salut ${profile.username}` : 'Tableau de bord'}</h2>
+        <p className="acc-subtitle">Tes amis, les tables ouvertes, les classements et tes dernières parties.</p>
+      </header>
+      <Dashboard withFriends={withFriends} />
+    </div>
   );
 }
 
-function Dashboard() {
+function Dashboard({ withFriends }: { withFriends: boolean }) {
   const { user } = useAuth();
   const { friends, incoming, groupInvitations, online, presence, presenceLive } = useSocial();
   const { groups } = useGroups();
@@ -57,6 +66,7 @@ function Dashboard() {
         </div>
       )}
 
+      {withFriends && (
       <section className="acc-card acc-card-wide soc-dash-friends">
         <h2 className="acc-section-title">
           <Users size={18} aria-hidden /> Amis en ligne
@@ -108,6 +118,7 @@ function Dashboard() {
           </ul>
         )}
       </section>
+      )}
 
       <section className="acc-card acc-card-wide soc-dash-sessions">
         <h2 className="acc-section-title">

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, type FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Camera, Check, Flame, LogOut, Pencil, Trophy, X } from 'lucide-react';
 import { useAuth } from './useAuth';
@@ -9,6 +9,8 @@ import { AccBanner } from './components/AccBanner';
 import { GAME_LABELS } from './types';
 import { validateBio, validateUsername } from './validation';
 import { SocialNav } from '../social/components/SocialNav';
+import { AchievementPanel } from '../achievements/AchievementPanel';
+import { refreshMyAchievements } from '../achievements/api';
 import { UserAvatar } from '../social/components/UserAvatar';
 const AvatarUpload = lazy(() => import('./components/AvatarUpload').then((m) => ({ default: m.AvatarUpload })));
 import { GameStats } from '../social/components/GameStats';
@@ -17,8 +19,25 @@ import { RankStrip } from '../social/components/RankStrip';
 const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 const SHORT_FMT = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
+/** « /compte#trophees » : descendre jusqu'aux trophées une fois la page posée. */
+function useScrollToHash(ready: boolean) {
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (!ready || !hash) return;
+    const timer = window.setTimeout(() => document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350);
+    return () => window.clearTimeout(timer);
+  }, [ready, hash]);
+}
+
 export function ProfilePage() {
   const { status, profile, user, signOut, updateProfile } = useAuth();
+  useScrollToHash(Boolean(user));
+  // Les trophées hors partie (groupes, podium passé) se recalculent ici aussi :
+  // la vitrine doit être à jour quand on vient la regarder.
+  const uid = user?.id;
+  useEffect(() => {
+    if (uid) refreshMyAchievements().catch(() => {});
+  }, [uid]);
   const location = useLocation();
   const { loading, stats, recent, error } = useProfileStats(user?.id ?? null);
 
@@ -221,6 +240,7 @@ export function ProfilePage() {
         </section>
 
         {user && <GameStats userId={user.id} />}
+        {user && <AchievementPanel userId={user.id} self />}
 
         <section className="acc-card acc-card-wide">
           <h2 className="acc-section-title">Dernières parties</h2>

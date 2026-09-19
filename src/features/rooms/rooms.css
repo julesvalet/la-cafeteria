@@ -82,7 +82,7 @@
   color: #fff;
   background: var(--color-primary);
   border-color: var(--color-primary);
-  box-shadow: 0 0 14px rgb(201 151 94 / 0.4);
+  box-shadow: 0 0 14px rgb(201 169 97 / 0.4);
 }
 
 /* Les observateurs, en gris et en italique : on voit d'un coup d'oeil qu'ils
@@ -160,7 +160,7 @@
 .sess-visibility label[data-checked] {
   border-color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  box-shadow: 0 0 12px rgb(201 151 94 / 0.3);
+  box-shadow: 0 0 12px rgb(201 169 97 / 0.3);
 }
 
 .sess-visibility label:has(input:focus-visible) { outline: 2px solid var(--color-primary-dark); outline-offset: 2px; }

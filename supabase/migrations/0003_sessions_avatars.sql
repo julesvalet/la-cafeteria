@@ -53,6 +53,7 @@ create or replace function public._room_fresh(p_at timestamptz)
 returns boolean
 language sql
 stable
+set search_path = public, pg_temp
 as $$ select p_at > now() - interval '90 seconds' $$;
 
 -- L'hôte annonce (ou met à jour) sa table. Une table privée retire sa ligne,

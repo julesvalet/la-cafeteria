@@ -1,0 +1,171 @@
+import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, LogIn, UserPlus } from 'lucide-react';
+import { accountsEnabled } from '../../lib/supabase';
+import { useAuth } from '../../features/account/useAuth';
+import { useProfileStats } from '../../features/account/useProfileStats';
+import { levelFromPoints } from '../../features/account/level';
+import { useSocial } from '../../features/social/useSocial';
+import { useFriendSessions } from '../../features/social/useFriendSessions';
+import { useJoinSession } from '../../features/social/useJoinSession';
+import { UserAvatar, type AvatarStatus } from '../../features/social/components/UserAvatar';
+import { GAME_LABELS } from '../../features/account/types';
+import * as api from '../../features/social/api';
+
+const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+/** Les couleurs des lignes d'amis de la maquette, reprises dans l'ordre. */
+const ROW_TONES = ['violet', 'bleu', 'vert', 'orange', 'rose'] as const;
+const RANK: Record<AvatarStatus, number> = { online: 0, away: 1, offline: 2 };
+
+/**
+ * La colonne de droite de l'accueil : la carte du joueur, ses amis, et
+ * l'ajout d'un ami par pseudo — la maquette, à la lettre.
+ */
+export function HomeSide() {
+  const { status, profile, user } = useAuth();
+
+  if (!accountsEnabled) return null;
+
+  if (status !== 'signed-in' || !profile || !user) {
+    return (
+      <aside className="home-side" aria-label="Ton compte">
+        <div className="home-profile" data-guest>
+          <UserAvatar username="?" size={64} />
+          <div className="home-profile-id">
+            <strong>Invité</strong>
+            <span>Connecte-toi pour tes amis, tes points et tes trophées.</span>
+          </div>
+        </div>
+        <div className="home-guest-actions">
+          <Link to="/connexion" className="home-pill" data-tone="violet">
+            <LogIn size={18} aria-hidden /> Se connecter
+          </Link>
+          <Link to="/inscription" className="home-pill" data-tone="bleu">
+            <UserPlus size={18} aria-hidden /> Créer un compte
+          </Link>
+        </div>
+      </aside>
+    );
+  }
+
+  return <SignedInSide userId={user.id} username={profile.username} avatar={profile.avatar} createdAt={profile.created_at} />;
+}
+
+function SignedInSide({ userId, username, avatar, createdAt }: { userId: string; username: string; avatar: string | null; createdAt: string }) {
+  const { stats } = useProfileStats(userId);
+  const { friends, presence, presenceLive, refreshFriends } = useSocial();
+  const { sessionOf } = useFriendSessions();
+  const join = useJoinSession();
+  const lvl = levelFromPoints(stats?.points ?? 0);
+
+  const statusOf = (id: string): AvatarStatus => (presenceLive ? (presence.get(id) ?? 'offline') : 'offline');
+  const sorted = [...friends].sort((a, b) => RANK[statusOf(a.user_id)] - RANK[statusOf(b.user_id)] || a.username.localeCompare(b.username));
+
+  return (
+    <aside className="home-side" aria-label="Ton profil et tes amis">
+      <Link to="/compte" className="home-profile">
+        <UserAvatar username={username} src={avatar} size={64} />
+        <div className="home-profile-id">
+          <strong>{username}</strong>
+          <span className="home-level">
+            Niveau {lvl.level}
+            <span className="home-level-bar" aria-hidden>
+              <span style={{ width: `${Math.round(lvl.ratio * 100)}%` }} />
+            </span>
+          </span>
+          <span className="home-since">Membre depuis le {DATE.format(new Date(createdAt))}</span>
+        </div>
+      </Link>
+
+      <ul className="home-friends" aria-label="Tes amis">
+        {sorted.length === 0 && <li className="home-friends-empty">Pas encore d'amis : ajoute-les par leur pseudo ci-dessous.</li>}
+        {sorted.map((f, i) => {
+          const st = statusOf(f.user_id);
+          const session = sessionOf(f.user_id);
+          return (
+            <li key={f.user_id} className="home-friend">
+              <Link to={`/joueur/${f.username}`} className="home-pill home-friend-pill" data-tone={ROW_TONES[i % ROW_TONES.length]} data-status={st}>
+                <UserAvatar username={f.username} src={f.avatar} size={36} status={st} />
+                <span className="home-friend-text">
+                  <strong>{f.username}</strong>
+                  <small>
+                    {session
+                      ? `${GAME_LABELS[session.game_type]} · ${session.status === 'playing' ? 'en partie' : 'en attente'}`
+                      : st === 'online'
+                        ? 'En ligne'
+                        : st === 'away'
+                          ? 'Absent'
+                          : 'Hors ligne'}
+                  </small>
+                </span>
+              </Link>
+              <button
+                type="button"
+                className="home-round"
+                data-tone={ROW_TONES[i % ROW_TONES.length]}
+                disabled={!session}
+                aria-label={session ? `Rejoindre la table de ${f.username}` : `${f.username} n'est pas à une table publique`}
+                title={session ? 'Rejoindre sa table' : 'Pas à une table publique'}
+                onClick={() => session && join(session.game_type, session.room_code)}
+              >
+                <ArrowRight size={20} aria-hidden />
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      <AddFriend onAdded={() => void refreshFriends()} />
+    </aside>
+  );
+}
+
+function AddFriend({ onAdded }: { onAdded: () => void }) {
+  const [name, setName] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await api.sendFriendRequest(name.trim());
+      setMsg({ ok: true, text: res.status === 'accepted' ? `Vous êtes amis avec ${res.username} !` : `Demande envoyée à ${res.username}.` });
+      setName('');
+      onAdded();
+    } catch (err) {
+      setMsg({ ok: false, text: err instanceof Error ? err.message : 'Envoi impossible.' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="home-add" onSubmit={submit}>
+      <label htmlFor="home-add-input" className="soc-sr-only">
+        Pseudo de l'ami à ajouter
+      </label>
+      <input
+        id="home-add-input"
+        className="home-pill home-add-input"
+        placeholder="pseudo"
+        value={name}
+        maxLength={20}
+        autoComplete="off"
+        onChange={(e) => setName(e.target.value)}
+      />
+      <button type="submit" className="home-round home-add-btn" disabled={busy || !name.trim()}>
+        ajouter
+        <br />
+        en amis
+      </button>
+      {msg && (
+        <p className="home-add-msg" data-ok={msg.ok} role={msg.ok ? 'status' : 'alert'}>
+          {msg.text}
+        </p>
+      )}
+    </form>
+  );
+}

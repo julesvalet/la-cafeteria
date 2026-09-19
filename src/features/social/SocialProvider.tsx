@@ -12,6 +12,7 @@ import {
 } from './socialContext';
 import { Toasts, type Toast } from './components/Toasts';
 import { FriendsDock } from './components/FriendsDock';
+import { AchievementNotification } from '../achievements/AchievementNotification';
 import type { AppNotification, Friendship, GroupInvitation } from './types';
 
 /** Assez souvent pour que « vu il y a 5 min » dise vrai, assez rarement pour ne rien coûter. */
@@ -204,7 +205,8 @@ export function SocialProvider({ children }: { children: ReactNode }) {
       setNotifications(list);
 
       const full = list.find((n) => n.id === event.id);
-      if (full && wantsToasts.current) {
+      // Les trophées ont leur propre pop-up doré (AchievementNotification).
+      if (full && wantsToasts.current && event.kind !== 'achievement') {
         setToasts((current) => [...current.slice(-2), { id: full.id, notification: full }]);
       }
     }
@@ -330,6 +332,7 @@ export function SocialProvider({ children }: { children: ReactNode }) {
       {children}
       {active && <Toasts toasts={toasts} onDismiss={dismissToast} onRead={(id) => void markRead([id]).catch(() => {})} />}
       <FriendsDock />
+      {active && <AchievementNotification />}
     </SocialContext>
   );
 }

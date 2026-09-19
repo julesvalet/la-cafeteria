@@ -1,0 +1,398 @@
+/*
+ * Accueil — d'après la maquette Illustrator (interface la cafétéria.ai,
+ * plan de travail 1920 × 1080).
+ *
+ * Trois colonnes : le panneau de bienvenue (≈ 1/3), la grille de tuiles de
+ * jeux (2 × 3), la colonne du joueur. Les couleurs sont celles de la maquette ;
+ * la typographie, Myriad dans le fichier, est remplacée par Source Sans 3, sa
+ * cousine libre dessinée chez Adobe.
+ */
+
+.home {
+  --home-slate: #2c5b6e;
+  --home-slate-deep: #234a5a;
+  --home-green: #05d93c;
+  --home-green-deep: #03b632;
+  --home-blue: #0b62a8;
+  --home-blue-deep: #094f88;
+  --home-panel: #1e1e1e;
+  --home-salmon: #e8706c;
+  --home-violet: #d27cf2;
+  --home-violet-soft: #e3a8f6;
+  --home-bleu: #4f87f6;
+  --home-bleu-soft: #8db1f8;
+  --home-vert: #05e13c;
+  --home-vert-soft: #6cf584;
+  --home-orange: #f59a3b;
+  --home-orange-soft: #f8c07e;
+  --home-rose: #f06a9c;
+  --home-rose-soft: #f6a3c3;
+  --home-grey: #8c8b86;
+
+  position: relative;
+  min-height: calc(100vh - 72px);
+  font-family: var(--font-ui);
+  color: #fff;
+  overflow: hidden;
+}
+
+/* --- Écran de chargement ------------------------------------------------------ */
+
+.home-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4vh;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.25)),
+    url('/assets/backdrops/earth.webp') center / cover no-repeat,
+    url('/assets/backdrops/earth-small.webp') center / cover no-repeat,
+    #05070b;
+  color: #fff;
+  font-family: var(--font-ui);
+}
+
+.home-splash-title {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: clamp(3rem, 12vw, 12rem);
+  line-height: 1;
+  text-shadow: 0 4px 40px rgb(0 0 0 / 0.45);
+  white-space: nowrap;
+}
+
+.home-splash-loading {
+  position: absolute;
+  bottom: 6vh;
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 4vw, 4.2rem);
+}
+
+.home-splash-dots i {
+  font-style: normal;
+  animation: home-dot 1.2s infinite;
+}
+
+.home-splash-dots i:nth-child(2) { animation-delay: 0.2s; }
+.home-splash-dots i:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes home-dot {
+  0%, 20% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+/* --- Mise en page ------------------------------------------------------------- */
+
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.1fr) minmax(280px, 0.62fr);
+  gap: clamp(20px, 2.4vw, 46px);
+  align-items: stretch;
+  max-width: 1880px;
+  margin: 0 auto;
+  padding: clamp(20px, 2.2vw, 42px) clamp(16px, 2.2vw, 42px) 48px;
+  transform-origin: 60% 50%;
+}
+
+/* Panneau de bienvenue */
+.home-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 4vh, 56px);
+  padding: clamp(28px, 4vh, 56px) clamp(24px, 2.4vw, 44px);
+  border-radius: clamp(28px, 3vw, 60px);
+  background: var(--home-slate);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.35);
+  text-align: center;
+}
+
+.home-welcome h1 {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-weight: 400;
+  font-size: clamp(1.8rem, 3.4vw, 4.1rem);
+  line-height: 1.15;
+  color: #fff;
+}
+
+.home-logo-card {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 220px;
+  padding: 24px;
+  border-radius: clamp(24px, 2.4vw, 44px);
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.04);
+}
+
+.home-logo-card img {
+  width: min(78%, 360px);
+  aspect-ratio: 1;
+  object-fit: contain;
+  border-radius: 24%;
+}
+
+/* Tuiles de jeux */
+.home-games {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: clamp(16px, 2.2vw, 44px);
+}
+
+.home-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 150px;
+  aspect-ratio: 1;
+  padding: 18px;
+  border-radius: clamp(26px, 3.4vw, 70px);
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  background: var(--home-blue);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.3);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.home-tile strong {
+  font-size: clamp(1.3rem, 2.4vw, 3.1rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.home-tile small {
+  font-size: clamp(0.78rem, 0.9vw, 1rem);
+  opacity: 0.85;
+}
+
+.home-tile:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 26px 50px rgb(0 0 0 / 0.4), 0 0 0 3px rgb(255 255 255 / 0.25);
+}
+
+.home-tile:active { transform: scale(0.98); }
+.home-tile:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+.home-tile[data-tone='jeu']:hover { background: var(--home-blue-deep); }
+
+.home-tile[data-tone='extra'] { background: var(--home-slate); }
+.home-tile[data-tone='extra']:hover { background: var(--home-slate-deep); }
+
+/* Grand écran : comme sur la maquette, tout tient dans la hauteur de l'écran.
+   Les tuiles remplissent leurs rangées au lieu de rester carrées. */
+@media (min-width: 1181px) and (min-height: 640px) {
+  .home-layout { height: calc(100vh - 72px); min-height: 600px; }
+  .home-welcome, .home-side { min-height: 0; }
+  .home-games { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .home-tile { aspect-ratio: auto; min-height: 0; }
+  .home-friends { max-height: none; min-height: 0; }
+}
+
+.home-tile[data-tone='tendance'] {
+  background: var(--home-green);
+  box-shadow: 0 16px 40px rgb(5 217 60 / 0.35);
+}
+
+.home-tile[data-tone='tendance']:hover { background: var(--home-green-deep); }
+
+.home-tile-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: clamp(0.78rem, 0.95vw, 1.05rem);
+  background: rgb(0 0 0 / 0.16);
+}
+
+/* Colonne du joueur */
+.home-side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: clamp(28px, 2.6vw, 52px);
+  background: var(--home-panel);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.4);
+  min-width: 0;
+}
+
+.home-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 10px;
+  border-radius: 999px;
+  background: var(--home-salmon);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.home-profile:hover { transform: scale(1.02); filter: brightness(1.05); }
+.home-profile:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.home-profile .soc-avatar { box-shadow: none; background: #a82424; }
+
+.home-profile-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.home-profile-id strong { font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-profile-id > span { font-size: 0.8rem; opacity: 0.95; }
+
+.home-level { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+
+.home-level-bar {
+  flex: 1;
+  max-width: 90px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.3);
+  overflow: hidden;
+}
+
+.home-level-bar span { display: block; height: 100%; background: #fff; }
+.home-since { font-size: 0.72rem !important; }
+
+.home-guest-actions { display: flex; flex-direction: column; gap: 10px; }
+
+.home-friends {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  max-height: 58vh;
+}
+
+.home-friends-empty { color: #bdbdb8; font-size: 0.9rem; padding: 8px 6px; text-align: center; }
+
+.home-friend { display: flex; align-items: center; gap: 10px; }
+
+.home-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  border: none;
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  text-decoration: none;
+  background: var(--home-grey);
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.home-pill:hover { filter: brightness(1.06); transform: translateX(2px); }
+.home-pill:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+.home-pill[data-tone='violet'] { background: var(--home-violet); }
+.home-pill[data-tone='bleu'] { background: var(--home-bleu); }
+.home-pill[data-tone='vert'] { background: var(--home-vert); }
+.home-pill[data-tone='orange'] { background: var(--home-orange); }
+.home-pill[data-tone='rose'] { background: var(--home-rose); }
+
+.home-guest-actions .home-pill { justify-content: center; padding: 10px 18px; font-weight: 600; }
+
+.home-friend-pill { flex: 1; min-width: 0; }
+.home-friend-pill[data-status='offline'] { filter: saturate(0.55) brightness(0.9); }
+.home-friend-pill .soc-avatar { box-shadow: none; background: rgb(0 0 0 / 0.18); }
+.home-friend-pill .soc-presence { border-color: rgb(255 255 255 / 0.9); }
+
+.home-friend-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+.home-friend-text strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.home-friend-text small { font-size: 0.74rem; opacity: 0.92; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.home-round {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  background: var(--home-grey);
+  transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.home-round[data-tone='violet'] { background: var(--home-violet-soft); color: #9b3fd0; }
+.home-round[data-tone='bleu'] { background: var(--home-bleu-soft); color: #2a5fcf; }
+.home-round[data-tone='vert'] { background: var(--home-vert-soft); color: #087a25; }
+.home-round[data-tone='orange'] { background: var(--home-orange-soft); color: #9a520a; }
+.home-round[data-tone='rose'] { background: var(--home-rose-soft); color: #a3294f; }
+
+.home-round:hover:not(:disabled) { transform: scale(1.08); }
+.home-round:active:not(:disabled) { transform: scale(0.95); }
+.home-round:disabled { opacity: 0.45; cursor: default; }
+.home-round:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+.home-add {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.home-add-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 20px;
+  font-size: 1.3rem;
+  color: #fff;
+  outline: none;
+}
+
+.home-add-input::placeholder { color: rgb(255 255 255 / 0.85); }
+.home-add-input:focus { box-shadow: 0 0 0 3px rgb(255 255 255 / 0.5); transform: none; }
+
+.home-add-btn {
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+}
+
+.home-add-msg { grid-column: 1 / -1; margin: 0; font-size: 0.82rem; color: #a6f5b5; }
+.home-add-msg[data-ok='false'] { color: #ffb4a8; }
+
+/* --- Écrans moyens et téléphones ------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .home-layout { grid-template-columns: 1fr 1fr; }
+  .home-welcome { grid-column: 1 / -1; flex-direction: row; align-items: center; }
+  .home-welcome h1 { flex: 1; text-align: left; }
+  .home-logo-card { flex: none; width: 200px; min-height: 0; aspect-ratio: 1; }
+}
+
+@media (max-width: 720px) {
+  .home-layout { grid-template-columns: 1fr; padding-top: 16px; }
+  .home-welcome { flex-direction: row; padding: 20px; }
+  .home-welcome h1 { font-size: 1.7rem; }
+  .home-logo-card { width: 96px; padding: 10px; border-radius: 22px; }
+  .home-tile { aspect-ratio: auto; min-height: 140px; border-radius: 30px; }
+  .home-friends { max-height: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-tile, .home-pill, .home-round, .home-profile { transition: none; }
+  .home-tile:hover, .home-pill:hover { transform: none; }
+  .home-splash-dots i { animation: none; opacity: 1; }
+}

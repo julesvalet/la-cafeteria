@@ -19,7 +19,7 @@ export function LoginPage() {
 
   // D'où venait le joueur avant d'être renvoyé ici. Le ramener à sa page
   // d'origine vaut mieux que de le déposer systématiquement sur son profil.
-  const from = (location.state as { from?: string } | null)?.from ?? '/tableau-de-bord';
+  const from = (location.state as { from?: string } | null)?.from ?? '/';
 
   // Déjà connecté (session reprise, ou retour en arrière du navigateur) :
   // rediriger par le rendu plutôt qu'en appelant navigate() pendant celui-ci,

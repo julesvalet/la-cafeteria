@@ -1,6 +1,6 @@
 import { lazy, Suspense, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Camera, LayoutDashboard, LogIn, LogOut, Settings, Trophy, User, Users } from 'lucide-react';
+import { Award, Camera, House, LogIn, LogOut, Settings, Trophy, User, Users } from 'lucide-react';
 import { accountsEnabled } from '../../../lib/supabase';
 import { useAuth } from '../useAuth';
 import { useSocial } from '../../social/useSocial';
@@ -81,14 +81,17 @@ export function AccountMenu() {
             <strong>{profile.username}</strong>
           </div>
         )}
-        <Link role="menuitem" to="/tableau-de-bord" onClick={close}>
-          <LayoutDashboard size={16} aria-hidden /> Tableau de bord
+        <Link role="menuitem" to="/" onClick={close}>
+          <House size={16} aria-hidden /> Accueil
         </Link>
         {profile && (
           <Link role="menuitem" to={`/joueur/${profile.username}`} onClick={close}>
             <User size={16} aria-hidden /> Voir mon profil
           </Link>
         )}
+        <Link role="menuitem" to="/compte#trophees" onClick={close}>
+          <Award size={16} aria-hidden /> Mes trophées
+        </Link>
         <Link role="menuitem" to="/classements" onClick={close}>
           <Trophy size={16} aria-hidden /> Classements
         </Link>

@@ -31,6 +31,8 @@ export interface GameOutcome {
    * manche. Voir les appelants dans chaque jeu.
    */
   signature: string;
+  /** Compteurs propres au jeu, pour les trophées (scopas, cartes spéciales…). */
+  details?: Record<string, number>;
 }
 
 /**
@@ -76,6 +78,7 @@ export async function recordGame(outcome: GameOutcome): Promise<RecordedGame> {
       p_won: outcome.won,
       p_score: Math.trunc(outcome.score) || 0,
       p_duration_seconds: outcome.durationSeconds ? Math.trunc(outcome.durationSeconds) : null,
+      p_details: outcome.details ?? {},
     })
     .single<RecordedGame>();
 

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Medal } from 'lucide-react';
+import { Award, Medal } from 'lucide-react';
+import { useTrophyCounts } from '../../achievements/useTrophyCounts';
 import { AccBanner } from '../../account/components/AccBanner';
 import { GAME_LABELS, type GameTypeId, type LeaderboardRow } from '../../account/types';
 import { winRate } from '../format';
@@ -16,6 +17,18 @@ function Position({ position }: { position: number }) {
     );
   }
   return <span className="soc-pos">{position}</span>;
+}
+
+/** Une petite coupe à partir de 5 trophées, teintée bronze, argent puis or. */
+function TrophyMark({ count }: { count: number }) {
+  if (count < 5) return null;
+  const tier = count >= 15 ? 'or' : count >= 10 ? 'argent' : 'bronze';
+  return (
+    <span className="lb-trophy" data-tier={tier} title={`${count} trophées`} aria-label={`${count} trophées`}>
+      <Award size={14} aria-hidden />
+      {count}
+    </span>
+  );
 }
 
 /** Les onglets de période et le choix du jeu. Contrôlés : l'état vit dans la page, et dans l'URL. */
@@ -73,6 +86,7 @@ export function LeaderboardTable({
   /** Version courte pour le tableau de bord : sans colonnes secondaires. */
   compact?: boolean;
 }) {
+  const trophies = useTrophyCounts(rows.map((r) => r.user_id));
   if (error) return <AccBanner tone="error">{error}</AccBanner>;
 
   if (!loading && rows.length === 0) {
@@ -119,6 +133,7 @@ export function LeaderboardTable({
                   <UserAvatar username={r.username} src={r.avatar} size={compact ? 26 : 32} />
                   {r.username}
                 </Link>
+                <TrophyMark count={trophies.get(r.user_id) ?? 0} />
                 {r.user_id === selfId && <span className="soc-tag">toi</span>}
               </td>
               <td className="soc-num soc-lb-points">{r.points}</td>

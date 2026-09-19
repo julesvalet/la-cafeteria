@@ -1,21 +1,31 @@
+/*
+ * Palette La Cafétéria : beige, or, marron, noir casino.
+ *
+ * Le fond (voir hooks/useTheme.ts) pose deux attributs : `data-backdrop`
+ * (gold | dark | earth) pour le décor, et `data-theme` (light | dark) sur
+ * lequel s'appuient toutes les pages et tous les jeux.
+ */
 :root {
-  /* Brand accent — identical in light & dark themes */
-  --color-primary: #c9975e;
-  --color-primary-dark: #a97844;
-  --color-primary-darker: #7a5730;
-  --color-primary-light: #e8c9a0;
-  --color-primary-tint: #f6e9d8;
+  /* Or — l'accent, identique dans tous les fonds */
+  --color-primary: #c9a961;
+  --color-primary-dark: #a3843c;
+  --color-primary-darker: #6e5a2a;
+  --color-primary-light: #e6d3a3;
+  --color-primary-tint: #efe3c8;
+  --color-gold: #d4af37;
 
-  /* Surfaces & text — theme-dependent */
-  --color-bg: #fffcf8;
-  --color-surface: #ffffff;
-  --color-surface-raised: #ffffff;
-  --color-text: #3b2a1e;
-  --color-heading: #7a5730;
-  --color-text-muted: #8a7563;
-  --color-border: #ecdfcc;
-  --color-success: #5a8a5a;
-  --color-danger: #b5533f;
+  /* Fond « or luxe » : beige clair, texte marron */
+  --color-bg: #e8d5c4;
+  --color-surface: #f5ecdf;
+  --color-surface-raised: #fbf5ec;
+  --color-text: #2a2622;
+  --color-heading: #5a4520;
+  --color-text-muted: #6f6150;
+  --color-border: #d4c4a8;
+  --color-success: #4f7d4f;
+  --color-danger: #a8462f;
+
+  --font-ui: 'Source Sans 3', 'Myriad Pro', 'Segoe UI', system-ui, sans-serif;
 
   --font-heading: 'Fraunces', 'Georgia', serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
@@ -31,14 +41,15 @@
   color-scheme: light;
 }
 
+/* Fonds « marron casino » et « Terre » : marron foncé, texte crème */
 :root[data-theme='dark'] {
-  --color-bg: #17120d;
-  --color-surface: #241c15;
-  --color-surface-raised: #2c231a;
-  --color-text: #f1e4d3;
-  --color-heading: #e8c9a0;
-  --color-text-muted: #b2a08a;
-  --color-border: #3c2f22;
+  --color-bg: #1a1a1a;
+  --color-surface: #2a2622;
+  --color-surface-raised: #3d3429;
+  --color-text: #f5f1eb;
+  --color-heading: #e6d3a3;
+  --color-text-muted: #c9a961;
+  --color-border: #3d3429;
   --color-success: #7cb47c;
   --color-danger: #d97b64;
 
@@ -64,15 +75,61 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, var(--color-primary-tint) 0%, var(--color-bg) 320px);
   color: var(--color-text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-:root[data-theme='dark'] body {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 14%, var(--color-bg)) 0%, var(--color-bg) 320px);
+/* --- Les trois fonds --------------------------------------------------------- */
+
+/* Or luxe : un dégradé beige vers or, à peine perceptible. */
+/* Sur <html> plutôt que <body> : le décor couvre toute la toile, même quand
+   la page est plus haute que l'écran. */
+html[data-backdrop='gold'] {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgb(212 175 55 / 0.22), transparent 55%) fixed,
+    linear-gradient(180deg, #efe1cf 0%, #e8d5c4 45%, #d9c4a4 100%) fixed,
+    #d9c4a4;
+}
+
+/* Marron casino : un marron très foncé, une lueur chaude en haut. */
+html[data-backdrop='dark'] {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgb(201 169 97 / 0.16), transparent 60%) fixed,
+    radial-gradient(ellipse at 100% 100%, rgb(61 52 41 / 0.6), transparent 55%) fixed,
+    #1a1a1a;
+}
+
+html[data-backdrop] body { background: transparent; }
+
+/* Terre : la photo du fichier Illustrator, voilée pour que le texte reste
+   lisible. Sur un calque fixe, pour qu'elle ne défile pas avec la page. */
+/* Le calque de la photo passe sous le fond du <body> : celui-ci doit donc
+   rester transparent, et la couleur de secours aller sur <html>. */
+html[data-backdrop='earth'] {
+  background: #05070b;
+}
+
+:root[data-backdrop='earth'] body {
+  background: transparent;
+}
+
+:root[data-backdrop='earth'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgb(13 13 13 / 0.35), rgb(13 13 13 / 0.55)),
+    url('/assets/backdrops/earth.webp') center / cover no-repeat,
+    url('/assets/backdrops/earth-small.webp') center / cover no-repeat;
+  pointer-events: none;
+}
+
+/* Changement de fond : fondu enchaîné (View Transitions). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
 }
 
 #root {

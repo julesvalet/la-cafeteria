@@ -12,6 +12,7 @@ import { CasinoAudio } from './utils/sound';
 import { readPreference, recordRound, savePreference } from './utils/storage';
 import { numbers } from './engine/rules';
 import { useRecordGame } from '../account/useRecordGame';
+import { useGameTally, withTally } from '../account/gameTally';
 import { flip7Outcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
@@ -52,7 +53,16 @@ function GameSession({ isPublic, ...options }: SessionOptions & { isPublic: bool
   // Vaut `null` hors partie en ligne terminée — le solo et les parties contre
   // des bots ne comptent pas. Pas de useMemo : le hook se repère à la clé de
   // session, une chaîne, et non à l'identité de l'objet.
-  const record = useRecordGame(flip7Outcome(state, selfId));
+  // Arrêts dès la première carte, pour le trophée « Timide ».
+  const tally = useGameTally(state?.phase, ['finished']);
+  if (state) {
+    tally.event(state.lastEvent.seq, () => {
+      const e = state.lastEvent;
+      const me = state.players.findIndex(p => p.id === selfId);
+      return e.kind === 'stay' && me >= 0 && e.by === me && state.players[me].cards.length === 1 ? 'early_stays' : null;
+    });
+  }
+  const record = useRecordGame(withTally(flip7Outcome(state, selfId), tally.counts));
   const [visible, setVisible] = useState<PublicState | null>(null);
   const [busy, setBusy] = useState(false);
   const [rules, setRules] = useState(false);

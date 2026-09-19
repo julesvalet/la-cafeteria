@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Clock, Pencil, UserPlus } from 'lucide-react';
 import { NeonButton } from '../../account/components/NeonButton';
@@ -9,6 +9,32 @@ import { useFriends } from '../useFriends';
 import { winRate } from '../format';
 import { RankStrip } from './RankStrip';
 import { UserAvatar } from './UserAvatar';
+import { AchievementBadge } from '../../achievements/AchievementBadge';
+import { bestAchievements, getAchievements, type AchievementState } from '../../achievements/api';
+
+/** Les trois plus beaux trophées, en médaillons sous le nom. */
+function TopTrophies({ userId }: { userId: string }) {
+  const [best, setBest] = useState<AchievementState[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getAchievements(userId)
+      .then((l) => {
+        if (!cancelled) setBest(bestAchievements(l));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+  if (best.length === 0) return null;
+  return (
+    <p className="ach-top" aria-label="Meilleurs trophées">
+      {best.map((a) => (
+        <AchievementBadge key={a.id} a={a} compact />
+      ))}
+    </p>
+  );
+}
 
 const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric' });
 
@@ -57,6 +83,7 @@ export function ProfileCard({ profile, stats }: { profile: PublicProfile; stats:
         </div>
         <div className="acc-profile-id">
           <h1 className="acc-title">{profile.username}</h1>
+          <TopTrophies userId={profile.id} />
           <p className="acc-subtitle">{profile.bio || <em>Aucune description.</em>}</p>
           <p className="neon-hint">
             À la table depuis {DATE_FMT.format(new Date(profile.created_at))}

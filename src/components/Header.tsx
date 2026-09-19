@@ -3,6 +3,7 @@ import { Trophy } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { AccountMenu } from '../features/account/components/AccountMenu';
 import { NotificationBell } from '../features/social/components/NotificationBell';
+import { SocialNav } from '../features/social/components/SocialNav';
 import { accountsEnabled } from '../lib/supabase';
 import { useAuth } from '../features/account/useAuth';
 
@@ -15,6 +16,8 @@ export function Header() {
           <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="La Cafétéria" className="site-logo" />
           <span>La Cafétéria</span>
         </Link>
+        {/* Grand écran : les onglets montent dans l'en-tête (voir social.css). */}
+        <SocialNav variant="header" />
         <div className="site-header-actions">
           {/* Les classements sont publics : le raccourci reste visible sans compte. */}
           {accountsEnabled && (

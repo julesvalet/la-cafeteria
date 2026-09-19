@@ -11,6 +11,7 @@ import { MysteryReveal, type MysteryShot } from './components/MysteryReveal';
 import { UnoFlash, type UnoShot } from './components/UnoFlash';
 import { UnoVictory } from './components/UnoVictory';
 import { useRecordGame } from '../account/useRecordGame';
+import { useGameTally, withTally } from '../account/gameTally';
 import { unoOutcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
@@ -151,7 +152,17 @@ function UnoGameView({
 
   // Vaut `null` tant que personne n'a posé sa dernière carte. La revanche
   // produit une nouvelle signature, donc un nouvel enregistrement.
-  const outcome = useMemo(() => unoOutcome(state, selfId, code), [state, selfId, code]);
+  // Cartes spéciales jouées, pour le trophée « Stratège ».
+  const tally = useGameTally(state?.phase, ['won']);
+  if (state && seat >= 0) {
+    tally.event(state.lastEvent.seq, () => {
+      const e = state.lastEvent;
+      if (e.kind !== 'play' || e.by !== seat || !e.cardId) return null;
+      const card = state.discard.find((c) => c.id === e.cardId);
+      return card && card.kind !== 'number' ? 'special_cards' : null;
+    });
+  }
+  const outcome = withTally(unoOutcome(state, selfId, code), tally.counts);
   const record = useRecordGame(outcome);
 
   // Every announcement is driven off `lastEvent.seq` rather than off diffing

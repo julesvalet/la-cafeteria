@@ -35,6 +35,8 @@ export function describeNotification(
         to: game && n.payload.room_code ? gameRoomPath(game, n.payload.room_code) : null,
       };
     }
+    case 'achievement':
+      return { text: `Trophée débloqué : ${n.payload.title ?? 'nouveau trophée'}.`, to: '/compte#trophees' };
     default:
       return { text: 'Nouvelle notification.', to: null };
   }

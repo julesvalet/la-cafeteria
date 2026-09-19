@@ -654,7 +654,7 @@ button.soc-bell-text:hover { color: var(--accent-strong); }
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1.5px solid var(--color-primary);
-  box-shadow: var(--shadow-lg), 0 0 20px rgb(201 151 94 / 0.35);
+  box-shadow: var(--shadow-lg), 0 0 20px rgb(201 169 97 / 0.35);
   color: var(--color-text);
 }
 
