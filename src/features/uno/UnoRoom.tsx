@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Check, Copy, Hand, LogOut, Megaphone, ShieldAlert, TriangleAlert } from 'lucide-react';
+import { GameTitle } from '../../components/GameTitle';
 import { useUnoRoom } from './net/useUnoRoom';
 import { isWild } from './engine/deck';
 import { UnoTable } from './components/UnoTable';
@@ -291,7 +292,7 @@ function UnoGameView({
 
       <div className="p4-room-topbar">
         <div>
-          <h1>UNO — room {code}</h1>
+          <GameTitle as="h1" game="uno" suffix={`room ${code}`} className="gt-room" />
           <div className="p4-topbar-actions">
             <button
               type="button"

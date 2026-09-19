@@ -171,7 +171,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
   gap: 12px;
 }
 
@@ -235,11 +235,17 @@
 .ach-bar { display: block; width: 100%; height: 5px; border-radius: 999px; background: var(--color-border); overflow: hidden; }
 .ach-bar > span { display: block; height: 100%; border-radius: inherit; background: var(--tier); }
 
-/* La progression chiffrée se révèle au survol, comme une info-bulle. */
-.ach-progress-text { font-size: 0.72rem; color: var(--color-text-muted); max-height: 0; overflow: hidden; transition: max-height 0.2s ease; }
-.ach-badge:hover .ach-progress-text,
-.ach-badge:focus-visible .ach-progress-text,
-.ach-badge[data-unlocked] .ach-progress-text { max-height: 20px; }
+.ach-progress-text { font-size: 0.72rem; line-height: 1.3; color: var(--color-text-muted); }
+.ach-locked-tag {
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+}
 
 /* Les trois plus beaux, sous le nom d'un profil */
 .ach-top { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
@@ -349,4 +355,63 @@
   .site-brand { gap: 8px; }
   .site-brand span { font-size: 16px; white-space: nowrap; }
   .site-logo { width: 34px; height: 34px; }
+}
+
+/* --- Mise en page : rien ne déborde ----------------------------------------- */
+
+/* Filet de sécurité : `clip` plutôt que `hidden`, qui casserait l'en-tête
+   collant en faisant de <body> un conteneur de défilement. */
+html, body { overflow-x: clip; }
+
+/* Étagement : en-tête 25, menus 50, notifications 150. Les fenêtres modales
+   sont des <dialog> : elles passent de toute façon au-dessus de tout. */
+.site-header { z-index: 25; }
+.soc-toasts, .ach-toast-zone { z-index: 150; }
+.home-splash { z-index: 160; }
+
+/* Les colonnes secondaires des tableaux cèdent la place sur téléphone. */
+@media (max-width: 520px) {
+  .acc-col-opt { display: none; }
+  .acc-table { white-space: normal; font-size: 0.86rem; }
+  .acc-table th, .acc-table td { padding-right: 8px; }
+}
+
+@media (max-width: 400px) {
+  .acc-col-xs { display: none; }
+}
+
+/* Onglets de période : sur un téléphone, ils passent à la ligne. */
+@media (max-width: 480px) {
+  .soc-tabs { flex-wrap: wrap; justify-content: center; border-radius: 18px; }
+  .soc-tab { padding: 7px 11px; }
+}
+
+/* Six onglets avec leurs libellés ne tiennent qu'à partir de 900px. */
+@media (max-width: 900px) {
+  .soc-nav-link:not(.active) .soc-nav-label { display: none; }
+  .soc-nav-link { padding: 9px 12px; }
+}
+
+/* Téléphone : les onglets en icônes seules, l'onglet actif se reconnaît à sa
+   pastille dorée (chaque lien garde son nom dans aria-label). */
+@media (max-width: 480px) {
+  .soc-nav-link .soc-nav-label { display: none; }
+  .soc-nav-link { padding: 9px 10px; }
+}
+
+/* Très petit écran : le logo seul suffit à signer le site. */
+@media (max-width: 380px) {
+  .site-header-actions { gap: 4px; }
+  .site-header-actions > .account-chip,
+  .site-header-actions > .theme-toggle,
+  .site-header-actions .dock-toggle { width: 34px; height: 34px; }
+  /* Le logo porte déjà le nom du site (alt). */
+  .site-brand span { display: none; }
+}
+
+/* Salons des jeux : sur un petit téléphone, des marges plus serrées pour que
+   les cartes « Créer / Rejoindre » tiennent dans l'écran. */
+@media (max-width: 480px) {
+  .p4-lobby, .scopa-lobby { padding-left: 16px; padding-right: 16px; }
+  .p4-lobby-card, .scopa-lobby-card { padding: 20px 18px; min-width: 0; }
 }

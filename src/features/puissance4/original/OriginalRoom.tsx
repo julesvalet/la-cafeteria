@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Check, Copy, LogOut, TriangleAlert } from 'lucide-react';
+import { GameTitle } from '../../../components/GameTitle';
 import { useP4Room } from '../net/useP4Room';
 import { ORIGINAL_MODES, MODE_ORDER, discColor } from '../engine/modes';
 import { teamLabel } from '../engine/rules';
@@ -74,7 +75,7 @@ export function OriginalRoom() {
           </button>
         </form>
         <Link to="/puissance4-original" className="p4-back-link">
-          ← Retour au menu Puissance 4 Original
+          ← Retour au menu P4 Classic
         </Link>
       </div>
     );
@@ -216,7 +217,7 @@ function OriginalGameView({
       <div className="container p4-status">
         <p className="p4-form-error">{error ?? 'Une erreur est survenue.'}</p>
         <Link to="/puissance4-original" className="btn btn-outline">
-          ← Retour au menu Puissance 4 Original
+          ← Retour au menu P4 Classic
         </Link>
       </div>
     );
@@ -250,7 +251,7 @@ function OriginalGameView({
 
       <div className="p4-room-topbar">
         <div>
-          <h1>Puissance 4 Original — room {code}</h1>
+          <GameTitle as="h1" game="puissance4-original" suffix={`room ${code}`} className="gt-room" />
           <div className="p4-topbar-actions">
             <button
               type="button"

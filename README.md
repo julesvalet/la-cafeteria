@@ -25,11 +25,18 @@ suit juste en dessous. Code : [src/pages/Home.tsx](src/pages/Home.tsx) et
 l'interface par un zoom flouté. Le niveau affiché est tiré des points
 (`level.ts`), rien n'est stocké.
 
-**Fonds du site** (engrenage de l'en-tête) : or luxe, marron casino ou Terre.
+**Fonds du site** (engrenage de l'en-tête) : or luxe, marron casino (par
+défaut) ou Terre, légèrement floutée.
 Le choix est gardé dans `localStorage.userTheme` et appliqué avant le premier
 rendu. `data-backdrop` choisit le décor ; `data-theme` reste `light` / `dark`,
 ce dont dépendent tous les jeux. L'image de la Terre a été extraite du fichier
 Illustrator (`public/assets/backdrops/`).
+
+**Noms des jeux** : `<GameTitle game="scopa" />`
+([src/components/GameTitle.tsx](src/components/GameTitle.tsx)) affiche le nom
+d'un jeu dans sa typographie (◆ SCOPA ◆, P • 4 FORGE, P • 4 CLASSIC, ● UNO ●,
+◇ FLIP • 7 ◇), avec sa devise en option. On s'en sert sur les tuiles de
+l'accueil, en tête des salons et des parties, et dans les listes.
 
 ## Stack technique
 
@@ -220,8 +227,9 @@ public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
 
 Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour
 qu'elle apparaisse sur l'accueil, ajoute-la au tableau `GAMES` de
-[src/features/games.ts](src/features/games.ts), et à `game_types` en base si
-ses parties doivent compter.
+[src/features/games.ts](src/features/games.ts), à `GAME_TITLES` de
+`GameTitle.tsx` (et son style dans `gameTitle.css`), et à `game_types` en base
+si ses parties doivent compter.
 
 ## Déploiement
 

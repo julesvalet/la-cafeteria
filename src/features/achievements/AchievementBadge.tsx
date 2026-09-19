@@ -8,8 +8,8 @@ const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', y
  * Un trophée : médaillon, nom, description, progression.
  *
  * Verrouillé, il reste lisible (gris, cadenas) : savoir ce qu'on peut viser
- * vaut mieux qu'une liste de « ??? ». La progression s'affiche au survol et
- * au focus, et reste lue par les lecteurs d'écran.
+ * vaut mieux qu'une liste de « ??? ». Marqué « À débloquer », avec sa barre
+ * et son compte.
  */
 export function AchievementBadge({ a, compact = false }: { a: AchievementState; compact?: boolean }) {
   const Icon = achievementIcon(a.icon);
@@ -35,6 +35,7 @@ export function AchievementBadge({ a, compact = false }: { a: AchievementState; 
       </span>
       <span className="ach-name">{a.title}</span>
       <span className="ach-desc">{a.description}</span>
+      {!unlocked && <span className="ach-locked-tag">À débloquer</span>}
       <span className="ach-progress" aria-label={`Progression : ${progressText}`}>
         <span className="ach-bar" aria-hidden>
           <span style={{ width: `${pct}%` }} />

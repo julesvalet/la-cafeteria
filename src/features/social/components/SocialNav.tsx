@@ -28,7 +28,15 @@ export function SocialNav({ variant = 'page' }: { variant?: 'page' | 'header' })
   return (
     <nav className="soc-nav" data-variant={variant} aria-label={variant === 'header' ? 'Navigation principale' : 'Espace joueur'}>
       {links.map(({ to, label, icon: Icon, badge }) => (
-        <NavLink key={to} to={to} className="soc-nav-link" end>
+        <NavLink
+          key={to}
+          to={to}
+          className="soc-nav-link"
+          end
+          // Sur téléphone, les libellés se cachent : le nom du lien reste là.
+          aria-label={badge > 0 ? `${label} (${badge} en attente)` : label}
+          title={label}
+        >
           <Icon size={16} aria-hidden />
           <span className="soc-nav-label">{label}</span>
           {badge > 0 && (

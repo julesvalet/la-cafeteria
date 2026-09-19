@@ -1,8 +1,8 @@
 import { Link, Navigate } from 'react-router-dom';
 import { ArrowRight, Flame, MailOpen, MessagesSquare, Radio, Trophy, UserPlus, Users } from 'lucide-react';
+import { GameTitle } from '../../../components/GameTitle';
 import { useAuth } from '../../account/useAuth';
 import { useProfileStats } from '../../account/useProfileStats';
-import { GAME_LABELS } from '../../account/types';
 import { LeaderboardTable } from '../components/LeaderboardTable';
 import { UserAvatar } from '../components/UserAvatar';
 import { ChallengeButton } from '../components/ChallengeButton';
@@ -154,7 +154,7 @@ function Dashboard({ withFriends }: { withFriends: boolean }) {
               <li key={g.id} className="soc-row soc-row-compact">
                 <span className="acc-outcome soc-outcome-dot" data-won={g.won} aria-hidden />
                 <div className="soc-row-main">
-                  <span className="soc-name">{GAME_LABELS[g.game_type] ?? g.game_type}</span>
+                  <GameTitle game={g.game_type} size="sm" className="gt-start" />
                   <span className="soc-meta">
                     {g.won ? 'Victoire' : 'Défaite'} · {g.player_count} joueurs · {timeAgo(g.created_at)}
                   </span>

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Check } from 'lucide-react';
+import { GameTitle } from '../../../components/GameTitle';
 import { ORIGINAL_MODES, MODE_ORDER, discColor } from '../engine/modes';
 import { OriginalRulesModal } from './OriginalRulesModal';
 import type { P4Mode } from '../engine/types';
@@ -55,7 +56,7 @@ export function OriginalLobby() {
       <OriginalRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
 
       <header className="p4-lobby-header">
-        <h1>Puissance 4 Original</h1>
+        <GameTitle as="h1" game="puissance4-original" size="xl" motto />
         <p>Le classique : aligne quatre jetons, sans pouvoirs, sur une grille 7 × 6.</p>
         <button type="button" className="btn btn-outline p4-rules-link" onClick={() => setRulesOpen(true)}>
           <BookOpen size={15} /> Règles du jeu

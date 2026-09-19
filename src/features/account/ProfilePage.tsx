@@ -261,7 +261,7 @@ export function ProfilePage() {
                   <tr>
                     <th scope="col">Jeu</th>
                     <th scope="col">Résultat</th>
-                    <th scope="col">Score</th>
+                    <th scope="col" className="acc-col-opt">Score</th>
                     <th scope="col">Points</th>
                     <th scope="col">Quand</th>
                   </tr>
@@ -275,7 +275,7 @@ export function ProfilePage() {
                           {game.won ? 'Victoire' : 'Défaite'}
                         </span>
                       </td>
-                      <td>{game.score || '—'}</td>
+                      <td className="acc-col-opt">{game.score || '—'}</td>
                       <td>
                         {game.points > 0 ? `+${game.points}` : '—'}
                         {game.streak_bonus && (

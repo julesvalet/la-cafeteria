@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Check, Layers } from 'lucide-react';
+import { GameTitle } from '../../components/GameTitle';
 import { UnoRulesModal } from './components/UnoRulesModal';
 import { usePlayerName, savePseudo } from '../rooms/playerName';
 import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
@@ -67,7 +68,7 @@ export function UnoLobby() {
       />
 
       <header className="p4-lobby-header">
-        <h1>UNO</h1>
+        <GameTitle as="h1" game="uno" size="xl" motto />
         <p>Débarrasse-toi de toutes tes cartes. Avec des cartes mystère et le duel UNO / Contre UNO.</p>
         <button type="button" className="btn btn-outline p4-rules-link" onClick={() => setRulesOpen(true)}>
           <BookOpen size={15} /> Règles du jeu

@@ -107,15 +107,15 @@ export function LeaderboardTable({
             <th scope="col" className="soc-num">
               Points
             </th>
-            <th scope="col" className="soc-num">
+            <th scope="col" className="soc-num acc-col-xs">
               Victoires
             </th>
             {!compact && (
               <>
-                <th scope="col" className="soc-num">
+                <th scope="col" className="soc-num acc-col-opt">
                   Parties
                 </th>
-                <th scope="col" className="soc-num">
+                <th scope="col" className="soc-num acc-col-opt">
                   Ratio
                 </th>
               </>
@@ -137,11 +137,11 @@ export function LeaderboardTable({
                 {r.user_id === selfId && <span className="soc-tag">toi</span>}
               </td>
               <td className="soc-num soc-lb-points">{r.points}</td>
-              <td className="soc-num">{r.wins}</td>
+              <td className="soc-num acc-col-xs">{r.wins}</td>
               {!compact && (
                 <>
-                  <td className="soc-num">{r.games}</td>
-                  <td className="soc-num">{winRate(r.wins, r.games)}</td>
+                  <td className="soc-num acc-col-opt">{r.games}</td>
+                  <td className="soc-num acc-col-opt">{winRate(r.wins, r.games)}</td>
                 </>
               )}
             </tr>
@@ -157,11 +157,11 @@ export function LeaderboardTable({
                 {mine.username} <span className="soc-tag">toi</span>
               </td>
               <td className="soc-num soc-lb-points">{mine.points}</td>
-              <td className="soc-num">{mine.wins}</td>
+              <td className="soc-num acc-col-xs">{mine.wins}</td>
               {!compact && (
                 <>
-                  <td className="soc-num">{mine.games}</td>
-                  <td className="soc-num">{winRate(mine.wins, mine.games)}</td>
+                  <td className="soc-num acc-col-opt">{mine.games}</td>
+                  <td className="soc-num acc-col-opt">{winRate(mine.wins, mine.games)}</td>
                 </>
               )}
             </tr>

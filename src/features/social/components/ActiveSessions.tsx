@@ -1,5 +1,5 @@
 import { Eye, LogIn, RefreshCw, Users } from 'lucide-react';
-import { GAME_LABELS } from '../../account/types';
+import { GameTitle } from '../../../components/GameTitle';
 import { AccBanner } from '../../account/components/AccBanner';
 import { useFriendSessions } from '../useFriendSessions';
 import { useJoinSession } from '../useJoinSession';
@@ -66,7 +66,7 @@ function SessionCard({ session: s, here, onJoin }: { session: FriendSession; her
   return (
     <li className="sess-card" data-status={s.status}>
       <div className="sess-card-game">
-        <span className="sess-game">{GAME_LABELS[s.game_type]}</span>
+        <GameTitle game={s.game_type} size="sm" className="sess-game gt-start" />
         <span className="sess-state" data-status={s.status}>
           {s.status === 'playing' ? 'En cours' : full ? 'Complète' : 'En attente de joueurs'}
         </span>

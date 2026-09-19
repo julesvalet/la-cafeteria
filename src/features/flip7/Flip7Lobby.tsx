@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Bot, Sparkles, Users, Trophy } from 'lucide-react';
+import { GameTitle } from '../../components/GameTitle';
 import { FlipCard } from './components/FlipCard';
 import { RulesModal } from './components/RulesModal';
 import { readStats } from './utils/storage';
@@ -39,7 +40,7 @@ export function Flip7Lobby() {
       <div className="f7-lobby-grid">
         <section className="f7-hero">
           <p className="f7-eyebrow"><span className="f7-live-dot" /> LA CAFÉTÉRIA PRÉSENTE</p>
-          <h1 className="f7-wordmark">FLIP<span>7</span><i>✦</i></h1>
+          <GameTitle as="h1" game="flip7" size="xl" motto className="f7-title" />
           <h2>La prochaine carte<br />peut tout changer.</h2>
           <p className="f7-hero-copy">Un peu d’audace. Beaucoup de suspense.<br />Accumule les points, évite le doublon…<br />et sache quand t’arrêter.</p>
           <div className="f7-hero-cards" aria-label="Cartes de Flip 7">

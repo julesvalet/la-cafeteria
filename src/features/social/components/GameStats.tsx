@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Gamepad2 } from 'lucide-react';
-import { GAME_LABELS } from '../../account/types';
+import { GameTitle } from '../../../components/GameTitle';
 import { getGameStats } from '../api';
 import { winRate } from '../format';
 import type { GameStatRow } from '../types';
@@ -38,7 +38,7 @@ export function GameStats({ userId }: { userId: string }) {
         <ul className="soc-game-grid">
           {rows.map((r) => (
             <li key={r.game_type} className="acc-stat soc-game-stat">
-              <span className="soc-game-name">{GAME_LABELS[r.game_type] ?? r.game_type}</span>
+              <GameTitle game={r.game_type} size="sm" className="soc-game-name gt-start" />
               <span className="soc-game-points">{r.points} pts</span>
               <span className="soc-meta">
                 {r.played} partie{r.played > 1 ? 's' : ''} · {r.wins} victoire{r.wins > 1 ? 's' : ''} ·{' '}

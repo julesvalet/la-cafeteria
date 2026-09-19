@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Flame, Radio, Trophy } from 'lucide-react';
+import { GameTitle } from '../components/GameTitle';
 import { accountsEnabled } from '../lib/supabase';
 import { GAMES, gameById, type GameEntry } from '../features/games';
 import { getTrendingGame, refreshMyAchievements } from '../features/achievements/api';
@@ -117,15 +118,15 @@ export function Home() {
                 <Flame size={15} aria-hidden /> jeu tendance
               </span>
               <TrendingIcon size={38} strokeWidth={1.6} aria-hidden />
-              <strong>{trending.name}</strong>
-              <small>{trending.tagline}</small>
+              <GameTitle game={trending.id} size="lg" motto className="gt-vivid" />
+              <small>{trending.players}</small>
             </Link>
             {others.map((g) => {
               const Icon = g.icon;
               return (
                 <Link key={g.id} to={g.to} className="home-tile" data-tone="jeu">
                   <Icon size={34} strokeWidth={1.6} aria-hidden />
-                  <strong>{g.name}</strong>
+                  <GameTitle game={g.id} size="lg" motto className="gt-vivid" />
                   <small>{g.players}</small>
                 </Link>
               );

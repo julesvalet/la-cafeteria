@@ -123,6 +123,10 @@ html[data-backdrop='earth'] {
     linear-gradient(180deg, rgb(13 13 13 / 0.35), rgb(13 13 13 / 0.55)),
     url('/assets/backdrops/earth.webp') center / cover no-repeat,
     url('/assets/backdrops/earth-small.webp') center / cover no-repeat;
+  /* Un léger flou : la photo reste un décor, pas un sujet. Le calque déborde
+     un peu pour que le flou ne laisse pas de liseré sur les bords. */
+  inset: -16px;
+  filter: blur(3px);
   pointer-events: none;
 }
 
@@ -173,6 +177,10 @@ button {
   max-width: 1140px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
 }
 
 .btn {

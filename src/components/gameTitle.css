@@ -1,0 +1,170 @@
+/* Les noms des jeux dans leur typographie (voir GameTitle.tsx). */
+
+.gt {
+  display: inline-flex;
+  flex-direction: column;
+  /* Centré par défaut ; --gt-align: flex-start pour un en-tête aligné à gauche. */
+  align-items: var(--gt-align, center);
+  gap: 0.25em;
+  max-width: 100%;
+  line-height: 1.05;
+  font-weight: 900;
+}
+
+.gt-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: var(--gt-align, center);
+  column-gap: 0.45em;
+  row-gap: 0.1em;
+  max-width: 100%;
+}
+
+/* Le mot peut passer à la ligne entre ses morceaux, jamais déborder. */
+.gt-word {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: var(--gt-align, center);
+  column-gap: 0.28em;
+  letter-spacing: 0.15em;
+  transform-origin: center;
+  transition: transform 0.25s ease, text-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.gt-word > :last-child { margin-right: -0.15em; }
+.gt-orn { font-size: 0.62em; align-self: center; }
+.gt-part { white-space: nowrap; }
+.gt-dot { margin: 0 0.3em; font-size: 0.8em; opacity: 0.85; }
+
+.gt-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.gt-suffix {
+  font-family: var(--font-ui, inherit);
+  font-size: 0.55em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-muted);
+}
+
+.gt-motto {
+  font-family: var(--font-ui, inherit);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Tailles */
+.gt[data-size='sm'] { font-size: 1rem; }
+.gt[data-size='md'] { font-size: 1.35rem; }
+.gt[data-size='lg'] { font-size: clamp(1.3rem, 2.3vw, 2.5rem); }
+.gt[data-size='xl'] { font-size: clamp(1.8rem, 6vw, 3.2rem); }
+.gt[data-size='sm'] .gt-motto { font-size: 0.7rem; }
+.gt:not([data-size='sm']) .gt-motto { font-size: clamp(0.7rem, 0.4em, 0.95rem); }
+
+/* --- Chaque jeu ------------------------------------------------------------ */
+
+.gt[data-game='scopa'] { font-family: 'Montserrat', var(--font-ui), sans-serif; color: #d4af37; }
+.gt[data-game='scopa'] .gt-motto { color: #c9a961; }
+
+.gt[data-game='puissance4'] { font-family: 'Oswald', var(--font-ui), sans-serif; color: #c9a961; }
+.gt[data-game='puissance4'] .gt-motto { color: #d4af37; }
+
+.gt[data-game='puissance4-original'] { font-family: 'Oswald', var(--font-ui), sans-serif; font-weight: 700; color: #f5f1eb; }
+.gt[data-game='puissance4-original'] .gt-motto { color: #c9a961; }
+
+.gt[data-game='uno'] { font-family: 'Montserrat', var(--font-ui), sans-serif; color: #4444ff; }
+.gt[data-game='uno'] .gt-part[data-i='0'] { color: #ff4444; }
+.gt[data-game='uno'] .gt-part[data-i='1'] { color: #ffdd33; }
+.gt[data-game='uno'] .gt-part[data-i='2'] { color: #44dd44; }
+.gt[data-game='uno'] .gt-orn { color: #4444ff; }
+.gt[data-game='uno'] .gt-word { column-gap: 0.12em; text-shadow: 0 2px 0 rgb(0 0 0 / 0.35); }
+.gt[data-game='uno'] .gt-motto { color: #ffdd33; }
+
+.gt[data-game='flip7'] { font-family: 'Oswald', var(--font-ui), sans-serif; font-weight: 800; color: #00d9ff; }
+.gt[data-game='flip7'] .gt-motto { color: #d4af37; }
+
+/* Sur le fond or clair, les teintes claires s'assombrissent pour rester lisibles. */
+:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='scopa'] { color: #8a6d1c; }
+:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='puissance4'] { color: #7a5c22; }
+:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='puissance4-original'] { color: #2a2622; }
+:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='flip7'] { color: #007a91; }
+:root[data-theme='light'] .gt:not(.gt-vivid) .gt-motto { color: #6b5a3e; }
+
+/* --- Survol ---------------------------------------------------------------- */
+
+:is(a, button):hover .gt[data-game='scopa'] .gt-word,
+.gt[data-game='scopa']:hover .gt-word {
+  transform: scale(1.08);
+  text-shadow: 0 0 14px rgb(212 175 55 / 0.7);
+}
+
+:is(a, button):hover .gt[data-game='puissance4'] .gt-word,
+.gt[data-game='puissance4']:hover .gt-word {
+  transform: scale(1.06);
+  animation: gt-pulse 1.4s ease-in-out infinite;
+}
+
+:is(a, button):hover .gt[data-game='puissance4-original'] .gt-word,
+.gt[data-game='puissance4-original']:hover .gt-word {
+  transform: scale(1.04);
+}
+
+:is(a, button):hover .gt[data-game='uno'] .gt-word,
+.gt[data-game='uno']:hover .gt-word {
+  transform: scale(1.1);
+}
+
+:is(a, button):hover .gt[data-game='uno'] :is(.gt-part, .gt-orn),
+.gt[data-game='uno']:hover :is(.gt-part, .gt-orn) {
+  animation: gt-rainbow 1.2s linear infinite;
+}
+
+.gt[data-game='uno'] .gt-part[data-i='1'] { animation-delay: -0.3s; }
+.gt[data-game='uno'] .gt-part[data-i='2'] { animation-delay: -0.6s; }
+.gt[data-game='uno'] .gt-orn:last-of-type { animation-delay: -0.9s; }
+
+:is(a, button):hover .gt[data-game='flip7'] .gt-word,
+.gt[data-game='flip7']:hover .gt-word {
+  transform: scale(1.07) rotate(-2.5deg);
+  text-shadow: 0 0 16px rgb(0 217 255 / 0.75);
+}
+
+@keyframes gt-pulse {
+  0%, 100% { text-shadow: 0 0 4px rgb(201 169 97 / 0.2); }
+  50% { text-shadow: 0 0 16px rgb(201 169 97 / 0.75); }
+}
+
+@keyframes gt-rainbow {
+  0% { color: #ff4444; }
+  25% { color: #ffdd33; }
+  50% { color: #44dd44; }
+  75% { color: #4444ff; }
+  100% { color: #ff4444; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gt-word { transition: none; }
+  .gt .gt-word, .gt :is(.gt-part, .gt-orn) { animation: none !important; transform: none !important; }
+}
+
+/* --- Contextes -------------------------------------------------------------- */
+
+/* Sur une tuile colorée : les teintes vives, détachées par une ombre. */
+.gt-vivid { filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.55)); }
+.gt-vivid .gt-motto { color: #fff !important; opacity: 0.92; }
+
+/* Dans une liste ou un en-tête de partie : aligné à gauche. */
+.gt-start, .gt-room { --gt-align: flex-start; }
+.gt-room { margin: 0; font-size: clamp(1.2rem, 4vw, 1.7rem); }
+.gt-room .gt-name { row-gap: 0.2em; }
+
+/* Le titre de l'accueil de Flip 7, en grand. */
+.f7-title { --gt-align: flex-start; font-size: clamp(2.8rem, 9vw, 6rem) !important; margin: 6px 0 14px; }

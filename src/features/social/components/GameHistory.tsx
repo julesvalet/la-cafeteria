@@ -54,8 +54,8 @@ export function GameHistory({ userId }: { userId: string }) {
               <tr>
                 <th scope="col">Jeu</th>
                 <th scope="col">Résultat</th>
-                <th scope="col">Joueurs</th>
-                <th scope="col">Durée</th>
+                <th scope="col" className="acc-col-opt">Joueurs</th>
+                <th scope="col" className="acc-col-opt">Durée</th>
                 <th scope="col">Points</th>
                 <th scope="col">Quand</th>
               </tr>
@@ -69,8 +69,8 @@ export function GameHistory({ userId }: { userId: string }) {
                       {g.won ? 'Victoire' : 'Défaite'}
                     </span>
                   </td>
-                  <td>{g.player_count}</td>
-                  <td>{duration(g.duration_seconds)}</td>
+                  <td className="acc-col-opt">{g.player_count}</td>
+                  <td className="acc-col-opt">{duration(g.duration_seconds)}</td>
                   <td>
                     {g.points > 0 ? `+${g.points}` : '—'}
                     {g.streak_bonus && (

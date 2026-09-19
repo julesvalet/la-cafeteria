@@ -67,6 +67,6 @@ export const GAME_LABELS: Record<GameTypeId, string> = {
   flip7: 'Flip 7',
   scopa: 'Scopa',
   uno: 'UNO',
-  puissance4: 'Puissance 4',
-  'puissance4-original': 'Puissance 4 Original',
+  puissance4: 'P4 Forge',
+  'puissance4-original': 'P4 Classic',
 };

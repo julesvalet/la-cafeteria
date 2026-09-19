@@ -36,7 +36,7 @@ function read(): Backdrop {
   } catch {
     // Stockage indisponible : le fond par défaut.
   }
-  return 'earth';
+  return 'dark';
 }
 
 export const themeOf = (b: Backdrop): Theme => (b === 'gold' ? 'light' : 'dark');

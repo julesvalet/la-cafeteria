@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
+import { GameTitle } from '../../components/GameTitle';
 import { RulesModal } from './components/RulesModal';
 import { usePlayerName, savePseudo } from '../rooms/playerName';
 import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
@@ -48,7 +49,7 @@ export function ScopaLobby() {
     <div className="container scopa-lobby">
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
       <header className="scopa-lobby-header">
-        <h1>Scopa</h1>
+        <GameTitle as="h1" game="scopa" size="xl" motto />
         <p>Le jeu de cartes italien, en ligne, entre potes. 2, 3 ou 4 joueurs.</p>
         <button type="button" className="btn btn-outline scopa-rules-link" onClick={() => setRulesOpen(true)}>
           <BookOpen size={15} /> Règles du jeu

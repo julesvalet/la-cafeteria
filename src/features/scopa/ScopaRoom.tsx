@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEven
 import { Link, useLocation, useParams } from 'react-router-dom';
 import type { PanInfo } from 'framer-motion';
 import { Copy, Check, BookOpen, LogOut, TriangleAlert, Trophy, Sparkles } from 'lucide-react';
+import { GameTitle } from '../../components/GameTitle';
 import { useScopaRoom } from './net/useScopaRoom';
 import { PlayingCard } from './components/PlayingCard';
 import { Avatar } from './components/Avatar';
@@ -321,7 +322,7 @@ function ScopaGameView({
 
       <div className="scopa-room-topbar">
         <div>
-          <h1>Scopa — room {code}</h1>
+          <GameTitle as="h1" game="scopa" suffix={`room ${code}`} className="gt-room" />
           <div className="scopa-topbar-actions">
             <button
               type="button"
