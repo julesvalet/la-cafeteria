@@ -122,7 +122,81 @@ patient plutôt que le meilleur joueur.
 `get_leaderboard(période, jeu, limite)` agrège à la lecture, avec remise à zéro
 à 00:00 UTC (jour, semaine ISO commençant le lundi, mois). Aucune tâche
 planifiée à surveiller : le classement ne peut pas être en retard sur les
-parties.
+parties. `get_leaderboard_rank()` donne la place d'un joueur sur le même
+classement, même hors du top 100.
+
+## Amis, groupes et temps réel
+
+Schéma : [supabase/migrations/0002_social.sql](supabase/migrations/0002_social.sql),
+à appliquer après 0001 (SQL Editor de Supabase, ou `supabase db push`). Rejouable
+sans risque, comme 0001.
+
+Même règle que pour les parties : **lecture par la RLS, écriture uniquement par
+des fonctions RPC** (`send_friend_request`, `create_group`, `send_group_message`,
+`invite_to_game`…). Aucune table sociale n'a de policy d'écriture : les règles
+(seul un admin invite, seul le créateur supprime, on n'écrit pas à quelqu'un
+qui nous a bloqué) vivent dans ces fonctions.
+
+| Page | Route |
+| --- | --- |
+| Tableau de bord | `/tableau-de-bord` |
+| Amis (ajout, demandes, défis, blocage) | `/amis` |
+| Groupes, et un groupe avec sa discussion | `/groupes`, `/groupes/:id` |
+| Classements (publics) | `/classements?periode=weekly&jeu=uno` |
+| Fiche publique d'un joueur | `/joueur/:pseudo` |
+
+Le temps réel passe par **Supabase Realtime**, pas par un serveur Socket.io :
+
+- `notifications` (publiée) sert de bus d'événements : demande d'ami, invitation
+  de groupe ou de partie, groupe supprimé… Le destinataire la reçoit en direct
+  (toast + cloche) ou la retrouve à sa prochaine visite. Les signaux
+  `silent` ne font que rafraîchir une liste.
+- `group_messages` (publiée) : les messages arrivent en direct, filtrés par la
+  RLS — un membre retiré cesse aussitôt de les recevoir.
+- Canaux privés `online` (présence) et `group:<id>` (« X écrit… »), autorisés
+  par les policies posées sur `realtime.messages`. Si ces canaux échouent, le
+  site retombe sur « vu il y a… » et la discussion marche sans indicateur.
+
+Inviter un ami à une partie ne change rien au P2P : l'invitation transporte
+seulement le code de room jusqu'à sa cloche.
+
+## Panneau d'amis, sessions, observation, photo de profil
+
+Schéma : [supabase/migrations/0003_sessions_avatars.sql](supabase/migrations/0003_sessions_avatars.sql),
+à appliquer après 0002. Rejouable sans risque.
+
+**Pseudo retenu.** La session Supabase persistait déjà ; ce qui redemandait
+le pseudo, c'étaient les salons et les liens de room. Connecté, on joue sous le
+pseudo du compte et un lien de room s'ouvre sans formulaire. Sans compte, le
+dernier pseudo tapé est gardé (`localStorage.userPseudo`), effacé à la
+déconnexion. Le jeton, lui, n'est pas recopié : Supabase le gère et le rafraîchit.
+
+**Panneau d'amis** (bouton « Amis » de l'en-tête) : amis triés en ligne /
+absent / hors ligne, recherche au-delà de six amis, statut personnel (en
+ligne, absent, hors ligne = invisible ; absent automatique après 5 min
+d'onglet caché). « Inviter » invite à la table en cours, ou ouvre « Crée ta
+session » ; « Rejoindre » s'allume quand l'ami est à une table publique.
+Colonne à droite sur ordinateur (la page se décale), tiroir par le bas au
+téléphone. Pas de raccourci Tab : il servirait déjà à naviguer au clavier.
+
+**Sessions publiques / privées.** Choisies à la création (salons de chaque jeu,
+ou « Crée ta session »). Une table *publique* est annoncée à ses **amis** via
+`publish_room()` (battement toutes les 30 s, oubliée après 90 s sans battement) ;
+une table *privée* n'est jamais écrite en base. `/sessions` liste les tables
+d'amis, et celles où un ami est assis.
+
+**Observation.** Arriver à une table lancée (ou pleine) fait entrer en
+observateur : même état masqué qu'un joueur, donc aucune main visible ; aucun
+clic ne passe (`inert`, et l'hôte ignore toute action d'un observateur). Les
+joueurs voient la liste des observateurs. « Rejoindre la manche suivante »
+réserve la prochaine place : quand un joueur est parti, son siège revient au
+premier observateur en attente au début de la manche ou de la revanche
+suivante. Code commun : [src/features/rooms/spectators.ts](src/features/rooms/spectators.ts).
+
+**Photo de profil.** Recadrée en cercle et réencodée en 512 × 512 dans le
+navigateur (métadonnées GPS perdues au passage), puis déposée dans le bucket
+public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
+`profiles.avatar` de pointer ailleurs que dans le dossier du joueur.
 
 
 ## Ajouter une nouvelle feature

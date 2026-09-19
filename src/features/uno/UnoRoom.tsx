@@ -13,13 +13,20 @@ import { UnoVictory } from './components/UnoVictory';
 import { useRecordGame } from '../account/useRecordGame';
 import { unoOutcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
+import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
+import { ObserverBar } from '../rooms/ObserverBar';
+import { useRoomSession } from '../rooms/useRoomSession';
+import { vacatedSeats } from '../rooms/spectators';
 import type { UnoCard, UnoColor } from './engine/types';
+import { useRoomIdentity } from '../rooms/playerName';
 
 interface LocationState {
   isHost?: boolean;
   name?: string;
   maxPlayers?: number;
   stackingEnabled?: boolean;
+  /** Choisi à la création : une table publique est annoncée aux amis. */
+  visibility?: 'public' | 'private';
 }
 
 export function UnoRoom() {
@@ -27,13 +34,22 @@ export function UnoRoom() {
   const location = useLocation();
   const navState = (location.state as LocationState | null) ?? null;
 
-  const [name, setName] = useState(navState?.name ?? '');
-  const [joined, setJoined] = useState(Boolean(navState?.name));
+  // Connecté, on entre sous le pseudo du compte sans formulaire.
+  const identity = useRoomIdentity(navState?.name);
+  const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
   const maxPlayers = navState?.maxPlayers ?? 2;
   const stackingEnabled = navState?.stackingEnabled ?? false;
 
-  if (!joined) {
+  if (identity.pending) {
+    return (
+      <div className="container p4-lobby">
+        <p role="status">Connexion à ton compte…</p>
+      </div>
+    );
+  }
+
+  if (!identity.joined) {
     return (
       <div className="container p4-lobby">
         <h1>Rejoindre la room {code}</h1>
@@ -41,7 +57,7 @@ export function UnoRoom() {
           className="p4-lobby-card"
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
-            if (name.trim()) setJoined(true);
+            identity.confirm();
           }}
         >
           <label htmlFor="uno-pseudo2">Ton pseudo</label>
@@ -49,12 +65,12 @@ export function UnoRoom() {
             id="uno-pseudo2"
             type="text"
             maxLength={18}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={identity.typed}
+            onChange={(e) => identity.setTyped(e.target.value)}
             placeholder="ex: Jules"
             autoFocus
           />
-          <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
+          <button type="submit" className="btn btn-primary" disabled={!identity.typed.trim()}>
             Rejoindre la partie
           </button>
         </form>
@@ -68,8 +84,9 @@ export function UnoRoom() {
   return (
     <UnoGameView
       code={code}
-      name={name}
+      name={identity.name}
       isHost={isHost}
+      isPublic={isPublic}
       maxPlayers={maxPlayers}
       stackingEnabled={stackingEnabled}
     />
@@ -82,14 +99,16 @@ function UnoGameView({
   isHost,
   maxPlayers,
   stackingEnabled,
+  isPublic,
 }: {
   code: string;
   name: string;
   isHost: boolean;
+  isPublic: boolean;
   maxPlayers: number;
   stackingEnabled: boolean;
 }) {
-  const { state, selfId, status, error, clearError, sendAction } = useUnoRoom(
+  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useUnoRoom(
     code,
     name,
     isHost,
@@ -115,6 +134,20 @@ function UnoGameView({
   const seat = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = seat >= 0 ? state?.players[seat] : undefined;
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+  // Connected, served the table, but without a seat: watching.
+  const isSpectator = Boolean(state && selfId && seat < 0 && spectators.some((s) => s.id === selfId));
+
+  useRoomSession({
+    game: 'uno',
+    code: code.toUpperCase(),
+    isHost,
+    isPublic,
+    role: !state ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
+    status: state?.phase === 'lobby' ? 'waiting' : 'playing',
+    players: state?.players.filter((p) => p.connected).length ?? 0,
+    maxPlayers: state?.maxPlayers ?? maxPlayers,
+    spectators: spectators.length,
+  });
 
   // Vaut `null` tant que personne n'a posé sa dernière carte. La revanche
   // produit une nouvelle signature, donc un nouvel enregistrement.
@@ -264,6 +297,7 @@ function UnoGameView({
                 </>
               )}
             </button>
+            <InviteFriendsButton game="uno" code={code} className="btn btn-outline p4-chip-btn" />
             <button type="button" className="btn btn-outline p4-chip-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -273,6 +307,15 @@ function UnoGameView({
           <LogOut size={14} /> Quitter
         </Link>
       </div>
+
+      <ObserverBar
+        spectators={spectators}
+        selfId={selfId}
+        isSpectator={isSpectator}
+        vacated={vacatedSeats(state.players)}
+        onSeat={requestSeat}
+        exitTo="/uno"
+      />
 
       {state.phase === 'lobby' && (
         <div className="p4-lobby-card p4-waiting">
@@ -377,6 +420,20 @@ function UnoGameView({
           <UnoVictory state={state} canRematch={isHost} onRematch={() => sendAction({ type: 'REMATCH' })}>
             <GameRecordBadge state={record} />
           </UnoVictory>
+        </>
+      )}
+
+      {/* Observers see every seat as an opponent — card counts only, never
+          the cards — and nothing on the table answers their clicks. */}
+      {inGame && isSpectator && (
+        <>
+          <div className="obs-lock" inert>
+            <UnoTable state={state} seat={-1} canDraw={false} onDraw={() => {}} />
+            {state.phase === 'playing' && (
+              <p className="p4-turn-hint">Au tour de {state.players[state.turn]?.name}...</p>
+            )}
+          </div>
+          <UnoVictory state={state} canRematch={false} onRematch={() => {}} />
         </>
       )}
     </div>

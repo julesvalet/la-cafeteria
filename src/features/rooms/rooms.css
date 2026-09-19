@@ -1,0 +1,201 @@
+/*
+ * Éléments communs aux rooms des cinq jeux : bandeau d'observation, choix
+ * public / privé dans les salons, lien vers les tables des amis.
+ *
+ * Ils se glissent dans des habillages très différents (le brun de Scopa et de
+ * Puissance 4, le tapis sombre de Flip 7) : couleurs tirées des variables du
+ * site, et une variante « casino » pour Flip 7.
+ */
+
+/* Le conteneur du plateau d'un observateur : `inert` coupe clics et focus,
+   `display: contents` le rend invisible à la mise en page existante. */
+.obs-scope { display: contents; }
+
+.obs-lock { filter: saturate(0.85); }
+
+/* --- Bandeau d'observation ----------------------------------------------- */
+
+.obs-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 14px);
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 55%, transparent);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+  color: var(--color-text);
+  animation: obs-in 0.3s ease-out;
+}
+
+@keyframes obs-in {
+  from { opacity: 0; transform: translateY(-6px); }
+}
+
+.obs-self {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.obs-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #5b7c99;
+  box-shadow: 0 0 12px rgb(91 124 153 / 0.45);
+}
+
+.obs-text { flex: 1 1 240px; font-size: 0.9rem; color: var(--color-text-muted); }
+
+.obs-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.obs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.obs-btn:hover { transform: scale(1.02); border-color: var(--color-primary); }
+.obs-btn:active { transform: scale(0.98); }
+.obs-btn:focus-visible { outline: 2px solid var(--color-primary-dark); outline-offset: 2px; }
+
+.obs-btn[data-tone='primary'] {
+  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 14px rgb(201 151 94 / 0.4);
+}
+
+/* Les observateurs, en gris et en italique : on voit d'un coup d'oeil qu'ils
+   ne sont pas à la table. */
+.obs-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.obs-list em { font-style: italic; opacity: 0.85; }
+.obs-waiting { font-size: 0.76rem; opacity: 0.8; }
+
+/* Flip 7 : le même bandeau, sur tapis. */
+.obs-bar[data-variant='casino'] {
+  border-color: rgb(0 217 255 / 0.35);
+  background: rgb(0 217 255 / 0.06);
+  color: var(--f7-text, #f5efdb);
+}
+.obs-bar[data-variant='casino'] .obs-text,
+.obs-bar[data-variant='casino'] .obs-list { color: var(--f7-muted, #a7ac9d); }
+.obs-bar[data-variant='casino'] .obs-badge { background: #0b7285; box-shadow: 0 0 12px rgb(0 217 255 / 0.45); }
+.obs-bar[data-variant='casino'] .obs-btn {
+  background: transparent;
+  color: #7feaff;
+  border-color: rgb(0 217 255 / 0.55);
+}
+.obs-bar[data-variant='casino'] .obs-btn[data-tone='primary'] {
+  color: #06222b;
+  background: #00d9ff;
+  border-color: #00d9ff;
+  box-shadow: 0 0 16px rgb(0 217 255 / 0.5);
+}
+
+/* --- Public / privé dans les salons --------------------------------------- */
+
+.sess-visibility {
+  border: none;
+  margin: 4px 0 14px;
+  padding: 0;
+  min-width: 0;
+}
+
+.sess-visibility legend {
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  opacity: 0.85;
+}
+
+.sess-visibility-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.sess-visibility label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid color-mix(in srgb, currentColor 20%, transparent);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.sess-visibility label:hover { border-color: color-mix(in srgb, var(--color-primary) 60%, transparent); }
+
+.sess-visibility label[data-checked] {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-shadow: 0 0 12px rgb(201 151 94 / 0.3);
+}
+
+.sess-visibility label:has(input:focus-visible) { outline: 2px solid var(--color-primary-dark); outline-offset: 2px; }
+
+.sess-visibility input { position: absolute; opacity: 0; pointer-events: none; }
+.sess-visibility svg { flex: none; margin-top: 2px; }
+.sess-visibility span { display: flex; flex-direction: column; gap: 2px; }
+.sess-visibility strong { font-size: 0.9rem; }
+.sess-visibility small { font-size: 0.76rem; opacity: 0.75; line-height: 1.35; }
+
+/* Dans le salon Flip 7, sur tapis sombre. */
+.f7-page .sess-visibility label[data-checked] {
+  border-color: #00d9ff;
+  background: rgb(0 217 255 / 0.08);
+  box-shadow: 0 0 14px rgb(0 217 255 / 0.3);
+}
+
+.sess-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+:root[data-theme='dark'] .sess-link { color: var(--color-primary-light); }
+.f7-page .sess-link { color: #7feaff; }
+
+@media (prefers-reduced-motion: reduce) {
+  .obs-bar { animation: none; }
+  .obs-btn { transition: none; }
+}
+
+.f7-page .sess-visibility { margin-top: 16px; }

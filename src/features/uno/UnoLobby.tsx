@@ -2,6 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Check, Layers } from 'lucide-react';
 import { UnoRulesModal } from './components/UnoRulesModal';
+import { usePlayerName, savePseudo } from '../rooms/playerName';
+import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
+import { SessionsLink } from '../rooms/SessionsLink';
 
 function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
@@ -20,7 +23,9 @@ const COUNT_TAGLINE: Record<number, string> = {
 
 export function UnoLobby() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  // Pré-rempli : le pseudo du compte, ou le dernier tapé sur ce navigateur.
+  const [name, setName] = usePlayerName();
+  const [visibility, setVisibility] = useState<Visibility>('public');
   const [joinCode, setJoinCode] = useState('');
   const [players, setPlayers] = useState(2);
   const [stacking, setStacking] = useState(false);
@@ -36,8 +41,9 @@ export function UnoLobby() {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     if (!requireName()) return;
+    savePseudo(name);
     navigate(`/uno/${randomRoomCode()}`, {
-      state: { isHost: true, name: name.trim(), maxPlayers: players, stackingEnabled: stacking },
+      state: { isHost: true, visibility, name: name.trim(), maxPlayers: players, stackingEnabled: stacking },
     });
   };
 
@@ -45,6 +51,7 @@ export function UnoLobby() {
     e.preventDefault();
     if (!requireName()) return;
     if (!joinCode.trim()) return;
+    savePseudo(name);
     navigate(`/uno/${joinCode.trim().toUpperCase()}`, {
       state: { isHost: false, name: name.trim() },
     });
@@ -148,6 +155,7 @@ export function UnoLobby() {
             Un code de room sera généré. Partage-le à tes potes : il faut être <strong>{players}</strong> pour lancer
             la partie.
           </p>
+          <SessionVisibility value={visibility} onChange={setVisibility} />
           <button type="submit" className="btn btn-primary">
             Créer la room
           </button>
@@ -167,6 +175,7 @@ export function UnoLobby() {
           <button type="submit" className="btn btn-outline" disabled={!joinCode.trim()}>
             Rejoindre
           </button>
+          <SessionsLink />
         </form>
       </div>
     </div>

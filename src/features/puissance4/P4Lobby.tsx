@@ -4,6 +4,9 @@ import { BookOpen, Check } from 'lucide-react';
 import { MODES, MODE_ORDER, discColor } from './engine/modes';
 import { P4RulesModal } from './components/P4RulesModal';
 import type { P4Mode } from './engine/types';
+import { usePlayerName, savePseudo } from '../rooms/playerName';
+import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
+import { SessionsLink } from '../rooms/SessionsLink';
 
 function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
@@ -14,7 +17,9 @@ function randomRoomCode(): string {
 
 export function P4Lobby() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  // Pré-rempli : le pseudo du compte, ou le dernier tapé sur ce navigateur.
+  const [name, setName] = usePlayerName();
+  const [visibility, setVisibility] = useState<Visibility>('public');
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<P4Mode>('duel');
   const [nameError, setNameError] = useState<string | null>(null);
@@ -29,8 +34,9 @@ export function P4Lobby() {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     if (!requireName()) return;
+    savePseudo(name);
     navigate(`/puissance4/${randomRoomCode()}`, {
-      state: { isHost: true, name: name.trim(), mode },
+      state: { isHost: true, visibility, name: name.trim(), mode },
     });
   };
 
@@ -38,6 +44,7 @@ export function P4Lobby() {
     e.preventDefault();
     if (!requireName()) return;
     if (!joinCode.trim()) return;
+    savePseudo(name);
     navigate(`/puissance4/${joinCode.trim().toUpperCase()}`, {
       state: { isHost: false, name: name.trim() },
     });
@@ -119,6 +126,7 @@ export function P4Lobby() {
             Un code de room sera généré. Partage-le à tes potes : il faut être{' '}
             <strong>{MODES[mode].players}</strong> pour lancer ce mode.
           </p>
+          <SessionVisibility value={visibility} onChange={setVisibility} />
           <button type="submit" className="btn btn-primary">
             Créer la room
           </button>
@@ -138,6 +146,7 @@ export function P4Lobby() {
           <button type="submit" className="btn btn-outline" disabled={!joinCode.trim()}>
             Rejoindre
           </button>
+          <SessionsLink />
         </form>
       </div>
     </div>

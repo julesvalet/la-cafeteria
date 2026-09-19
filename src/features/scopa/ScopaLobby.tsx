@@ -2,6 +2,9 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen } from 'lucide-react';
 import { RulesModal } from './components/RulesModal';
+import { usePlayerName, savePseudo } from '../rooms/playerName';
+import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
+import { SessionsLink } from '../rooms/SessionsLink';
 
 function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
@@ -12,7 +15,9 @@ function randomRoomCode(): string {
 
 export function ScopaLobby() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  // Pré-rempli : le pseudo du compte, ou le dernier tapé sur ce navigateur.
+  const [name, setName] = usePlayerName();
+  const [visibility, setVisibility] = useState<Visibility>('public');
   const [joinCode, setJoinCode] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -24,7 +29,8 @@ export function ScopaLobby() {
       return;
     }
     const code = randomRoomCode();
-    navigate(`/scopa/${code}`, { state: { isHost: true, name: name.trim() } });
+    savePseudo(name);
+    navigate(`/scopa/${code}`, { state: { isHost: true, visibility, name: name.trim() } });
   };
 
   const handleJoin = (e: FormEvent) => {
@@ -34,6 +40,7 @@ export function ScopaLobby() {
       return;
     }
     if (!joinCode.trim()) return;
+    savePseudo(name);
     navigate(`/scopa/${joinCode.trim().toUpperCase()}`, { state: { isHost: false, name: name.trim() } });
   };
 
@@ -68,6 +75,7 @@ export function ScopaLobby() {
         <form className="scopa-lobby-card" onSubmit={handleCreate}>
           <h2>Créer une partie</h2>
           <p>Un nouveau code de room sera généré. Partage-le à tes potes pour qu'ils te rejoignent.</p>
+          <SessionVisibility value={visibility} onChange={setVisibility} />
           <button type="submit" className="btn btn-primary">
             Créer la room
           </button>
@@ -87,6 +95,7 @@ export function ScopaLobby() {
           <button type="submit" className="btn btn-outline" disabled={!joinCode.trim()}>
             Rejoindre
           </button>
+          <SessionsLink />
         </form>
       </div>
     </div>

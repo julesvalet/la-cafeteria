@@ -3,7 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, Bot, Sparkles, Users, Trophy } from 'lucide-react';
 import { FlipCard } from './components/FlipCard';
 import { RulesModal } from './components/RulesModal';
-import { readPreference, readStats, savePreference } from './utils/storage';
+import { readStats } from './utils/storage';
+import { usePlayerName, savePseudo } from '../rooms/playerName';
+import { SessionVisibility, type Visibility } from '../rooms/SessionVisibility';
+import { SessionsLink } from '../rooms/SessionsLink';
 import type { Difficulty, GameMode, Ruleset } from './engine/types';
 import './flip7.css';
 
@@ -14,7 +17,8 @@ function roomCode() {
 export function Flip7Lobby() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<GameMode>('bots');
-  const [name, setName] = useState(() => readPreference('name', ''));
+  const [name, setName] = usePlayerName();
+  const [visibility, setVisibility] = useState<Visibility>('public');
   const [count, setCount] = useState(2);
   const [difficulty, setDifficulty] = useState<Difficulty>('medium');
   const [ruleset, setRuleset] = useState<Ruleset>('official');
@@ -23,9 +27,9 @@ export function Flip7Lobby() {
   const stats = readStats();
   const start = (e: FormEvent, join = false) => {
     e.preventDefault();
-    const playerName = name.trim() || 'Joueur'; savePreference('name', playerName);
+    const playerName = name.trim() || 'Joueur'; savePseudo(playerName);
     const nextCode = join ? code.trim().toUpperCase() : roomCode();
-    navigate(`/flip7/${nextCode}`, { state: { name: playerName, isHost: !join, mode: join ? 'online' : mode,
+    navigate(`/flip7/${nextCode}`, { state: { name: playerName, isHost: !join, visibility, mode: join ? 'online' : mode,
       maxPlayers: mode === 'solo' ? 1 : count, difficulty, ruleset } });
   };
   return <div className="f7-page f7-lobby">
@@ -66,10 +70,11 @@ export function Flip7Lobby() {
               </select></>}
             <label className="f7-label" htmlFor="f7-ruleset">Les règles de la table</label>
             <select id="f7-ruleset" value={ruleset} onChange={e => setRuleset(e.target.value as Ruleset)}><option value="official">Flip 7 · 94 cartes, de 0 à 12</option><option value="cafeteria">Variante Cafétéria · 62 cartes, de 0 à 7</option></select>
+            {mode === 'online' && <SessionVisibility value={visibility} onChange={setVisibility} />}
             <p className="f7-setup-note">{mode === 'solo' ? 'Pas d’adversaire, pas de limite. Bats ton record de manche.' : mode === 'bots' ? 'La table est prête. Tes adversaires aussi.' : 'Crée la table, puis partage son code à tes amis.'}</p>
             <button className="f7-primary f7-start" type="submit">{mode === 'online' ? 'Créer une table' : 'Entrer dans la partie'}<ArrowRight size={19} /></button>
           </form>
-          {mode === 'online' && <form className="f7-join" onSubmit={e => start(e, true)}><label htmlFor="f7-code">Déjà une invitation ?</label><div><input id="f7-code" placeholder="CODE" maxLength={6} pattern="[A-Za-z2-9]{6}" required value={code} onChange={e => setCode(e.target.value.toUpperCase())} /><button className="f7-secondary" type="submit" disabled={code.trim().length !== 6}>Rejoindre</button></div></form>}
+          {mode === 'online' && <form className="f7-join" onSubmit={e => start(e, true)}><label htmlFor="f7-code">Déjà une invitation ?</label><div><input id="f7-code" placeholder="CODE" maxLength={6} pattern="[A-Za-z2-9]{6}" required value={code} onChange={e => setCode(e.target.value.toUpperCase())} /><button className="f7-secondary" type="submit" disabled={code.trim().length !== 6}>Rejoindre</button></div><SessionsLink /></form>}
         </section>
       </div>
       <footer className="f7-lobby-footer"><span><Trophy size={17} /> Ton carnet de jeu</span><span><b>{stats.rounds}</b> manches</span><span><b>{stats.best}</b> record</span><span><b>{stats.flip7s}</b> Flip 7</span></footer>

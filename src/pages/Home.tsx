@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react';
 import { FeatureCard } from '../components/FeatureCard';
 import { PLANETS } from '../components/planets/planets.data';
 import { hasWebGL } from '../components/planets/useEnvironment';
+import { HomeSessionsChip } from '../features/social/components/HomeSessionsChip';
 
 // Three.js is the heaviest thing on the site and only the home page needs it.
 // Splitting it out keeps a deep link straight into a game room lightweight.
@@ -43,11 +44,21 @@ export function Home() {
     hasWebGL() ? null : 'unsupported',
   );
 
-  if (fallback) return <FeatureGrid reason={fallback} />;
+  if (fallback) {
+    return (
+      <>
+        <FeatureGrid reason={fallback} />
+        <HomeSessionsChip />
+      </>
+    );
+  }
 
   return (
-    <Suspense fallback={<div className="planet-hub" aria-busy="true"><div className="planet-hub-sky" /></div>}>
-      <PlanetHub onContextLost={() => setFallback('lost')} />
-    </Suspense>
+    <>
+      <Suspense fallback={<div className="planet-hub" aria-busy="true"><div className="planet-hub-sky" /></div>}>
+        <PlanetHub onContextLost={() => setFallback('lost')} />
+      </Suspense>
+      <HomeSessionsChip />
+    </>
   );
 }

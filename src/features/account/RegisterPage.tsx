@@ -28,7 +28,7 @@ export function RegisterPage() {
   const [busy, setBusy] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
-  if (status === 'signed-in') return <Navigate to="/compte" replace />;
+  if (status === 'signed-in') return <Navigate to="/tableau-de-bord" replace />;
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -53,7 +53,7 @@ export function RegisterPage() {
         setBusy(false);
         return;
       }
-      navigate('/compte', { replace: true });
+      navigate('/tableau-de-bord', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Inscription impossible.');
       setBusy(false);

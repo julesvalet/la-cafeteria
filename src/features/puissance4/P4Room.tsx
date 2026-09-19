@@ -12,14 +12,21 @@ import { VictoryOverlay } from './components/VictoryOverlay';
 import { useRecordGame } from '../account/useRecordGame';
 import { p4Outcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
+import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
+import { ObserverBar } from '../rooms/ObserverBar';
+import { useRoomSession } from '../rooms/useRoomSession';
+import { vacatedSeats } from '../rooms/spectators';
 import type { Impact } from './components/ImpactFx';
 import type { FxShot } from './components/PowerFx';
 import type { P4Mode } from './engine/types';
+import { useRoomIdentity } from '../rooms/playerName';
 
 interface LocationState {
   isHost?: boolean;
   name?: string;
   mode?: P4Mode;
+  /** Choisi à la création : une table publique est annoncée aux amis. */
+  visibility?: 'public' | 'private';
 }
 
 /** Roughly how long a disc takes to fall, so the dust lands with it. */
@@ -30,12 +37,21 @@ export function P4Room() {
   const location = useLocation();
   const navState = (location.state as LocationState | null) ?? null;
 
-  const [name, setName] = useState(navState?.name ?? '');
-  const [joined, setJoined] = useState(Boolean(navState?.name));
+  // Connecté, on entre sous le pseudo du compte sans formulaire.
+  const identity = useRoomIdentity(navState?.name);
+  const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
   const mode = navState?.mode ?? 'duel';
 
-  if (!joined) {
+  if (identity.pending) {
+    return (
+      <div className="container p4-lobby">
+        <p role="status">Connexion à ton compte…</p>
+      </div>
+    );
+  }
+
+  if (!identity.joined) {
     return (
       <div className="container p4-lobby">
         <h1>Rejoindre la room {code}</h1>
@@ -43,7 +59,7 @@ export function P4Room() {
           className="p4-lobby-card"
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
-            if (name.trim()) setJoined(true);
+            identity.confirm();
           }}
         >
           <label htmlFor="p4-pseudo2">Ton pseudo</label>
@@ -51,12 +67,12 @@ export function P4Room() {
             id="p4-pseudo2"
             type="text"
             maxLength={18}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={identity.typed}
+            onChange={(e) => identity.setTyped(e.target.value)}
             placeholder="ex: Jules"
             autoFocus
           />
-          <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
+          <button type="submit" className="btn btn-primary" disabled={!identity.typed.trim()}>
             Rejoindre la partie
           </button>
         </form>
@@ -67,7 +83,7 @@ export function P4Room() {
     );
   }
 
-  return <P4GameView code={code} name={name} isHost={isHost} mode={mode} />;
+  return <P4GameView code={code} name={identity.name} isHost={isHost} mode={mode} isPublic={isPublic} />;
 }
 
 function P4GameView({
@@ -75,13 +91,15 @@ function P4GameView({
   name,
   isHost,
   mode,
+  isPublic,
 }: {
   code: string;
   name: string;
   isHost: boolean;
   mode: P4Mode;
+  isPublic: boolean;
 }) {
-  const { state, selfId, status, error, clearError, sendAction } = useP4Room(code, name, isHost, mode);
+  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useP4Room(code, name, isHost, mode);
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [impact, setImpact] = useState<Impact | null>(null);
@@ -109,6 +127,21 @@ function P4GameView({
   );
   const me = seat >= 0 ? state?.players[seat] : undefined;
   const myTurn = state?.phase === 'playing' && state.turn === seat;
+  // Connected and served the board, but seatless: watching. The board already
+  // renders without a seat, and gates every click on `myTurn`.
+  const isSpectator = Boolean(state && selfId && seat < 0 && spectators.some((s) => s.id === selfId));
+
+  useRoomSession({
+    game: 'puissance4',
+    code: code.toUpperCase(),
+    isHost,
+    isPublic,
+    role: !state ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
+    status: state?.phase === 'lobby' ? 'waiting' : 'playing',
+    players: state?.players.filter((p) => p.connected).length ?? 0,
+    maxPlayers: MODES[state?.mode ?? mode].players,
+    spectators: spectators.length,
+  });
 
   // Null until the board resolves. A draw is recorded too — nobody scores, but
   // the game still counts towards a player's total.
@@ -290,6 +323,7 @@ function P4GameView({
                 </>
               )}
             </button>
+            <InviteFriendsButton game="puissance4" code={code} className="btn btn-outline p4-chip-btn" />
             <button type="button" className="btn btn-outline p4-chip-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -299,6 +333,15 @@ function P4GameView({
           <LogOut size={14} /> Quitter
         </Link>
       </div>
+
+      <ObserverBar
+        spectators={spectators}
+        selfId={selfId}
+        isSpectator={isSpectator}
+        vacated={vacatedSeats(state.players)}
+        onSeat={requestSeat}
+        exitTo="/puissance4"
+      />
 
       {state.phase === 'lobby' && (
         <div className="p4-lobby-card p4-waiting">

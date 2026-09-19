@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { lazy, Suspense, useState, type FormEvent } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { Check, Flame, LogOut, Pencil, Trophy, X } from 'lucide-react';
+import { Camera, Check, Flame, LogOut, Pencil, Trophy, X } from 'lucide-react';
 import { useAuth } from './useAuth';
 import { useProfileStats } from './useProfileStats';
 import { NeonButton } from './components/NeonButton';
@@ -8,6 +8,11 @@ import { NeonInput } from './components/NeonInput';
 import { AccBanner } from './components/AccBanner';
 import { GAME_LABELS } from './types';
 import { validateBio, validateUsername } from './validation';
+import { SocialNav } from '../social/components/SocialNav';
+import { UserAvatar } from '../social/components/UserAvatar';
+const AvatarUpload = lazy(() => import('./components/AvatarUpload').then((m) => ({ default: m.AvatarUpload })));
+import { GameStats } from '../social/components/GameStats';
+import { RankStrip } from '../social/components/RankStrip';
 
 const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 const SHORT_FMT = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -23,6 +28,8 @@ export function ProfilePage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<{ username?: string | null; bio?: string | null }>({});
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [photoSaved, setPhotoSaved] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -71,10 +78,22 @@ export function ProfilePage() {
   return (
     <div className="container acc-scope">
       <div className="acc-page acc-page-wide">
+        <SocialNav />
         <section className="acc-card acc-card-wide">
           <header className="acc-profile-head">
-            <div className="acc-avatar" aria-hidden>
-              {(profile?.username ?? '?').charAt(0).toUpperCase()}
+            <div className="acc-avatar-col">
+              <button
+                type="button"
+                className="acc-avatar acc-avatar-btn"
+                onClick={() => setUploading(true)}
+                aria-label="Changer ma photo de profil"
+              >
+                <UserAvatar username={profile?.username ?? '?'} src={profile?.avatar} size={68} />
+                <Camera size={16} aria-hidden className="acc-avatar-cam" />
+              </button>
+              <button type="button" className="acc-avatar-change" onClick={() => setUploading(true)}>
+                Changer photo
+              </button>
             </div>
             <div className="acc-profile-id">
               <h1 className="acc-title">{profile?.username ?? 'Profil'}</h1>
@@ -100,6 +119,21 @@ export function ProfilePage() {
               </NeonButton>
             </div>
           </header>
+
+          {photoSaved && <AccBanner tone="success">Photo mise à jour.</AccBanner>}
+
+          {uploading && (
+            <Suspense fallback={null}>
+              <AvatarUpload
+                open
+                onClose={() => setUploading(false)}
+                onDone={() => {
+                  setPhotoSaved(true);
+                  window.setTimeout(() => setPhotoSaved(false), 3500);
+                }}
+              />
+            </Suspense>
+          )}
 
           {!profile && (
             <AccBanner tone="error">
@@ -177,7 +211,16 @@ export function ProfilePage() {
               <dd>{stats?.favorite_game ? GAME_LABELS[stats.favorite_game] : '—'}</dd>
             </div>
           </dl>
+
+          {user && (
+            <>
+              <h3 className="acc-section-title soc-subsection">Au classement</h3>
+              <RankStrip userId={user.id} />
+            </>
+          )}
         </section>
+
+        {user && <GameStats userId={user.id} />}
 
         <section className="acc-card acc-card-wide">
           <h2 className="acc-section-title">Dernières parties</h2>

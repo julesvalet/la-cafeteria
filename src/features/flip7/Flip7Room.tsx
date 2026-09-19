@@ -14,22 +14,41 @@ import { numbers } from './engine/rules';
 import { useRecordGame } from '../account/useRecordGame';
 import { flip7Outcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
+import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
+import { ObserverBar } from '../rooms/ObserverBar';
+import { useRoomIdentity } from '../rooms/playerName';
+import { useRoomSession } from '../rooms/useRoomSession';
+import { vacatedSeats } from '../rooms/spectators';
 import type { PlayerAction, PublicState } from './engine/types';
 import './flip7.css';
 
 export function Flip7Room() {
   const { code = '' } = useParams();
-  const nav = useLocation().state as Partial<SessionOptions> | null;
-  const [name, setName] = useState(nav?.name ?? readPreference('name', ''));
-  const [joined, setJoined] = useState(Boolean(nav?.name));
+  const nav = useLocation().state as (Partial<SessionOptions> & { visibility?: 'public' | 'private' }) | null;
+  // Connecté, on s'assoit sous le pseudo du compte, sans formulaire.
+  const identity = useRoomIdentity(nav?.name);
   if (!/^[A-Z2-9]{6}$/.test(code)) return <div className="f7-page f7-connection"><h1>Code de table invalide</h1><Link to="/flip7" className="f7-primary">Retour au salon</Link></div>;
-  if (!joined) return <div className="f7-page f7-connection"><p className="f7-eyebrow">UNE PLACE T’ATTEND</p><h1>Table {code}</h1><form className="f7-setup" onSubmit={e => { e.preventDefault(); savePreference('name', name.trim() || 'Joueur'); setJoined(true); }}><label htmlFor="f7-guest" className="f7-label">Ton pseudo</label><input id="f7-guest" value={name} maxLength={18} placeholder="Joueur" onChange={e => setName(e.target.value)} /><button className="f7-primary" type="submit">Rejoindre la table</button></form><Link to="/flip7">← Retour au salon</Link></div>;
-  return <GameSession key={code} code={code} name={name.trim() || 'Joueur'} isHost={Boolean(nav?.isHost)}
+  if (identity.pending) return <div className="f7-page f7-connection"><p role="status">Connexion à ton compte…</p></div>;
+  if (!identity.joined) return <div className="f7-page f7-connection"><p className="f7-eyebrow">UNE PLACE T’ATTEND</p><h1>Table {code}</h1><form className="f7-setup" onSubmit={e => { e.preventDefault(); identity.confirm(); }}><label htmlFor="f7-guest" className="f7-label">Ton pseudo</label><input id="f7-guest" value={identity.typed} maxLength={18} placeholder="Joueur" onChange={e => identity.setTyped(e.target.value)} /><button className="f7-primary" type="submit">Rejoindre la table</button></form><Link to="/flip7">← Retour au salon</Link></div>;
+  return <GameSession key={code} code={code} name={identity.name.trim() || 'Joueur'} isHost={Boolean(nav?.isHost)} isPublic={nav?.visibility === 'public'}
     mode={nav?.mode ?? 'online'} maxPlayers={nav?.maxPlayers ?? 2} difficulty={nav?.difficulty ?? 'medium'} ruleset={nav?.ruleset ?? 'official'} />;
 }
 
-function GameSession(options: SessionOptions) {
-  const { state, selfId, status, error, clearError, sendAction } = useFlip7Game(options);
+function GameSession({ isPublic, ...options }: SessionOptions & { isPublic: boolean }) {
+  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useFlip7Game(options);
+  const online = options.mode === 'online';
+  const seated = Boolean(state?.players.some(p => p.id === selfId));
+  // Arrivé en cours de partie ou à une table pleine : il regarde.
+  const isSpectator = online && Boolean(state && selfId) && !seated && spectators.some(s => s.id === selfId);
+  useRoomSession({
+    game: 'flip7', code: options.code, isHost: options.isHost, isPublic,
+    // Le solo et les bots ne se partagent pas.
+    role: !online || !state ? null : isSpectator ? 'spectator' : seated ? 'player' : null,
+    status: state?.phase === 'lobby' ? 'waiting' : 'playing',
+    players: state?.players.filter(p => p.connected).length ?? 0,
+    maxPlayers: state?.options.maxPlayers ?? options.maxPlayers,
+    spectators: spectators.length,
+  });
   // Vaut `null` hors partie en ligne terminée — le solo et les parties contre
   // des bots ne comptent pas. Pas de useMemo : le hook se repère à la clé de
   // session, une chaîne, et non à l'identité de l'objet.
@@ -111,10 +130,11 @@ function GameSession(options: SessionOptions) {
         </div>
       </header>
       {copyError && <p className="f7-notice">Copie ce code pour inviter tes amis : <strong>{options.code}</strong></p>}
+      <ObserverBar spectators={spectators} selfId={selfId} isSpectator={isSpectator} vacated={vacatedSeats(state.players)} onSeat={requestSeat} exitTo="/flip7" variant="casino" />
       {error && <div className="f7-notice" role="alert">{error}<button onClick={clearError} aria-label="Fermer le message">×</button></div>}
       <div className={`f7-room-layout ${options.mode === 'online' ? 'has-chat' : ''}`}>
-        {state.phase === 'lobby' ? <section className="f7-waiting"><div className="f7-waiting-cards"><FlipCard back /><FlipCard card={{ id: 'wait7', kind: 'number', value: 7 }} /></div><p className="f7-eyebrow">LES AMIS FONT LES BONNES TABLES</p><h1>On attend la bande.</h1><p>Partage le code, les autres n’ont plus qu’à s’installer.</p><button className="f7-invite-code" onClick={copy}>{options.code} {copied ? <Check size={21} /> : <Copy size={21} />}</button><p>{state.players.length} / {state.options.maxPlayers} joueurs</p><div className="f7-waiting-players">{state.players.map(p => <span key={p.id}><i className="f7-live-dot" />{p.name}{p.id === state.hostId ? ' · hôte' : ''}</span>)}</div>{selfId === state.hostId ? <button className="f7-primary" disabled={state.players.length !== state.options.maxPlayers} onClick={() => act({ type: 'START' })}>Lancer la partie →</button> : <p>L’hôte lancera la partie quand tout le monde sera là.</p>}</section>
-          : view.players.some(p => p.id === selfId) && <GameBoard state={view} selfId={selfId} busy={busy} sendAction={act} footer={<GameRecordBadge state={record} />} />}
+        {state.phase === 'lobby' ? <section className="f7-waiting"><div className="f7-waiting-cards"><FlipCard back /><FlipCard card={{ id: 'wait7', kind: 'number', value: 7 }} /></div><p className="f7-eyebrow">LES AMIS FONT LES BONNES TABLES</p><h1>On attend la bande.</h1><p>Partage le code, les autres n’ont plus qu’à s’installer.</p><button className="f7-invite-code" onClick={copy}>{options.code} {copied ? <Check size={21} /> : <Copy size={21} />}</button><InviteFriendsButton game="flip7" code={options.code} className="f7-secondary" /><p>{state.players.length} / {state.options.maxPlayers} joueurs</p><div className="f7-waiting-players">{state.players.map(p => <span key={p.id}><i className="f7-live-dot" />{p.name}{p.id === state.hostId ? ' · hôte' : ''}</span>)}</div>{selfId === state.hostId ? <button className="f7-primary" disabled={state.players.length !== state.options.maxPlayers} onClick={() => act({ type: 'START' })}>Lancer la partie →</button> : <p>L’hôte lancera la partie quand tout le monde sera là.</p>}</section>
+          : (seated || isSpectator) && <div className="obs-scope" inert={isSpectator || undefined}><GameBoard state={view} selfId={selfId} busy={busy} sendAction={act} footer={<GameRecordBadge state={record} />} /></div>}
         {options.mode === 'online' && <ChatPanel messages={state.chat} onSend={text => act({ type: 'CHAT', text })} selfId={selfId} />}
       </div>
       <footer className="f7-room-footer"><span>♠ UNE CARTE. UN CHOIX. UN FRISSON.</span><span>La Cafétéria · Flip 7</span></footer>

@@ -4,6 +4,7 @@ import { accountsEnabled, getSupabase, authRedirectUrl } from '../../lib/supabas
 import { AuthContext, type AuthValue, type SignUpResult } from './authContext';
 import { DEFAULT_PREFERENCES, type Profile } from './types';
 import { translateAuthError } from './validation';
+import { clearSavedPseudo, savePseudo } from '../rooms/playerName';
 
 /** Remonte l'erreur Supabase en français, sans perdre la cause d'origine. */
 function fail(message: string): never {
@@ -157,7 +158,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await (await getSupabase()).auth.signOut();
     if (error) fail(error.message);
     setProfile(null);
+    // Un navigateur partagé ne doit pas proposer le pseudo du compte qui vient
+    // de partir au prochain qui s'assoit.
+    clearSavedPseudo();
   }, []);
+
+  // Le pseudo du compte devient celui des salons de jeu, y compris hors
+  // connexion plus tard sur ce navigateur (jusqu'à la déconnexion).
+  useEffect(() => {
+    if (profile?.username) savePseudo(profile.username);
+  }, [profile?.username]);
 
   const refreshProfile = useCallback(async () => {
     if (!userId) return;

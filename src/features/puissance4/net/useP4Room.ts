@@ -3,6 +3,15 @@ import Peer, { type DataConnection } from 'peerjs';
 import { MODES, ORIGINAL_MODES } from '../engine/modes';
 import { applyAction, createInitialState } from '../engine/rules';
 import type { P4Action, P4Mode, P4State } from '../engine/types';
+import {
+  createSpectatorDesk,
+  isSeatMessage,
+  isSpectatorsMessage,
+  withSeatsFilled,
+  type SeatMessage,
+  type Spectator,
+  type SpectatorsMessage,
+} from '../../rooms/spectators';
 
 export type P4Variant = 'powers' | 'original';
 
@@ -19,7 +28,9 @@ const PEER_PREFIXES: Record<P4Variant, string> = {
 type WireMessage =
   | { type: 'ACTION'; action: P4Action }
   | { type: 'STATE'; state: P4State }
-  | { type: 'ERROR'; message: string };
+  | { type: 'ERROR'; message: string }
+  | SpectatorsMessage
+  | SeatMessage;
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'error';
 
@@ -46,6 +57,8 @@ interface UseP4RoomResult {
   error: string | null;
   clearError: () => void;
   sendAction: (action: P4Action) => void;
+  spectators: Spectator[];
+  requestSeat: (want: boolean) => void;
 }
 
 /**
@@ -64,11 +77,13 @@ export function useP4Room(
   const [selfId, setSelfId] = useState<string | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [error, setError] = useState<string | null>(null);
+  const [spectators, setSpectators] = useState<Spectator[]>([]);
 
   const peerRef = useRef<Peer | null>(null);
   const hostStateRef = useRef<P4State | null>(null);
   const connsRef = useRef<Map<string, DataConnection>>(new Map());
   const hostConnRef = useRef<DataConnection | null>(null);
+  const hostApplyRef = useRef<(action: P4Action) => string | undefined>(() => undefined);
 
   // Read at connection time only, so retyping a name cannot restart the peer.
   const nameRef = useRef(playerName);
@@ -103,6 +118,24 @@ export function useP4Room(
         broadcast(next);
       };
 
+      const desk = createSpectatorDesk((list) => {
+        setSpectators(list);
+        for (const conn of conns.values()) {
+          if (conn.open) conn.send({ type: 'SPECTATORS', spectators: list } satisfies WireMessage);
+        }
+      });
+
+      // A rematch is the moment to hand vacated seats to waiting spectators.
+      hostApplyRef.current = (action) => {
+        const current = hostStateRef.current;
+        if (!current) return undefined;
+        const run = (s: P4State) => applyAction(s, action, modes, powersEnabled);
+        const { state: next, error: err } =
+          action.type === 'REMATCH' || action.type === 'START' ? withSeatsFilled(current, desk, run) : run(current);
+        commit(next);
+        return err;
+      };
+
       peer.on('open', (id) => {
         if (cancelled) return;
         setSelfId(id);
@@ -126,17 +159,39 @@ export function useP4Room(
         });
 
         conn.on('data', (data) => {
+          if (!hostStateRef.current) return;
+          if (isSeatMessage(data)) {
+            desk.setWant(conn.peer, data.want);
+            return;
+          }
           const msg = data as WireMessage;
-          if (msg.type !== 'ACTION' || !hostStateRef.current) return;
-          // Never trust a client's claim about who it is.
-          const action = { ...msg.action, playerId: conn.peer } as P4Action;
-          const { state: next, error: err } = applyAction(hostStateRef.current, action, modes, powersEnabled);
-          commit(next);
+          if (msg.type !== 'ACTION') return;
+
+          if (msg.action.type === 'JOIN') {
+            const joined = applyAction(hostStateRef.current, { ...msg.action, playerId: conn.peer }, modes, powersEnabled);
+            if (joined.state.players.some((p) => p.id === conn.peer)) {
+              commit(joined.state);
+            } else if (desk.add(conn.peer, msg.action.name)) {
+              // Game under way or table full: they watch.
+              conn.send({ type: 'SPECTATORS', spectators: desk.list() } satisfies WireMessage);
+            } else {
+              conn.send({ type: 'ERROR', message: 'Table complète, même pour regarder.' } satisfies WireMessage);
+            }
+            return;
+          }
+
+          // Spectators do not play, and nobody plays for somebody else.
+          if (desk.has(conn.peer)) return;
+          const err = hostApplyRef.current({ ...msg.action, playerId: conn.peer } as P4Action);
           if (err && conn.open) conn.send({ type: 'ERROR', message: err } satisfies WireMessage);
         });
 
         conn.on('close', () => {
           conns.delete(conn.peer);
+          if (desk.has(conn.peer)) {
+            desk.remove(conn.peer);
+            return;
+          }
           if (!hostStateRef.current) return;
           commit(applyAction(hostStateRef.current, { type: 'LEAVE', playerId: conn.peer }, modes, powersEnabled).state);
         });
@@ -169,6 +224,10 @@ export function useP4Room(
           setStatus('connected');
         });
         conn.on('data', (data) => {
+          if (isSpectatorsMessage(data)) {
+            setSpectators(data.spectators);
+            return;
+          }
           const msg = data as WireMessage;
           if (msg.type === 'STATE') setState(msg.state);
           if (msg.type === 'ERROR') setError(msg.message);
@@ -196,28 +255,27 @@ export function useP4Room(
       cancelled = true;
       peerRef.current?.destroy();
       conns.clear();
+      hostApplyRef.current = () => undefined;
     };
   }, [roomCode, isHost, variant, modes, powersEnabled, peerPrefix]);
 
   const sendAction = useCallback(
     (action: P4Action) => {
       if (isHost) {
-        if (!hostStateRef.current) return;
-        const { state: next, error: err } = applyAction(hostStateRef.current, action, modes, powersEnabled);
-        hostStateRef.current = next;
-        setState(maskState(next, peerPrefix + roomCode.trim().toUpperCase()));
-        for (const [peerId, conn] of connsRef.current) {
-          if (conn.open) conn.send({ type: 'STATE', state: maskState(next, peerId) } satisfies WireMessage);
-        }
+        const err = hostApplyRef.current(action);
         if (err) setError(err);
       } else {
         hostConnRef.current?.send({ type: 'ACTION', action } satisfies WireMessage);
       }
     },
-    [isHost, roomCode, modes, powersEnabled, peerPrefix],
+    [isHost],
   );
+
+  const requestSeat = useCallback((want: boolean) => {
+    hostConnRef.current?.send({ type: 'SEAT', want } satisfies WireMessage);
+  }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
-  return { state, selfId, isHost, status, error, clearError, sendAction };
+  return { state, selfId, isHost, status, error, clearError, sendAction, spectators, requestSeat };
 }

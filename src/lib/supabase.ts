@@ -30,6 +30,13 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
  */
 export const accountsEnabled = Boolean(url && key);
 
+/**
+ * Adresse et clé publique, pour les rares appels faits sans la bibliothèque —
+ * l'envoi de la photo de profil, qui a besoin de suivre sa progression, ce que
+ * `storage.upload()` ne permet pas.
+ */
+export const supabaseConfig = { url: url ?? '', key: key ?? '' };
+
 /** Le client, une fois construit. Mémorisé : un seul par onglet. */
 let clientPromise: Promise<SupabaseClient> | null = null;
 

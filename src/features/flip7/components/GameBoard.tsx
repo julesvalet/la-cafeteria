@@ -26,8 +26,10 @@ function AnimatedScore({ value }: { value: number }) {
 export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: PublicState; selfId: string; busy: boolean; sendAction: (a: PlayerAction) => void; footer?: ReactNode }) {
   const [selected, setSelected] = useState<string | null>(null);
   const turnPlayer = state.players[state.turn];
-  const me = state.players.find(p => p.id === selfId)!;
-  const viewed = state.players.find(p => p.id === selected) ?? (state.phase === 'playing' ? state.players[state.pending?.by ?? state.turn] : me);
+  // Absent for an observer, who has no seat: the board then shows whoever is
+  // playing, or the first seat between rounds.
+  const me = state.players.find(p => p.id === selfId);
+  const viewed = state.players.find(p => p.id === selected) ?? (state.phase === 'playing' ? state.players[state.pending?.by ?? state.turn] : me ?? state.players[0]);
   const target = state.pending?.by === state.players.findIndex(p => p.id === selfId);
   const myTurn = turnPlayer?.id === selfId && state.phase === 'playing' && !state.automatic && !state.pending;
   const actionable = myTurn && !busy;
@@ -76,7 +78,7 @@ export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: 
           <button className="f7-no" disabled={!actionable || !canStay} onClick={() => sendAction({ type: 'STAY' })}><b>NON</b><span>J’assure mes points</span></button>
           <span className="f7-coin coin-right" aria-hidden="true">✦</span>
         </div>
-        <p className="f7-decision-hint">{myTurn ? `Un doublon et les points de cette manche s’envolent.${hasChance(me) ? ' Ta seconde chance te protège.' : ''}` : 'Garde un œil sur les cartes. Ton tour arrive.'}</p>
+        <p className="f7-decision-hint">{myTurn ? `Un doublon et les points de cette manche s’envolent.${me && hasChance(me) ? ' Ta seconde chance te protège.' : ''}` : 'Garde un œil sur les cartes. Ton tour arrive.'}</p>
       </>}
     </div>}
     {ended && <section className="f7-results"><Trophy size={30} /><p className="f7-eyebrow">{state.phase === 'finished' ? 'LA PARTIE EST TERMINÉE' : `FIN DE LA MANCHE ${state.round}`}</p><h2>{state.winnerId ? `${state.players.find(p => p.id === state.winnerId)?.name} remporte la partie !` : state.lastEvent.kind === 'flip7' ? 'Sept cartes. Un joli coup.' : 'Les jeux sont faits.'}</h2>

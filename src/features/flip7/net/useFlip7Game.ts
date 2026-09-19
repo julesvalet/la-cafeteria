@@ -5,6 +5,13 @@ import { applyAction, botAction, createGame, leave, publicState, tick } from '..
 import type { GameOptions, GameState, PlayerAction, PublicState } from '../engine/types';
 import { parseEnvelope } from './protocol';
 import { REVEAL_MS } from '../utils/animation';
+import {
+  createSpectatorDesk,
+  isSeatMessage,
+  isSpectatorsMessage,
+  withSeatsFilled,
+  type Spectator,
+} from '../../rooms/spectators';
 
 export interface SessionOptions extends GameOptions { code: string; name: string; isHost: boolean }
 const PREFIX = 'la-cafeteria-flip7-';
@@ -14,7 +21,9 @@ export function useFlip7Game(options: SessionOptions) {
   const [selfId, setSelfId] = useState('');
   const [status, setStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
   const [error, setError] = useState<string | null>(null);
+  const [spectators, setSpectators] = useState<Spectator[]>([]);
   const command = useRef<(a: PlayerAction) => void>(() => {});
+  const seatRequest = useRef<(want: boolean) => void>(() => {});
   const initial = useRef(options);
 
   useEffect(() => {
@@ -31,9 +40,16 @@ export function useFlip7Game(options: SessionOptions) {
     let timeout: ReturnType<typeof setTimeout> | undefined;
     let request = 0;
     const conns = new Map<string, DataConnection>();
+    // Observers: connected, served the same public view, but seatless.
+    const watchers = new Map<string, DataConnection>();
     const requests = new Map<string, Set<string>>();
     const chatTimes = new Map<string, number>();
 
+    const desk = createSpectatorDesk(list => {
+      if (cancelled) return;
+      setSpectators(list);
+      for (const conn of [...conns.values(), ...watchers.values()]) send(conn, { type: 'SPECTATORS', spectators: list });
+    });
     const fail = (message: string, fatal = false) => { if (!cancelled) { setError(message); if (fatal) setStatus('error'); } };
     const send = (conn: DataConnection, data: unknown) => { if (conn.open) { try { conn.send(data); } catch { conn.close(); } } };
     const commit = (next: GameState) => {
@@ -45,6 +61,11 @@ export function useFlip7Game(options: SessionOptions) {
       setState(view);
       for (const conn of conns.values()) {
         if (next.players.some(p => p.id === conn.peer)) send(conn, { type: 'STATE', state: view });
+      }
+      // An observer who just took a vacated seat becomes a player connection.
+      for (const [id, conn] of watchers) {
+        if (next.players.some(p => p.id === id)) { watchers.delete(id); conns.set(id, conn); }
+        send(conn, { type: 'STATE', state: view });
       }
       if (!changed) return;
       if (newReveal) lockedUntil = Date.now() + REVEAL_MS;
@@ -70,9 +91,21 @@ export function useFlip7Game(options: SessionOptions) {
         if (Date.now() - (chatTimes.get(actor) ?? 0) < 700) { reject('Un petit instant entre deux messages.'); return; }
         chatTimes.set(actor, Date.now());
       }
-      const result = applyAction(truth, actor, action);
+      const run = (s: GameState) => applyAction(s, actor, action);
+      const result = ['START', 'NEXT_ROUND', 'REMATCH'].includes(action.type) ? withSeatsFilled(truth, desk, run) : run(truth);
       if (result.error) { reject(result.error); return; }
       commit(result.state);
+    };
+    // Observers may talk at the table; the engine only knows seated players, so
+    // their lines are appended here, clearly labelled.
+    const watcherChat = (id: string, text: string, conn: DataConnection) => {
+      if (!truth || typeof text !== 'string' || !text.trim() || text.length > 300) return;
+      if (Date.now() - (chatTimes.get(id) ?? 0) < 700) { send(conn, { type: 'ERROR', message: 'Un petit instant entre deux messages.' }); return; }
+      chatTimes.set(id, Date.now());
+      const who = desk.list().find(s => s.id === id)?.name ?? 'Observateur';
+      const s = structuredClone(truth);
+      s.chat = [...s.chat, { id: (s.chat.at(-1)?.id ?? 0) + 1, playerId: id, name: `${who} (observe)`, text: text.trim(), time: Date.now() }].slice(-100);
+      commit(s);
     };
     const initialize = () => {
       if (cancelled) return;
@@ -96,10 +129,12 @@ export function useFlip7Game(options: SessionOptions) {
           conn.on('open', () => {
             send(conn, { type: 'ACTION', action: { type: 'JOIN', name: opts.name }, revision: 0, requestId: `${id}-${++request}` });
             command.current = action => send(conn, { type: 'ACTION', action, revision: truth?.revision ?? 0, requestId: `${id}-${++request}` });
+            seatRequest.current = want => send(conn, { type: 'SEAT', want });
           });
           conn.on('data', raw => {
             if (cancelled || !raw || typeof raw !== 'object') return;
             const msg = raw as { type?: string; state?: PublicState; message?: string };
+            if (isSpectatorsMessage(raw)) { setSpectators(raw.spectators); return; }
             if (msg.type === 'STATE' && msg.state?.code === opts.code && Array.isArray(msg.state.players)) {
               // The client retains only a public view; it never runs random draws.
               truth = { revision: msg.state.revision } as GameState;
@@ -113,22 +148,38 @@ export function useFlip7Game(options: SessionOptions) {
           const joinTimeout = setTimeout(() => { if (!conns.has(conn.peer)) conn.close(); }, 12000);
           conn.on('data', raw => {
             if (cancelled || !truth) return;
+            if (isSeatMessage(raw)) { if (watchers.has(conn.peer)) desk.setWant(conn.peer, raw.want); return; }
             const e = parseEnvelope(raw);
             if (!e) { send(conn, { type: 'ERROR', message: 'Commande invalide.' }); return; }
             const seen = requests.get(conn.peer) ?? new Set<string>();
             if (seen.has(e.requestId)) return;
             seen.add(e.requestId); if (seen.size > 128) seen.delete(seen.values().next().value!);
             requests.set(conn.peer, seen);
+            if (watchers.has(conn.peer)) {
+              if (e.action.type === 'CHAT') watcherChat(conn.peer, e.action.text, conn);
+              return;
+            }
             if (!conns.has(conn.peer)) {
               if (e.action.type !== 'JOIN') return;
               const joined = applyAction(truth, conn.peer, e.action);
-              if (joined.error) { send(conn, { type: 'ERROR', message: joined.error }); return; }
+              if (joined.error) {
+                // Game under way or table full: offer a seat in the stands instead.
+                if (truth.phase !== 'lobby' || truth.players.length >= truth.options.maxPlayers) {
+                  if (!desk.add(conn.peer, e.action.name)) { send(conn, { type: 'ERROR', message: 'Table complète, même pour regarder.' }); return; }
+                  clearTimeout(joinTimeout); watchers.set(conn.peer, conn);
+                  send(conn, { type: 'STATE', state: publicState(truth) });
+                  send(conn, { type: 'SPECTATORS', spectators: desk.list() });
+                  return;
+                }
+                send(conn, { type: 'ERROR', message: joined.error }); return;
+              }
               clearTimeout(joinTimeout); conns.set(conn.peer, conn); commit(joined.state); return;
             }
             accept(conn.peer, e.action, conn, e.revision);
           });
           const disconnect = () => {
             clearTimeout(joinTimeout);
+            if (watchers.get(conn.peer) === conn) { watchers.delete(conn.peer); desk.remove(conn.peer); return; }
             if (conns.get(conn.peer) !== conn) return;
             conns.delete(conn.peer); requests.delete(conn.peer);
             if (truth && !cancelled) commit(leave(truth, conn.peer));
@@ -142,11 +193,12 @@ export function useFlip7Game(options: SessionOptions) {
       }).catch(() => fail('Le module de connexion n’a pas pu être chargé.', true));
     }
     return () => {
-      cancelled = true; clearTimeout(timer); clearTimeout(timeout); command.current = () => {};
-      for (const conn of conns.values()) conn.close(); conns.clear(); hostConn?.close(); peer?.destroy();
+      cancelled = true; clearTimeout(timer); clearTimeout(timeout); command.current = () => {}; seatRequest.current = () => {};
+      for (const conn of [...conns.values(), ...watchers.values()]) conn.close(); conns.clear(); watchers.clear(); hostConn?.close(); peer?.destroy();
     };
   }, []);
 
   return { state, selfId, status, error, clearError: useCallback(() => setError(null), []),
-    sendAction: useCallback((action: PlayerAction) => command.current(action), []) };
+    sendAction: useCallback((action: PlayerAction) => command.current(action), []),
+    spectators, requestSeat: useCallback((want: boolean) => seatRequest.current(want), []) };
 }

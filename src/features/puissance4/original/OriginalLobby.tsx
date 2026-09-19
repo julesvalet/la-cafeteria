@@ -4,6 +4,9 @@ import { BookOpen, Check } from 'lucide-react';
 import { ORIGINAL_MODES, MODE_ORDER, discColor } from '../engine/modes';
 import { OriginalRulesModal } from './OriginalRulesModal';
 import type { P4Mode } from '../engine/types';
+import { usePlayerName, savePseudo } from '../../rooms/playerName';
+import { SessionVisibility, type Visibility } from '../../rooms/SessionVisibility';
+import { SessionsLink } from '../../rooms/SessionsLink';
 
 function randomRoomCode(): string {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans caractères ambigus (0/O, 1/I)
@@ -14,7 +17,9 @@ function randomRoomCode(): string {
 
 export function OriginalLobby() {
   const navigate = useNavigate();
-  const [name, setName] = useState('');
+  // Pré-rempli : le pseudo du compte, ou le dernier tapé sur ce navigateur.
+  const [name, setName] = usePlayerName();
+  const [visibility, setVisibility] = useState<Visibility>('public');
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<P4Mode>('duel');
   const [nameError, setNameError] = useState<string | null>(null);
@@ -29,8 +34,9 @@ export function OriginalLobby() {
   const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     if (!requireName()) return;
+    savePseudo(name);
     navigate(`/puissance4-original/${randomRoomCode()}`, {
-      state: { isHost: true, name: name.trim(), mode },
+      state: { isHost: true, visibility, name: name.trim(), mode },
     });
   };
 
@@ -38,6 +44,7 @@ export function OriginalLobby() {
     e.preventDefault();
     if (!requireName()) return;
     if (!joinCode.trim()) return;
+    savePseudo(name);
     navigate(`/puissance4-original/${joinCode.trim().toUpperCase()}`, {
       state: { isHost: false, name: name.trim() },
     });
@@ -119,6 +126,7 @@ export function OriginalLobby() {
             Un code de room sera généré. Partage-le à tes potes : il faut être{' '}
             <strong>{ORIGINAL_MODES[mode].players}</strong> pour lancer ce mode.
           </p>
+          <SessionVisibility value={visibility} onChange={setVisibility} />
           <button type="submit" className="btn btn-primary">
             Créer la room
           </button>
@@ -138,6 +146,7 @@ export function OriginalLobby() {
           <button type="submit" className="btn btn-outline" disabled={!joinCode.trim()}>
             Rejoindre
           </button>
+          <SessionsLink />
         </form>
       </div>
     </div>

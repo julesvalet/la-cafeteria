@@ -7,6 +7,9 @@ import './features/scopa/scopa.css'
 import './features/puissance4/puissance4.css'
 import './features/uno/uno.css'
 import './features/account/account.css'
+import './features/social/social.css'
+import './features/social/casino.css'
+import './features/rooms/rooms.css'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(

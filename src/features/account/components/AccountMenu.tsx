@@ -1,18 +1,28 @@
-import { Link } from 'react-router-dom';
-import { LogIn, User } from 'lucide-react';
+import { lazy, Suspense, useId, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Camera, LayoutDashboard, LogIn, LogOut, Settings, Trophy, User, Users } from 'lucide-react';
 import { accountsEnabled } from '../../../lib/supabase';
 import { useAuth } from '../useAuth';
+import { useSocial } from '../../social/useSocial';
+import { UserAvatar } from '../../social/components/UserAvatar';
+// Le recadrage d'image ne sert qu'au moment de changer de photo.
+const AvatarUpload = lazy(() => import('./AvatarUpload').then((m) => ({ default: m.AvatarUpload })));
 
 /**
- * Le contrôle de compte de l'en-tête.
+ * Le contrôle de compte de l'en-tête : le bouton du panneau d'amis, puis
+ * l'avatar et son menu.
  *
- * Volontairement réduit à un raccourci vers le profil : ouvrir un menu
- * déroulant ici ajouterait un piège au clavier et une couche de z-index
- * au-dessus d'une scène 3D et de quatre plateaux de jeu, pour deux entrées que
- * la page Compte porte déjà.
+ * Le menu est un `popover` natif : couche supérieure au-dessus de la scène 3D
+ * et des plateaux, Échap et clic extérieur gérés par le navigateur, focus
+ * rendu à l'avatar à la fermeture — sans piège au clavier.
  */
 export function AccountMenu() {
-  const { status, profile } = useAuth();
+  const { status, profile, signOut } = useAuth();
+  const { panelOpen, setPanelOpen, online, friends } = useSocial();
+  const navigate = useNavigate();
+  const menuId = useId();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Sans configuration, aucun compte n'est possible : mieux vaut ne rien
   // afficher qu'un bouton qui mène à un formulaire inerte.
@@ -33,16 +43,86 @@ export function AccountMenu() {
     );
   }
 
-  const initial = profile?.username?.charAt(0).toUpperCase();
+  const friendsOnline = friends.filter((f) => online.has(f.user_id)).length;
+  const close = () => menuRef.current?.hidePopover();
 
   return (
-    <Link
-      to="/compte"
-      className="account-chip account-chip-avatar"
-      title={profile?.username ?? 'Mon compte'}
-      aria-label={profile ? `Compte de ${profile.username}` : 'Mon compte'}
-    >
-      {initial ?? <User size={17} aria-hidden />}
-    </Link>
+    <>
+      <button
+        type="button"
+        className="account-chip account-chip-icon dock-toggle"
+        aria-pressed={panelOpen}
+        aria-label={friendsOnline > 0 ? `Amis, ${friendsOnline} en ligne` : 'Amis'}
+        title="Amis"
+        onClick={() => setPanelOpen((o) => !o)}
+      >
+        <Users size={17} aria-hidden />
+        {friendsOnline > 0 && (
+          <span className="dock-toggle-count" aria-hidden>
+            {friendsOnline}
+          </span>
+        )}
+      </button>
+
+      <button
+        type="button"
+        className="account-chip account-chip-avatar"
+        popoverTarget={menuId}
+        title={profile?.username ?? 'Mon compte'}
+        aria-label={profile ? `Menu du compte de ${profile.username}` : 'Menu du compte'}
+      >
+        {profile ? <UserAvatar username={profile.username} src={profile.avatar} size={36} /> : <User size={17} aria-hidden />}
+      </button>
+
+      <div id={menuId} ref={menuRef} popover="auto" className="acc-menu acc-scope" role="menu">
+        {profile && (
+          <div className="acc-menu-head">
+            <UserAvatar username={profile.username} src={profile.avatar} size={40} />
+            <strong>{profile.username}</strong>
+          </div>
+        )}
+        <Link role="menuitem" to="/tableau-de-bord" onClick={close}>
+          <LayoutDashboard size={16} aria-hidden /> Tableau de bord
+        </Link>
+        {profile && (
+          <Link role="menuitem" to={`/joueur/${profile.username}`} onClick={close}>
+            <User size={16} aria-hidden /> Voir mon profil
+          </Link>
+        )}
+        <Link role="menuitem" to="/classements" onClick={close}>
+          <Trophy size={16} aria-hidden /> Classements
+        </Link>
+        <button
+          type="button"
+          role="menuitem"
+          onClick={() => {
+            close();
+            setUploading(true);
+          }}
+        >
+          <Camera size={16} aria-hidden /> Changer ma photo
+        </button>
+        <Link role="menuitem" to="/compte" onClick={close}>
+          <Settings size={16} aria-hidden /> Paramètres
+        </Link>
+        <button
+          type="button"
+          role="menuitem"
+          className="acc-menu-danger"
+          onClick={() => {
+            close();
+            void signOut().then(() => navigate('/'));
+          }}
+        >
+          <LogOut size={16} aria-hidden /> Se déconnecter
+        </button>
+      </div>
+
+      {uploading && (
+        <Suspense fallback={null}>
+          <AvatarUpload open onClose={() => setUploading(false)} />
+        </Suspense>
+      )}
+    </>
   );
 }

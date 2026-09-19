@@ -14,11 +14,18 @@ import { fanTransform, handCardScale, scatterTransform, tableCardScale } from '.
 import { useRecordGame } from '../account/useRecordGame';
 import { scopaOutcome } from '../account/gameOutcomes';
 import { GameRecordBadge } from '../account/components/GameRecordBadge';
+import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
+import { ObserverBar } from '../rooms/ObserverBar';
+import { useRoomSession } from '../rooms/useRoomSession';
+import { vacatedSeats } from '../rooms/spectators';
 import type { CardT } from './engine/types';
+import { useRoomIdentity } from '../rooms/playerName';
 
 interface LocationState {
   isHost?: boolean;
   name?: string;
+  /** Choisi à la création : une table publique est annoncée aux amis. */
+  visibility?: 'public' | 'private';
 }
 
 const DEAL_STEP = 0.06;
@@ -34,11 +41,20 @@ export function ScopaRoom() {
   const location = useLocation();
   const navState = (location.state as LocationState | null) ?? null;
 
-  const [name, setName] = useState(navState?.name ?? '');
-  const [joined, setJoined] = useState(Boolean(navState?.name));
+  // Connecté, on entre sous le pseudo du compte sans formulaire.
+  const identity = useRoomIdentity(navState?.name);
+  const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
 
-  if (!joined) {
+  if (identity.pending) {
+    return (
+      <div className="container scopa-lobby">
+        <p role="status">Connexion à ton compte…</p>
+      </div>
+    );
+  }
+
+  if (!identity.joined) {
     return (
       <div className="container scopa-lobby">
         <h1>Rejoindre la room {code}</h1>
@@ -46,7 +62,7 @@ export function ScopaRoom() {
           className="scopa-lobby-card"
           onSubmit={(e: FormEvent) => {
             e.preventDefault();
-            if (name.trim()) setJoined(true);
+            identity.confirm();
           }}
         >
           <label htmlFor="pseudo2">Ton pseudo</label>
@@ -54,12 +70,12 @@ export function ScopaRoom() {
             id="pseudo2"
             type="text"
             maxLength={18}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={identity.typed}
+            onChange={(e) => identity.setTyped(e.target.value)}
             placeholder="ex: Jules"
             autoFocus
           />
-          <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
+          <button type="submit" className="btn btn-primary" disabled={!identity.typed.trim()}>
             Rejoindre la partie
           </button>
         </form>
@@ -70,11 +86,21 @@ export function ScopaRoom() {
     );
   }
 
-  return <ScopaGameView code={code} name={name} isHost={isHost} />;
+  return <ScopaGameView code={code} name={identity.name} isHost={isHost} isPublic={isPublic} />;
 }
 
-function ScopaGameView({ code, name, isHost }: { code: string; name: string; isHost: boolean }) {
-  const { state, selfId, status, error, sendAction } = useScopaRoom(code, name, isHost);
+function ScopaGameView({
+  code,
+  name,
+  isHost,
+  isPublic,
+}: {
+  code: string;
+  name: string;
+  isHost: boolean;
+  isPublic: boolean;
+}) {
+  const { state, selfId, status, error, sendAction, spectators, requestSeat } = useScopaRoom(code, name, isHost);
 
   const [selectedTableIds, setSelectedTableIds] = useState<string[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -93,6 +119,23 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
   const myIndex = useMemo(() => state?.players.findIndex((p) => p.id === selfId) ?? -1, [state, selfId]);
   const me = myIndex >= 0 ? state?.players[myIndex] : undefined;
   const isMyTurn = state?.phase === 'playing' && state.turn === myIndex;
+  // Connecté, servi en état, mais sans siège : il regarde.
+  const isSpectator = Boolean(state && selfId && myIndex < 0 && spectators.some((s) => s.id === selfId));
+  // Un observateur voit la table depuis le premier siège, cartes retournées.
+  const viewIndex = myIndex >= 0 ? myIndex : isSpectator ? 0 : -1;
+  const seated = viewIndex >= 0 ? state?.players[viewIndex] : undefined;
+
+  useRoomSession({
+    game: 'scopa',
+    code: code.toUpperCase(),
+    isHost,
+    isPublic,
+    role: !state ? null : isSpectator ? 'spectator' : myIndex >= 0 ? 'player' : null,
+    status: state?.phase === 'lobby' ? 'waiting' : 'playing',
+    players: state?.players.filter((p) => p.connected).length ?? 0,
+    maxPlayers: 4,
+    spectators: spectators.length,
+  });
 
   // Vaut `null` tant que la partie n'est pas finie : le hook ne fait donc rien
   // jusqu'au dernier pli, puis enregistre une fois.
@@ -100,15 +143,15 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
   const record = useRecordGame(outcome);
 
   const orderedOpponents = useMemo(() => {
-    if (!state || myIndex < 0) return [];
+    if (!state || viewIndex < 0) return [];
     const n = state.players.length;
     const result: { player: (typeof state.players)[number]; index: number }[] = [];
     for (let i = 1; i < n; i++) {
-      const index = (myIndex + i) % n;
+      const index = (viewIndex + i) % n;
       result.push({ player: state.players[index], index });
     }
     return result;
-  }, [state, myIndex]);
+  }, [state, viewIndex]);
 
   const seatClasses = SEAT_CLASSES[orderedOpponents.length] ?? [];
 
@@ -291,6 +334,7 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
                 </>
               )}
             </button>
+            <InviteFriendsButton game="scopa" code={code} className="btn btn-outline scopa-invite-btn" />
             <button type="button" className="btn btn-outline scopa-invite-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -300,6 +344,15 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
           <LogOut size={14} /> Quitter
         </Link>
       </div>
+
+      <ObserverBar
+        spectators={spectators}
+        selfId={selfId}
+        isSpectator={isSpectator}
+        vacated={vacatedSeats(state.players)}
+        onSeat={requestSeat}
+        exitTo="/scopa"
+      />
 
       {state.phase === 'lobby' && (
         <div className="scopa-lobby-card">
@@ -327,8 +380,9 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
         </div>
       )}
 
-      {(state.phase === 'playing' || state.phase === 'hand-end' || state.phase === 'match-end') && me && (
-        <>
+      {(state.phase === 'playing' || state.phase === 'hand-end' || state.phase === 'match-end') && seated && (
+        // Pour un observateur, rien sur la table ne répond au clic.
+        <div className="obs-scope" inert={isSpectator || undefined}>
           <div className="scopa-score-bar">
             {state.players.map((p, i) => (
               <div key={p.id} className={`scopa-score-row ${i === state.turn && state.phase === 'playing' ? 'is-active' : ''}`}>
@@ -409,16 +463,34 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
           <div className="scopa-seat scopa-seat-bottom">
             <div className="scopa-seat-info">
               <Avatar active={Boolean(isMyTurn)} />
-              <span className="scopa-seat-name">{me.name} (toi)</span>
+              <span className="scopa-seat-name">
+                {seated.name}
+                {me ? ' (toi)' : ''}
+              </span>
             </div>
-            <CapturedPile cards={me.captured} />
+            <CapturedPile cards={seated.captured} />
           </div>
 
           <div
             className="scopa-my-hand"
-            style={{ '--hand-card-scale': handCardScale(me.hand.length) } as CSSProperties}
+            style={{ '--hand-card-scale': handCardScale(me ? me.hand.length : seated.handCount) } as CSSProperties}
           >
-            {me.hand.map((c, idx) => {
+            {!me &&
+              Array.from({ length: seated.handCount }).map((_, idx) => {
+                const fan = fanTransform(idx, seated.handCount);
+                return (
+                  <PlayingCard
+                    key={idx}
+                    card={{ id: `${seated.id}-back-${idx}`, suit: 'denari', rank: 1 }}
+                    faceDown
+                    restX={fan.x}
+                    restY={fan.y}
+                    restRotate={fan.rotate}
+                    zIndex={idx}
+                  />
+                );
+              })}
+            {me?.hand.map((c, idx) => {
               const fan = fanTransform(idx, me.hand.length);
               return (
                 <PlayingCard
@@ -537,7 +609,7 @@ function ScopaGameView({ code, name, isHost }: { code: string; name: string; isH
             </div>
           )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );
