@@ -119,11 +119,12 @@ export const ORIGINAL_MODES: Record<P4Mode, ModeConfig> = {
   },
 };
 
-/** Free-for-all palette: four hues that stay distinct on the beige board. */
-const SOLO_COLORS = ['#e0a33c', '#3f9e8c', '#c8503f', '#8b6bc4'];
+/** Free-for-all palette: four neon hues that stay distinct on the black board
+ *  and apart from the interface green. */
+const SOLO_COLORS = ['#ffe14d', '#29f1ff', '#ff3d6e', '#b45cff'];
 
 /** In 2v2 teammates share a hue family so the alliance is readable at a glance. */
-const TEAM_COLORS = ['#e0a33c', '#3f9e8c', '#c2762a', '#2f7d97'];
+const TEAM_COLORS = ['#ffe14d', '#29f1ff', '#ff9f1c', '#3d7bff'];
 
 export function discColor(mode: P4Mode, playerIndex: number): string {
   const palette = mode === 'teams' ? TEAM_COLORS : SOLO_COLORS;

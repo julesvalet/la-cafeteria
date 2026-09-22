@@ -1,22 +1,23 @@
 /* ===================== UNO ====================================
-   The table keeps the Cafétéria brown; the cards are the only saturated
-   things on screen, exactly as in Puissance 4. Layout classes are shared
-   with the P4 lobby (p4-lobby, p4-modal, ...) — only what is genuinely
-   UNO-specific lives here.
+   La table suit la borne PLAFEE — noir, néon vert — et les cartes gardent
+   leurs quatre couleurs : ce sont les seules choses saturées à l'écran,
+   comme les jetons de Puissance 4. Les classes du salon (p4-lobby,
+   p4-modal…) sont partagées ; seul ce qui est propre à UNO vit ici.
    ============================================================== */
 
 .uno-room {
-  padding: 32px 20px 120px;
   max-width: 1100px;
+  padding-top: 28px;
+  padding-bottom: 120px;
 }
 
-/* ---------- Card artwork ---------- */
+/* ---------- Cartes ---------- */
 
 .uno-card-svg {
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.55));
 }
 
 /* ---------- Table ---------- */
@@ -24,8 +25,8 @@
 .uno-table {
   display: flex;
   flex-direction: column;
-  gap: 22px;
   align-items: center;
+  gap: 22px;
   margin: 20px 0 12px;
 }
 
@@ -33,7 +34,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 26px;
+  gap: 22px;
 }
 
 .uno-opponent {
@@ -42,14 +43,14 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 14px;
-  border: 1px solid transparent;
-  transition: border-color 0.25s ease, background 0.25s ease, opacity 0.25s ease;
+  border: 2px solid transparent;
+  transition: border-color 0.25s ease-out, background-color 0.25s ease-out, box-shadow 0.25s ease-out, opacity 0.25s ease-out;
 }
 
 .uno-opponent.is-active {
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  border-color: var(--neon);
+  background: rgb(var(--neon-rgb) / 0.08);
+  box-shadow: var(--neon-glow);
 }
 
 .uno-opponent.is-gone {
@@ -79,32 +80,34 @@
 }
 
 .uno-opponent-name {
-  font-weight: 600;
-  color: var(--color-text);
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .uno-opponent-count {
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: #fff;
+  min-width: 24px;
+  padding: 2px 6px;
+  font-family: var(--font-pixel);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   text-align: center;
+  color: var(--bg);
+  background: var(--neon);
+  box-shadow: var(--neon-glow-sm);
 }
 
+/* « UNO » annoncé : en magenta, l'alerte de la salle. */
 .uno-opponent-uno {
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: #d8232a;
-  color: #fff;
-  font-weight: 800;
-  font-size: 10px;
-  letter-spacing: 1px;
+  padding: 3px 6px 2px;
+  font-family: var(--font-arcade);
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: var(--bg);
+  background: var(--magenta);
+  box-shadow: 0 0 10px rgb(var(--magenta-rgb) / 0.75);
 }
 
-/* ---------- Centre: piles, colour, direction ---------- */
+/* ---------- Centre : piles, couleur, sens ---------- */
 
 .uno-center {
   display: flex;
@@ -125,11 +128,12 @@
 .uno-draw-pile {
   border-radius: 12px;
   cursor: not-allowed;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease-out, filter 0.2s ease-out;
 }
 
 .uno-draw-pile.is-active {
   cursor: pointer;
+  filter: drop-shadow(0 0 10px rgb(var(--neon-rgb) / 0.7));
 }
 
 .uno-draw-pile.is-active:hover {
@@ -137,22 +141,23 @@
 }
 
 .uno-draw-pile:disabled {
-  filter: grayscale(0.35) brightness(0.85);
+  filter: grayscale(0.35) brightness(0.8);
 }
 
 .uno-pile-count {
   position: absolute;
   right: -8px;
   bottom: -8px;
-  min-width: 26px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-size: 12px;
+  min-width: 28px;
+  padding: 3px 6px;
+  border: 2px solid var(--neon);
+  background: #0b0b0b;
+  box-shadow: var(--neon-glow-sm);
+  font-family: var(--font-pixel);
   font-weight: 700;
+  font-size: 13px;
   text-align: center;
+  color: var(--neon);
 }
 
 .uno-discard-pile {
@@ -173,37 +178,38 @@
   gap: 10px;
 }
 
+/* La couleur demandée : une case qui brille de sa propre teinte. */
 .uno-active-color {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  border: 2px solid var(--color-border);
+  border: 2px solid #fff;
   box-shadow: 0 0 14px currentColor;
 }
 
 .uno-direction {
   display: grid;
   place-items: center;
-  color: var(--color-text-muted);
+  color: var(--neon);
+  filter: drop-shadow(0 0 6px rgb(var(--neon-rgb) / 0.7));
 }
 
 .uno-pending {
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: #d8232a;
-  color: #fff;
-  font-weight: 800;
-  font-size: 14px;
+  padding: 4px 8px;
+  font-family: var(--font-arcade);
+  font-size: 12px;
+  color: var(--bg);
+  background: var(--magenta);
+  box-shadow: 0 0 12px rgb(var(--magenta-rgb) / 0.75);
 }
 
-/* ---------- Hand ---------- */
+/* ---------- Main ---------- */
 
 .uno-hand {
-  margin-top: 18px;
-  min-height: 150px;
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  min-height: 150px;
+  margin-top: 18px;
 }
 
 .uno-hand-inner {
@@ -211,8 +217,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 150px;
   width: 100%;
+  height: 150px;
 }
 
 .uno-hand-card {
@@ -231,44 +237,55 @@
 }
 
 .uno-hand-card:focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--cyan);
   outline-offset: 3px;
   border-radius: 8px;
 }
 
-/* ---------- Action buttons ---------- */
+/* ---------- Boutons d'action ---------- */
 
 .uno-actions {
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   margin-top: 6px;
 }
 
 .uno-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  padding: 9px 18px;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
 }
 
+/* « UNO ! » : le bouton qu'on martèle, en magenta. */
 .uno-btn-uno {
-  font-weight: 800;
-  letter-spacing: 1px;
+  border-color: var(--magenta);
+  color: var(--magenta);
+  text-shadow: 0 0 10px rgb(var(--magenta-rgb) / 0.8);
+  box-shadow: 0 0 10px rgb(var(--magenta-rgb) / 0.45), inset 0 0 6px rgb(var(--magenta-rgb) / 0.25);
+}
+
+.uno-btn-uno:hover:not(:disabled) {
+  color: var(--bg);
+  background: var(--magenta);
+  box-shadow: 0 0 22px rgb(var(--magenta-rgb) / 0.85);
 }
 
 .uno-btn-contre {
-  border-color: #d8232a;
-  color: #d8232a;
+  border-color: var(--danger);
+  color: var(--danger);
+  text-shadow: 0 0 10px rgb(var(--danger-rgb) / 0.7);
+  box-shadow: 0 0 10px rgb(var(--danger-rgb) / 0.4);
 }
 
 .uno-btn-contre:hover:not(:disabled) {
-  background: color-mix(in srgb, #d8232a 14%, transparent);
+  color: var(--bg);
+  background: var(--danger);
+  box-shadow: 0 0 22px rgb(var(--danger-rgb) / 0.8);
 }
 
-/* ---------- Lobby extras ---------- */
+/* ---------- Salon ---------- */
 
 .uno-mode-seats {
   display: flex;
@@ -279,138 +296,153 @@
 .uno-mode-seat {
   width: 14px;
   height: 14px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  opacity: 0.75;
+  background: var(--neon);
+  box-shadow: 0 0 6px rgb(var(--neon-rgb) / 0.6);
 }
 
 .uno-option {
-  max-width: 560px;
+  max-width: 580px;
   margin: 0 auto 34px;
 }
 
+/* L'option « cartes mystère » : un interrupteur de console. */
 .uno-toggle {
   display: flex;
   align-items: flex-start;
   gap: 14px;
   width: 100%;
-  padding: 16px 18px;
+  padding: 16px;
+  border: 2px solid rgb(var(--neon-rgb) / 0.25);
+  background: #0d0d0d;
   text-align: left;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  color: var(--ink);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease-out, background-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
+.uno-toggle:hover { border-color: rgb(var(--neon-rgb) / 0.6); }
+
 .uno-toggle.is-on {
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border-color: var(--neon);
+  background: rgb(var(--neon-rgb) / 0.07);
+  box-shadow: var(--neon-glow);
 }
 
 .uno-toggle-track {
   position: relative;
   flex: none;
-  width: 44px;
-  height: 25px;
+  width: 46px;
+  height: 24px;
   margin-top: 2px;
-  border-radius: 999px;
-  background: var(--color-border);
-  transition: background 0.22s ease;
+  border: 2px solid #555;
+  background: #0a0a0a;
+  transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .uno-toggle.is-on .uno-toggle-track {
-  background: var(--color-primary);
+  border-color: var(--neon);
+  box-shadow: var(--neon-glow-sm);
 }
 
 .uno-toggle-thumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 19px;
-  height: 19px;
-  border-radius: 50%;
-  background: #fff;
-  transition: transform 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #555;
+  transition: transform 0.2s steps(4, end), background-color 0.2s ease-out;
 }
 
 .uno-toggle.is-on .uno-toggle-thumb {
-  transform: translateX(19px);
+  background: var(--neon);
+  transform: translateX(22px);
 }
 
 .uno-toggle-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  min-width: 0;
 }
 
 .uno-toggle-label {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-weight: 600;
+  gap: 8px;
+  font-family: var(--font-pixel);
+  font-weight: 700;
   font-size: 14px;
-  color: var(--color-text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--neon);
 }
 
 .uno-toggle-sub {
   font-size: 12.5px;
   line-height: 1.5;
-  color: var(--color-text-muted);
+  color: var(--ink-3);
 }
 
 .uno-lobby-options {
   font-size: 13px;
-  color: var(--color-text-muted);
+  color: var(--ink-2);
 }
 
 .uno-rule-flag {
   margin-left: 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--color-primary);
-  color: #fff;
-  font-size: 10px;
+  padding: 3px 6px 2px;
+  border: 1px solid var(--neon);
+  font-family: var(--font-pixel);
   font-weight: 700;
-  letter-spacing: 0.6px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   vertical-align: middle;
+  color: var(--neon);
 }
 
-/* ---------- Colour picker ---------- */
+/* ---------- Choix de couleur ---------- */
 
 .uno-color-modal {
-  max-width: 340px;
+  max-width: 360px;
+  padding: 26px;
   text-align: center;
-  padding: 28px;
 }
 
 .uno-color-modal h2 {
-  font-size: 20px;
   margin-bottom: 18px;
+  font-size: 17px;
+  text-shadow: var(--text-glow);
 }
 
 .uno-color-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }
 
 .uno-color-swatch {
   height: 76px;
-  border: 3px solid rgba(255, 255, 255, 0.85);
-  border-radius: 14px;
+  border: 3px solid rgb(255 255 255 / 0.85);
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 0 14px rgb(0 0 0 / 0.5);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.uno-color-swatch:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 20px rgb(255 255 255 / 0.35);
 }
 
 .uno-color-cancel {
+  min-height: 40px;
+  padding: 8px 16px;
   font-size: 13px;
-  padding: 8px 18px;
 }
 
-/* ---------- Mystery reveal ---------- */
+/* ---------- Carte mystère révélée ---------- */
 
 .uno-mystery {
   position: fixed;
@@ -419,13 +451,15 @@
   display: grid;
   place-items: center;
   pointer-events: none;
-  background: rgba(12, 9, 6, 0.62);
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.25) 0 1px, transparent 1px 3px),
+    rgb(0 0 0 / 0.7);
 }
 
 .uno-mystery-flash {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 50% 50%, #fff8ec 0%, var(--color-primary-light) 60%, transparent 100%);
+  background: radial-gradient(circle at 50% 50%, #fff 0%, rgb(var(--neon-rgb) / 0.7) 55%, transparent 100%);
 }
 
 .uno-mystery-card {
@@ -433,14 +467,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 34px 40px;
+  gap: 8px;
   max-width: min(420px, calc(100% - 40px));
+  padding: 30px 32px;
+  border: 3px solid var(--neon);
+  background:
+    repeating-linear-gradient(0deg, rgb(var(--neon-rgb) / 0.05) 0 1px, transparent 1px 3px),
+    #0b0b0b;
+  box-shadow: 0 0 30px rgb(var(--neon-rgb) / 0.6), 0 20px 60px rgb(0 0 0 / 0.6);
   text-align: center;
-  border-radius: 20px;
-  border: 2px solid var(--color-primary);
-  background: var(--color-surface);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 .uno-mystery-ray {
@@ -450,7 +485,7 @@
   width: 3px;
   height: 200px;
   margin-left: -1.5px;
-  background: linear-gradient(to top, transparent, var(--color-primary));
+  background: linear-gradient(to top, transparent, var(--neon));
   transform-origin: top center;
 }
 
@@ -459,39 +494,42 @@
   place-items: center;
   width: 72px;
   height: 72px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
-  color: var(--color-primary);
   margin-bottom: 4px;
+  border: 2px solid var(--neon);
+  background: rgb(var(--neon-rgb) / 0.12);
+  color: var(--neon);
+  box-shadow: var(--neon-glow);
 }
 
 .uno-mystery-eyebrow {
-  font-size: 11px;
+  font-family: var(--font-pixel);
   font-weight: 700;
-  letter-spacing: 2px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--neon);
 }
 
 .uno-mystery-card h2 {
-  font-size: 28px;
-  color: var(--color-text);
+  font-size: 22px;
+  color: var(--ink);
+  text-shadow: var(--text-glow);
 }
 
 .uno-mystery-desc {
   font-size: 14px;
-  color: var(--color-text-muted);
   line-height: 1.5;
+  color: var(--ink-2);
 }
 
 .uno-mystery-who {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 12.5px;
   font-style: italic;
-  color: var(--color-text-muted);
+  color: var(--ink-3);
 }
 
-/* ---------- "UNO !" announcement ---------- */
+/* ---------- Annonce « UNO ! » ---------- */
 
 .uno-flash {
   position: fixed;
@@ -503,7 +541,7 @@
      plays, which is what keeps the announcement from freezing a turn. */
   pointer-events: none;
   /* A vignette rather than a blackout — the table has to stay readable. */
-  background: radial-gradient(circle at 50% 50%, rgba(12, 9, 6, 0.32) 0%, rgba(12, 9, 6, 0.72) 100%);
+  background: radial-gradient(circle at 50% 50%, rgb(0 0 0 / 0.3) 0%, rgb(0 0 0 / 0.75) 100%);
 }
 
 .uno-flash-burst {
@@ -514,7 +552,7 @@
   height: 320px;
   margin: -160px 0 0 -160px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fff 0%, #f4c500 40%, rgba(216, 35, 42, 0) 70%);
+  background: radial-gradient(circle, #fff 0%, #f4c500 40%, rgb(216 35 42 / 0) 70%);
 }
 
 .uno-flash-ring {
@@ -524,8 +562,9 @@
   width: 260px;
   height: 260px;
   margin: -130px 0 0 -130px;
+  border: 4px solid var(--magenta);
   border-radius: 50%;
-  border: 4px solid #f4c500;
+  box-shadow: 0 0 20px rgb(var(--magenta-rgb) / 0.7);
 }
 
 .uno-flash-ray {
@@ -535,9 +574,8 @@
   width: 4px;
   height: 300px;
   margin-left: -2px;
-  border-radius: 2px;
-  transform-origin: top center;
   opacity: 0.7;
+  transform-origin: top center;
 }
 
 .uno-flash-confetti {
@@ -545,9 +583,8 @@
   top: 50%;
   left: 50%;
   width: 11px;
-  height: 15px;
-  margin: -7px 0 0 -5px;
-  border-radius: 2px;
+  height: 11px;
+  margin: -5px 0 0 -5px;
 }
 
 .uno-flash-stack {
@@ -555,28 +592,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .uno-flash-name {
-  font-family: var(--font-heading);
-  font-size: clamp(30px, 7vw, 52px);
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  color: var(--color-primary-light);
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.7);
-  text-align: center;
   max-width: min(90vw, 560px);
   overflow-wrap: anywhere;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: clamp(28px, 7vw, 48px);
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 14px rgb(var(--magenta-rgb) / 0.8), 0 2px 24px rgb(0 0 0 / 0.7);
 }
 
 .uno-flash-verb {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  color: var(--color-primary);
   margin-bottom: 18px;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--neon);
+  text-shadow: var(--text-glow);
 }
 
 .uno-flash-stage {
@@ -594,14 +634,12 @@
 }
 
 .uno-flash-halo {
+  z-index: 0;
   width: clamp(220px, 46vw, 300px);
   height: clamp(300px, 64vw, 420px);
   border-radius: 24px;
-  background: radial-gradient(circle, rgba(244, 197, 0, 0.75) 0%, rgba(216, 35, 42, 0.35) 45%, transparent 72%);
+  background: radial-gradient(circle, rgb(255 0 255 / 0.6) 0%, rgb(0 255 255 / 0.3) 45%, transparent 72%);
   filter: blur(26px);
-  /* Not a negative index: that would bury it behind the overlay's own
-     backdrop rather than tucking it behind the card. */
-  z-index: 0;
 }
 
 .uno-flash-card {
@@ -615,45 +653,44 @@
 .uno-flash-face {
   position: absolute;
   inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
   border-radius: 12px;
   /* Each face hides when it is turned away, so only one is ever readable. */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
 }
 
 .uno-flash-back {
   /* Pre-turned, so it faces the viewer exactly when the card reaches 180°. */
   transform: rotateY(180deg);
-  background:
-    linear-gradient(135deg, #d8232a 0%, #f4c500 34%, #1a9c4b 67%, #0a6cb8 100%);
   border: 5px solid #fff;
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(135deg, #d8232a 0%, #f4c500 34%, #1a9c4b 67%, #0a6cb8 100%);
+  box-shadow: 0 22px 60px rgb(0 0 0 / 0.55);
 }
 
 .uno-flash-word {
-  font-family: var(--font-heading);
-  font-size: clamp(44px, 11vw, 68px);
-  font-weight: 800;
-  letter-spacing: 2px;
+  font-family: var(--font-arcade);
+  font-size: clamp(28px, 7vw, 42px);
+  letter-spacing: 0.04em;
   color: #fff;
   transform: rotate(-14deg);
   text-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.35),
-    0 0 26px rgba(255, 255, 255, 0.55);
+    0 3px 0 rgb(0 0 0 / 0.45),
+    0 0 26px rgb(255 255 255 / 0.6);
 }
 
 /* ---------- Responsive ---------- */
 
 @media (max-width: 720px) {
   .uno-room {
-    padding: 20px 12px 100px;
+    padding-top: 20px;
+    padding-bottom: 100px;
   }
 
   .uno-opponents {
-    gap: 14px;
+    gap: 12px;
   }
 
   .uno-opponent {
@@ -688,14 +725,14 @@
   .uno-action-btn {
     flex: 1 1 auto;
     justify-content: center;
-    padding: 9px 12px;
+    padding: 10px 12px;
   }
 
   .uno-mystery-card {
-    padding: 26px 24px;
+    padding: 24px 20px;
   }
 
   .uno-mystery-card h2 {
-    font-size: 23px;
+    font-size: 19px;
   }
 }

@@ -7,16 +7,18 @@ import { SocialNav } from '../features/social/components/SocialNav';
 import { accountsEnabled } from '../lib/supabase';
 import { useAuth } from '../features/account/useAuth';
 
+const BRAND = `${import.meta.env.BASE_URL}brand/`;
+
 export function Header() {
   const { status } = useAuth();
   return (
     <header className="site-header">
       <div className="container site-header-inner">
-        <Link to="/" className="site-brand">
-          <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="La Cafétéria" className="site-logo" />
-          <span>La Cafétéria</span>
+        <Link to="/" className="site-brand" aria-label="PLAFEE, accueil">
+          <img src={`${BRAND}plafee-mark.svg`} alt="" className="site-brand-mark" width={23} height={40} />
+          <img src={`${BRAND}plafee-wordmark.svg`} alt="" className="site-brand-word" width={116} height={20} />
         </Link>
-        {/* Grand écran : les onglets montent dans l'en-tête (voir social.css). */}
+        {/* Grand écran : les onglets montent dans l'en-tête (voir arcade.css). */}
         <SocialNav variant="header" />
         <div className="site-header-actions">
           {/* Les classements sont publics : le raccourci reste visible sans compte. */}

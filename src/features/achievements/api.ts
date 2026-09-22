@@ -38,6 +38,14 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   defis: 'Défis',
 };
 
+/** La rareté d'un trophée, affichée sur son badge. */
+export const TIER_LABELS: Record<Tier, string> = {
+  bronze: 'Bronze',
+  argent: 'Argent',
+  or: 'Or',
+  legende: 'Légende',
+};
+
 const TIER_RANK: Record<Tier, number> = { legende: 0, or: 1, argent: 2, bronze: 3 };
 
 /** Le catalogue complet, avec la progression du joueur (zéro s'il n'a rien commencé). */

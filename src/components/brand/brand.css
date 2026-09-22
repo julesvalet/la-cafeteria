@@ -1,0 +1,33 @@
+/* Le symbole et le lettrage PLAFEE (voir PlafeeLogo.tsx). */
+
+.plf-mark,
+.plf-wordmark {
+  display: block;
+  overflow: visible;
+}
+
+/* L'allumage : chaque flamme, puis chaque lettre, s'allume comme un tube néon
+   — deux ratés, puis la lumière tient. */
+.plf-mark.is-animated .plf-flame {
+  animation: plf-ignite 0.5s linear both;
+  animation-delay: calc(0.1s + var(--i) * 0.28s);
+}
+
+.plf-wordmark.is-animated .plf-letter {
+  animation: plf-ignite 0.42s linear both;
+  animation-delay: calc(0.62s + var(--i) * 0.09s);
+}
+
+@keyframes plf-ignite {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  38% { opacity: 0.15; }
+  52% { opacity: 1; }
+  60% { opacity: 0.35; }
+  72%, 100% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plf-mark.is-animated .plf-flame,
+  .plf-wordmark.is-animated .plf-letter { animation: none; }
+}

@@ -3,28 +3,29 @@ import type { GameTypeId } from '../features/account/types';
 import './gameTitle.css';
 
 /**
- * Le nom d'un jeu dans sa typographie : chaque jeu a sa police, sa couleur,
- * ses ornements et sa réaction au survol (voir gameTitle.css).
+ * Le nom d'un jeu en lettres de borne d'arcade : chaque jeu a sa police
+ * pixel, sa couleur néon, ses ornements et sa devise (voir gameTitle.css).
  *
- * Les ornements (◆ • ● ◇) sont décoratifs : les lecteurs d'écran lisent le nom
+ * Ornements et crochets sont décoratifs : les lecteurs d'écran lisent le nom
  * simple (`label`).
  */
 interface TitleSpec {
   label: string;
-  /** Ornement de part et d'autre du nom. */
-  ornament?: string;
-  /** Les mots du nom : la ligne ne se coupe qu'entre eux ; `•` y devient un
-   *  point décoratif. */
+  /** Ornements de part et d'autre du nom. */
+  before?: string;
+  after?: string;
+  /** Les mots du nom : la ligne ne se coupe qu'entre eux. `[`, `]` et `.`
+   *  y deviennent des signes décoratifs. */
   parts: string[];
   motto: string;
 }
 
 const GAME_TITLES: Record<GameTypeId, TitleSpec> = {
-  scopa: { label: 'Scopa', ornament: '◆', parts: ['SCOPA'], motto: 'Le jeu de cartes légendaire' },
-  puissance4: { label: 'P4 Forge', parts: ['P•4', 'FORGE'], motto: 'Stratégie & Pouvoirs' },
-  'puissance4-original': { label: 'P4 Classic', parts: ['P•4', 'CLASSIC'], motto: 'Classique pur' },
-  uno: { label: 'UNO', ornament: '●', parts: ['U', 'N', 'O'], motto: 'Chaos Multicolore' },
-  flip7: { label: 'Flip 7', ornament: '◇', parts: ['FLIP•7'], motto: 'Stop ou Encore ?' },
+  scopa: { label: 'Scopa', before: '>>', after: '<<', parts: ['SCOPA'], motto: 'CARD BATTLE' },
+  puissance4: { label: 'P4 Forge', parts: ['[P4]', 'FORGE'], motto: 'POWER MODE' },
+  'puissance4-original': { label: 'P4 Classic', parts: ['[P4]', 'CLASSIC'], motto: 'PURE MODE' },
+  uno: { label: 'UNO', before: '***', after: '***', parts: ['UNO'], motto: 'CHAOS MODE' },
+  flip7: { label: 'Flip 7', parts: ['[FLIP.7]'], motto: 'STOP OR CONTINUE' },
 };
 
 interface Props {
@@ -39,30 +40,37 @@ interface Props {
   className?: string;
 }
 
+/** `[P4]` → crochets décoratifs, `FLIP.7` → point décoratif. */
+function renderPart(part: string) {
+  return part.split(/([[\].])/).map((bit, i) =>
+    bit === '[' || bit === ']' ? (
+      <span key={i} className="gt-brk">
+        {bit}
+      </span>
+    ) : bit === '.' ? (
+      <span key={i} className="gt-dot">
+        .
+      </span>
+    ) : (
+      <Fragment key={i}>{bit}</Fragment>
+    ),
+  );
+}
+
 export function GameTitle({ game, size = 'md', motto = false, suffix, as: Tag = 'span', className }: Props) {
   const spec = GAME_TITLES[game];
-  const ornament = spec.ornament && (
-    <span className="gt-orn" aria-hidden>
-      {spec.ornament}
-    </span>
-  );
   return (
     <Tag className={`gt${className ? ` ${className}` : ''}`} data-game={game} data-size={size}>
       <span className="gt-name">
         <span className="gt-sr">{spec.label}</span>
         <span className="gt-word" aria-hidden>
-          {ornament}
+          {spec.before && <span className="gt-orn">{spec.before}</span>}
           {spec.parts.map((p, i) => (
             <span key={i} className="gt-part" data-i={i}>
-              {p.split('•').map((bit, j) => (
-                <Fragment key={j}>
-                  {j > 0 && <span className="gt-dot">•</span>}
-                  {bit}
-                </Fragment>
-              ))}
+              {renderPart(p)}
             </span>
           ))}
-          {ornament}
+          {spec.after && <span className="gt-orn">{spec.after}</span>}
         </span>
         {suffix && <span className="gt-suffix">{suffix}</span>}
       </span>

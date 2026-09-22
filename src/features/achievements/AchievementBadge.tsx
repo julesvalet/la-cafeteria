@@ -1,15 +1,15 @@
 import { Lock } from 'lucide-react';
 import { achievementIcon } from './icons';
-import type { AchievementState } from './api';
+import { TIER_LABELS, type AchievementState } from './api';
 
 const DATE = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
 /**
- * Un trophée : médaillon, nom, description, progression.
+ * Un trophée : médaillon, nom, rareté, description, progression.
  *
  * Verrouillé, il reste lisible (gris, cadenas) : savoir ce qu'on peut viser
- * vaut mieux qu'une liste de « ??? ». Marqué « À débloquer », avec sa barre
- * et son compte.
+ * vaut mieux qu'une liste de « ??? ». Marqué « À débloquer », avec sa jauge
+ * et son compte ; débloqué, il s'allume en vert fluo.
  */
 export function AchievementBadge({ a, compact = false }: { a: AchievementState; compact?: boolean }) {
   const Icon = achievementIcon(a.icon);
@@ -30,6 +30,7 @@ export function AchievementBadge({ a, compact = false }: { a: AchievementState; 
 
   return (
     <li className="ach-badge" data-tier={a.tier} data-unlocked={unlocked || undefined} tabIndex={0}>
+      <span className="ach-tier">{TIER_LABELS[a.tier]}</span>
       <span className="ach-medal" aria-hidden>
         {unlocked ? <Icon size={24} /> : <Lock size={20} />}
       </span>

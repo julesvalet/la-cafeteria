@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Flame, Radio, Trophy } from 'lucide-react';
+import { ChevronRight, Flame, Radio, Trophy } from 'lucide-react';
 import { GameTitle } from '../components/GameTitle';
 import { accountsEnabled } from '../lib/supabase';
 import { GAMES, gameById, type GameEntry } from '../features/games';
@@ -18,7 +18,8 @@ const DashboardSections = lazy(() =>
 );
 
 const SPLASH_KEY = 'cafet-splash-seen';
-const SPLASH_MIN_MS = 1400;
+const SPLASH_MIN_MS = 1700;
+const BRAND = `${import.meta.env.BASE_URL}brand/`;
 
 function splashSeen() {
   try {
@@ -29,11 +30,12 @@ function splashSeen() {
 }
 
 /**
- * L'accueil, d'après la maquette : bienvenue et logo à gauche, les jeux au
- * centre (le jeu du moment en tête, en vert), le joueur et ses amis à droite.
+ * L'accueil, façon salle d'arcade : le fronton (la bannière de la charte),
+ * les jeux en bornes néon — le jeu du moment en tête — et la fiche du
+ * joueur ; le tableau de bord en dessous pour un joueur connecté.
  *
- * À la première visite, l'écran « LA CAFETERIA — chargement… » laisse place à
- * l'interface par un zoom flouté, comme sur la maquette.
+ * À la première visite, l'écran de démarrage allume le logo flamme par
+ * flamme, puis laisse place à l'interface par un zoom flouté.
  */
 export function Home() {
   const reduce = useReducedMotion();
@@ -43,10 +45,6 @@ export function Home() {
 
   useEffect(() => {
     if (!splash) return;
-    // La photo de la Terre est l'image du chargement : on attend qu'elle soit
-    // prête (dans la limite du raisonnable) plutôt que d'afficher un fond noir.
-    const img = new Image();
-    img.src = `${import.meta.env.BASE_URL}assets/backdrops/earth.webp`;
     const start = Date.now();
     let done = false;
     const finish = () => {
@@ -61,8 +59,10 @@ export function Home() {
         }
       }, Math.max(0, SPLASH_MIN_MS - (Date.now() - start)));
     };
-    img.decode().then(finish, finish);
-    const cap = window.setTimeout(finish, 3500);
+    // L'accueil doit arriver dans ses polices pixel, pas dans celles de secours.
+    if (document.fonts) document.fonts.ready.then(finish, finish);
+    else finish();
+    const cap = window.setTimeout(finish, 3200);
     return () => window.clearTimeout(cap);
   }, [splash]);
 
@@ -88,7 +88,6 @@ export function Home() {
   }, [status]);
 
   const others = GAMES.filter((g) => g.id !== trending.id);
-  const TrendingIcon = trending.icon;
 
   return (
     <div className="home">
@@ -96,59 +95,80 @@ export function Home() {
 
       {!splash && (
         <motion.div
-          className="home-layout"
-          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.12, x: 80, filter: 'blur(16px)' }}
-          animate={{ opacity: 1, scale: 1, x: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+          className="container home-layout"
+          initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 1.06, filter: 'blur(12px)' }}
+          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <section className="home-welcome" aria-labelledby="home-title">
-            <h1 id="home-title">
-              Bienvenue sur
-              <br />
-              La cafétéria
-            </h1>
-            <div className="home-logo-card">
-              <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="Logo de La Cafétéria" />
+          <section className="home-hero" aria-labelledby="home-title">
+            <div className="home-marquee">
+              <img src={`${BRAND}plafee-banner.svg`} alt="" className="home-banner" width={1662} height={650} />
+            </div>
+            <div className="home-hero-copy">
+              <h1 id="home-title" className="home-title">
+                <span className="soc-sr-only">PLAFEE : </span>La salle d'arcade entre potes
+              </h1>
+              <Link to={trending.to} className="home-press" aria-label={`Jouer au jeu tendance : ${trending.name}`}>
+                <span className="home-press-key">
+                  <span className="plf-blink" aria-hidden>
+                    ▶
+                  </span>{' '}
+                  Press start
+                </span>
+                <small aria-hidden>Jeu tendance : {trending.name}</small>
+              </Link>
             </div>
           </section>
 
-          <nav className="home-games" aria-label="Les jeux">
-            <Link to={trending.to} className="home-tile" data-tone="tendance">
-              <span className="home-tile-badge">
-                <Flame size={15} aria-hidden /> jeu tendance
-              </span>
-              <TrendingIcon size={38} strokeWidth={1.6} aria-hidden />
-              <GameTitle game={trending.id} size="lg" motto className="gt-vivid" />
-              <small>{trending.players}</small>
-            </Link>
-            {others.map((g) => {
-              const Icon = g.icon;
-              return (
-                <Link key={g.id} to={g.to} className="home-tile" data-tone="jeu">
-                  <Icon size={34} strokeWidth={1.6} aria-hidden />
-                  <GameTitle game={g.id} size="lg" motto className="gt-vivid" />
-                  <small>{g.players}</small>
-                </Link>
-              );
-            })}
-            {/* La sixième tuile de la maquette : les tables des amis pour un
-                joueur connecté, les classements pour un visiteur. */}
-            {status === 'signed-in' ? (
-              <Link to="/sessions" className="home-tile" data-tone="extra">
-                <Radio size={34} strokeWidth={1.6} aria-hidden />
-                <strong>Tables</strong>
-                <small>Rejoindre tes amis</small>
-              </Link>
-            ) : (
-              <Link to="/classements" className="home-tile" data-tone="extra">
-                <Trophy size={34} strokeWidth={1.6} aria-hidden />
-                <strong>Classements</strong>
-                <small>Qui mène cette semaine</small>
-              </Link>
-            )}
-          </nav>
+          <div className="home-main">
+            <section className="home-games-wrap" aria-labelledby="home-games-title">
+              <header className="home-section-head">
+                <h2 id="home-games-title">Choisis ton jeu</h2>
+                <span className="home-credits" aria-hidden>
+                  Free play
+                </span>
+              </header>
+              <nav className="home-games" aria-label="Les jeux">
+                <GameTile game={trending} hot />
+                {others.map((g) => (
+                  <GameTile key={g.id} game={g} />
+                ))}
+                {/* La sixième borne : les tables des amis pour un joueur
+                    connecté, les classements pour un visiteur. */}
+                {status === 'signed-in' ? (
+                  <Link to="/sessions" className="home-tile" data-kind="extra">
+                    <span className="home-tile-top">
+                      <span>Multijoueur</span>
+                    </span>
+                    <span className="home-tile-icon" aria-hidden>
+                      <Radio size={28} strokeWidth={1.75} />
+                    </span>
+                    <strong className="home-tile-name">Tables</strong>
+                    <span className="home-tile-desc">Rejoins les parties ouvertes de tes amis.</span>
+                    <span className="home-tile-cta">
+                      Voir <ChevronRight size={16} aria-hidden />
+                    </span>
+                  </Link>
+                ) : (
+                  <Link to="/classements" className="home-tile" data-kind="extra">
+                    <span className="home-tile-top">
+                      <span>Hi-score</span>
+                    </span>
+                    <span className="home-tile-icon" aria-hidden>
+                      <Trophy size={28} strokeWidth={1.75} />
+                    </span>
+                    <strong className="home-tile-name">Classements</strong>
+                    <span className="home-tile-desc">Qui mène la salle cette semaine.</span>
+                    <span className="home-tile-cta">
+                      Voir <ChevronRight size={16} aria-hidden />
+                    </span>
+                  </Link>
+                )}
+              </nav>
+            </section>
 
-          <HomeSide />
+            <HomeSide />
+          </div>
         </motion.div>
       )}
 
@@ -160,5 +180,39 @@ export function Home() {
         </Suspense>
       )}
     </div>
+  );
+}
+
+/** Une borne : le jeu, sa devise, son nombre de joueurs. */
+function GameTile({ game, hot = false }: { game: GameEntry; hot?: boolean }) {
+  const Icon = game.icon;
+  return (
+    <Link
+      to={game.to}
+      className="home-tile"
+      data-hot={hot || undefined}
+      aria-label={`${game.name}${hot ? ', jeu tendance' : ''} — ${game.tagline} ${game.players}.`}
+    >
+      <span className="home-tile-top" aria-hidden>
+        {hot ? (
+          <span className="home-tile-badge">
+            <Flame size={12} aria-hidden /> Hot
+          </span>
+        ) : (
+          <span>Jeu</span>
+        )}
+        <span className="home-tile-players">{game.players}</span>
+      </span>
+      <span className="home-tile-icon" aria-hidden>
+        <Icon size={28} strokeWidth={1.75} />
+      </span>
+      <GameTitle game={game.id} size="lg" motto />
+      <span className="home-tile-desc" aria-hidden>
+        {game.tagline}
+      </span>
+      <span className="home-tile-cta" aria-hidden>
+        Jouer <ChevronRight size={16} aria-hidden />
+      </span>
+    </Link>
   );
 }

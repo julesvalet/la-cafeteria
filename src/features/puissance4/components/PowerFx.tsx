@@ -150,7 +150,7 @@ function ShotBody({ shot }: { shot: FxShot }) {
       <>
         <motion.span
           className="p4-fx-slam"
-          style={{ ...col, background: `repeating-linear-gradient(135deg, ${color}, ${color} 10px, #2b241d 10px, #2b241d 20px)` }}
+          style={{ ...col, background: `repeating-linear-gradient(135deg, ${color}, ${color} 10px, #0a0a0a 10px, #0a0a0a 20px)` }}
           initial={{ opacity: 0, scaleY: 0.1, y: '-30%' }}
           animate={{ opacity: [0, 1, 0.85, 0], scaleY: [0.1, 1, 1, 1], y: 0 }}
           transition={{ duration: 0.85, times: [0, 0.22, 0.6, 1], ease: 'easeOut' }}

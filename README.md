@@ -1,42 +1,84 @@
-# La Cafétéria ☕
+# PLAFEE 🟩
 
-Le hub de mini-applications et de jeux entre potes. Un seul endroit, plusieurs façons de traîner ensemble.
+La salle d'arcade entre potes : plusieurs jeux, un seul endroit, et une borne
+néon pour tout le monde. (Le site s'appelait « La Cafétéria » jusqu'à la refonte
+arcade ; l'URL `/la-cafeteria/` et les clés de stockage ont été gardées pour ne
+casser ni les liens partagés ni les réglages déjà en place.)
 
 ## Features
 
-- **Flip 7** — un plateau casino, de 2 à 5 amis en ligne, 1 à 3 bots (trois difficultés), ou un entraînement solo illimité. Une roulette révèle chaque carte ; arrête pour sécuriser tes points, ou tente les sept numéros différents. Règles officielles (94 cartes, objectif 200 points) et variante Cafétéria (62 cartes et effets personnalisés) disponibles au salon. Chat intégré, sons et musique activables, statistiques locales, thèmes clair/sombre et mode d’animation léger.
+- **Flip 7** — un plateau casino, de 2 à 5 amis en ligne, 1 à 3 bots (trois difficultés), ou un entraînement solo illimité. Une roulette révèle chaque carte ; arrête pour sécuriser tes points, ou tente les sept numéros différents. Règles officielles (94 cartes, objectif 200 points) et variante PLAFEE (62 cartes et effets personnalisés) disponibles au salon. Chat intégré, sons et musique activables, statistiques locales et mode d’animation léger.
 
 - **Scopa** — le jeu de cartes italien classique, jouable en ligne à 2, 3 ou 4 joueurs. Crée une room, partage le code (ou le lien) à tes potes, et jouez ensemble en temps réel — sans backend, tout passe en pair-à-pair (WebRTC via [PeerJS](https://peerjs.com/)).
 - **Puissance 4** — le classique, mais avec des pouvoirs. De 2 à 4 joueurs : duel, chacun pour soi à 3 ou 4, ou 2 v 2 en équipes (l'alignement gagnant peut mélanger les jetons des deux coéquipiers). Personne ne *choisit* ses pouvoirs : chaque joueur reçoit une réserve de jetons pour la partie, dont une minorité tirée au sort est chargée d'un pouvoir — Traversée, Destruction, Inversion de gravité, Double-tour ou Blocage de colonne. Tu joues ta colonne normalement ; si ce jeton-là était chargé, l'effet part à l'impact. Même système de rooms que la Scopa.
 - **Puissance 4 Original** — la même chose, sans aucun pouvoir : le Puissance 4 classique sur une grille 7 × 6, dans les quatre mêmes formats.
 - **UNO** — le jeu de cartes, de 2 à 4 joueurs, avec deux ajouts : deux **cartes mystère** mélangées à la pioche, qui déclenchent un effet-surprise dès qu'on les tire (aucune en duel — sans public, la surprise ne vaut rien), et une option de **surenchère des +** que l'hôte active avant la partie, où un +2 peut être relancé jusqu'à ce que quelqu'un encaisse la pile. Les boutons **UNO** et **Contre UNO** sont à double tranchant : oublier d'annoncer coûte deux cartes, dénoncer à tort aussi.
 
+## Identité : la charte PLAFEE
+
+Le logo, le lettrage et la bannière viennent du fichier Illustrator de la marque
+(`PLAFEE.ai`). Ils n'ont pas été redessinés : un script a lu les tracés du fichier
+et les a convertis en SVG — 355 carrés pivotés pour le symbole, 415 pastilles
+pour le lettrage. D'où `public/brand/` (symbole, lettrage, logo empilé, bannière,
+arcs d'angle, favicon, icônes d'application, image de partage) et
+[src/components/brand/plafeeArt.ts](src/components/brand/plafeeArt.ts), qui sert
+au symbole et au lettrage animés de l'écran de démarrage.
+
+| Couleur | Valeur | Emploi |
+| --- | --- | --- |
+| Vert PLAFEE | `#50FF4D` | tout ce qui s'allume : cadres, titres, actions |
+| Vert clair | `#A6FFA3` | devises, étiquettes, texte vif secondaire |
+| Noir salle / borne | `#0D0D0D` / `#1A1A1A` | fond de page, fond des cartes |
+| Cyan | `#00FFFF` | observer, Flip 7, contour de focus |
+| Magenta | `#FF00FF` | alertes, badge « hot », UNO |
+
+Le vert est celui de la charte, mesuré sur les fichiers de marque — un vert fluo
+légèrement plus tendre que le `#00FF00` pur, pour que l'interface et le logo
+soient exactement de la même couleur. Il ne vit qu'à un seul endroit :
+`--neon` / `--neon-rgb` dans [src/index.css](src/index.css).
+
+**Typographies** — servies avec le site, aucune requête chez Google :
+
+| Police | Rôle |
+| --- | --- |
+| Silkscreen 700 | l'interface : titres, boutons, onglets, étiquettes (elle dessine les capitales accentuées en entier, ce que Press Start 2P ne fait pas) |
+| Press Start 2P | l'arcade pure, sans accents : titres SCOPA et UNO, PRESS START, devises |
+| VT323 | les afficheurs : scores, points, codes de room |
+| JetBrains Mono | le texte courant |
+
 ## La page d'accueil
 
-D'après la maquette Illustrator (`interface la cafétéria.ai`) : bienvenue et logo
-à gauche, les jeux au centre — le **jeu tendance** (le plus joué des 7 derniers
-jours, `trending_game()`) en tête, en vert —, le joueur, son niveau et ses amis
-à droite, avec l'ajout d'un ami par pseudo. Pour un joueur connecté, le tableau
-de bord (tables des amis, classement de la semaine, dernières parties, groupes)
-suit juste en dessous. Code : [src/pages/Home.tsx](src/pages/Home.tsx) et
-[src/pages/home/](src/pages/home/).
+Le fronton (la bannière de la charte) en haut, « PRESS START » qui mène au **jeu
+tendance** (le plus joué des 7 derniers jours, `trending_game()`), puis les jeux en
+bornes néon et la fiche « Joueur 1 » — niveau, amis, ajout d'un ami par pseudo.
+Pour un joueur connecté, le tableau de bord (tables des amis, classement de la
+semaine, dernières parties, groupes) suit juste en dessous. Code :
+[src/pages/Home.tsx](src/pages/Home.tsx) et [src/pages/home/](src/pages/home/).
 
-À la première visite, l'écran « LA CAFETERIA — chargement… » laisse place à
-l'interface par un zoom flouté. Le niveau affiché est tiré des points
-(`level.ts`), rien n'est stocké.
+À la première visite, la borne s'allume : les deux flammes du symbole, puis le
+lettrage lettre par lettre, une jauge qui se remplit, et l'interface arrive par un
+zoom flouté. Le niveau affiché est tiré des points (`level.ts`), rien n'est stocké.
 
-**Fonds du site** (engrenage de l'en-tête) : or luxe, marron casino (par
-défaut) ou Terre, légèrement floutée.
-Le choix est gardé dans `localStorage.userTheme` et appliqué avant le premier
-rendu. `data-backdrop` choisit le décor ; `data-theme` reste `light` / `dark`,
-ce dont dépendent tous les jeux. L'image de la Terre a été extraite du fichier
-Illustrator (`public/assets/backdrops/`).
+**Réglages d'affichage** (engrenage de l'en-tête) : le décor — grille néon (par
+défaut), noir total, phosphore —, l'effet cathodique (lignes de balayage,
+vignettage, bandeau qui descend) et les animations néon permanentes. Les trois
+choix sont gardés dans `localStorage` (`userTheme`, `plafee-crt`, `plafee-fx`) et
+appliqués avant le premier rendu par le script d'`index.html`, sous forme
+d'attributs `data-backdrop`, `data-crt` et `data-fx` sur `<html>`. Couper les
+animations calme aussi les pulsations des bornes ; `prefers-reduced-motion` fait
+la même chose sans réglage.
 
 **Noms des jeux** : `<GameTitle game="scopa" />`
-([src/components/GameTitle.tsx](src/components/GameTitle.tsx)) affiche le nom
-d'un jeu dans sa typographie (◆ SCOPA ◆, P • 4 FORGE, P • 4 CLASSIC, ● UNO ●,
-◇ FLIP • 7 ◇), avec sa devise en option. On s'en sert sur les tuiles de
-l'accueil, en tête des salons et des parties, et dans les listes.
+([src/components/GameTitle.tsx](src/components/GameTitle.tsx)) affiche le nom d'un
+jeu dans sa typographie de borne (`>> SCOPA <<`, `[P4] FORGE`, `[P4] CLASSIC`,
+`*** UNO ***` qui cycle vert → cyan → magenta, `[FLIP.7]` en cyan), avec sa
+devise en option (CARD BATTLE, POWER MODE, PURE MODE, CHAOS MODE, STOP OR
+CONTINUE). On s'en sert sur les bornes de l'accueil, en tête des salons et des
+parties, et dans les listes.
+
+**Installable** : `manifest.webmanifest` déclare PLAFEE en plein écran avec ses
+icônes ; ajouté à l'écran d'accueil d'un téléphone, le site s'ouvre sans barre de
+navigateur, encoche comprise (`viewport-fit=cover` et `env(safe-area-inset-*)`).
 
 ## Stack technique
 
@@ -217,7 +259,7 @@ Les compteurs propres à un jeu (scopas, cartes spéciales UNO, arrêts à la
 première carte au Flip 7) viennent du client, bornés : un client modifié peut
 les gonfler, comme il peut déjà déclarer une victoire en P2P.
 
-**Photo de profil.** Recadrée en cercle et réencodée en 512 × 512 dans le
+**Photo de profil.** Recadrée en carré (comme les avatars du site) et réencodée en 512 × 512 dans le
 navigateur (métadonnées GPS perdues au passage), puis déposée dans le bucket
 public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
 `profiles.avatar` de pointer ailleurs que dans le dossier du joueur.
@@ -228,8 +270,8 @@ public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
 Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour
 qu'elle apparaisse sur l'accueil, ajoute-la au tableau `GAMES` de
 [src/features/games.ts](src/features/games.ts), à `GAME_TITLES` de
-`GameTitle.tsx` (et son style dans `gameTitle.css`), et à `game_types` en base
-si ses parties doivent compter.
+`GameTitle.tsx` (et son style dans `gameTitle.css` : sa police pixel, sa couleur
+et sa devise), et à `game_types` en base si ses parties doivent compter.
 
 ## Déploiement
 

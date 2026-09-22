@@ -30,11 +30,11 @@ function playJingle() {
     [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'triangle';
+      osc.type = 'square';
       osc.frequency.value = freq;
       const t = now + i * 0.09;
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.12, t + 0.02);
+      gain.gain.linearRampToValueAtTime(0.05, t + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + (i === 3 ? 0.7 : 0.25));
       osc.connect(gain).connect(ctx.destination);
       osc.start(t);

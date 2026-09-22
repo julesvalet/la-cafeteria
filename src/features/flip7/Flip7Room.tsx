@@ -147,7 +147,7 @@ function GameSession({ isPublic, ...options }: SessionOptions & { isPublic: bool
           : (seated || isSpectator) && <div className="obs-scope" inert={isSpectator || undefined}><GameBoard state={view} selfId={selfId} busy={busy} sendAction={act} footer={<GameRecordBadge state={record} />} /></div>}
         {options.mode === 'online' && <ChatPanel messages={state.chat} onSend={text => act({ type: 'CHAT', text })} selfId={selfId} />}
       </div>
-      <footer className="f7-room-footer"><span>♠ UNE CARTE. UN CHOIX. UN FRISSON.</span><span>La Cafétéria · Flip 7</span></footer>
+      <footer className="f7-room-footer"><span>♠ UNE CARTE. UN CHOIX. UN FRISSON.</span><span>PLAFEE · Flip 7</span></footer>
     </div>
     {shot && <RouletteWheel key={shot.seq} event={shot} lite={lite} />}
   </div>;

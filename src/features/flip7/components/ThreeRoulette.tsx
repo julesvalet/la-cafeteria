@@ -11,11 +11,11 @@ function Wheel() {
     if (group.current) { group.current.rotation.y = (1 - (1 - t) ** 3) * Math.PI * 8; group.current.rotation.z = .16; }
   });
   return <group ref={group} rotation={[.25, 0, .16]}>
-    <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[2.3, .045, 8, 64]} /><meshStandardMaterial color="#e7bb4d" metalness={.7} roughness={.25} /></mesh>
+    <mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[2.3, .045, 8, 64]} /><meshStandardMaterial color="#50ff4d" emissive="#50ff4d" emissiveIntensity={.8} metalness={.3} roughness={.35} /></mesh>
     {Array.from({ length: 12 }, (_, i) => {
       const angle = i / 12 * Math.PI * 2;
       return <mesh key={i} position={[Math.sin(angle) * 2.3, 0, Math.cos(angle) * 2.3]} rotation={[0, angle, 0]}>
-        <boxGeometry args={[.68, 1.05, .025]} /><meshStandardMaterial color={i % 3 ? '#f0dfaa' : '#c69436'} metalness={.15} roughness={.5} />
+        <boxGeometry args={[.68, 1.05, .025]} /><meshStandardMaterial color={i % 3 ? '#151515' : '#50ff4d'} emissive={i % 3 ? '#0a1f0a' : '#2db82a'} emissiveIntensity={.7} metalness={.15} roughness={.5} />
       </mesh>;
     })}
   </group>;
@@ -38,7 +38,7 @@ function LostContext({ onFailure }: { onFailure: () => void }) {
 export default function ThreeRoulette({ onFailure }: { onFailure: () => void }) {
   return <Boundary onFailure={onFailure}><div className="f7-three">
     <Canvas dpr={[1, 1.5]} camera={{ position: [0, 2.5, 7], fov: 45 }} gl={{ alpha: true, antialias: false }}>
-      <ambientLight intensity={1.9} /><pointLight position={[2, 4, 4]} intensity={35} color="#ffe5a4" />
+      <ambientLight intensity={1.9} /><pointLight position={[2, 4, 4]} intensity={35} color="#b6ffb4" />
       <Wheel /><LostContext onFailure={onFailure} />
     </Canvas>
   </div></Boundary>;

@@ -1,66 +1,105 @@
 /*
- * Palette La Cafétéria : beige, or, marron, noir casino.
+ * PLAFEE — la charte arcade.
  *
- * Le fond (voir hooks/useTheme.ts) pose deux attributs : `data-backdrop`
- * (gold | dark | earth) pour le décor, et `data-theme` (light | dark) sur
- * lequel s'appuient toutes les pages et tous les jeux.
+ * Le vert de la charte graphique (#50FF4D, mesuré sur les fichiers de marque)
+ * sur le noir de la salle (#0D0D0D) et des bornes (#1A1A1A). Cyan et magenta
+ * en accents, jamais en fond. Tout est carré : les pixels du logo donnent la
+ * règle, seuls les objets de jeu (cartes, jetons) gardent leurs courbes.
+ *
+ * Les réglages d'affichage (voir hooks/useTheme.ts) posent trois attributs
+ * sur <html> : `data-backdrop` (grid | void | phosphor), `data-crt` (on | off)
+ * et `data-fx` (on | calm).
  */
 :root {
-  /* Or — l'accent, identique dans tous les fonds */
-  --color-primary: #c9a961;
-  --color-primary-dark: #a3843c;
-  --color-primary-darker: #6e5a2a;
-  --color-primary-light: #e6d3a3;
-  --color-primary-tint: #efe3c8;
-  --color-gold: #d4af37;
+  /* --- Charte ------------------------------------------------------------ */
+  --neon-rgb: 80 255 77;
+  --neon: #50ff4d;
+  /* Vert fluo clair : devises, texte vif secondaire. */
+  --neon-soft: #a6ffa3;
+  /* Vert sombre : bordures discrètes, ombre des boutons pressés. */
+  --neon-deep: #2db82a;
+  --neon-shade: #1c7a1a;
+  /* Vert presque noir : fonds teintés. */
+  --neon-ink: #0a1f0a;
 
-  /* Fond « or luxe » : beige clair, texte marron */
-  --color-bg: #e8d5c4;
-  --color-surface: #f5ecdf;
-  --color-surface-raised: #fbf5ec;
-  --color-text: #2a2622;
-  --color-heading: #5a4520;
-  --color-text-muted: #6f6150;
-  --color-border: #d4c4a8;
-  --color-success: #4f7d4f;
-  --color-danger: #a8462f;
+  --cyan-rgb: 0 255 255;
+  --cyan: #00ffff;
+  --magenta-rgb: 255 0 255;
+  --magenta: #ff00ff;
+  --amber-rgb: 255 197 61;
+  --amber: #ffc53d;
+  --danger-rgb: 255 77 106;
+  --danger: #ff4d6a;
 
-  --font-ui: 'Source Sans 3', 'Myriad Pro', 'Segoe UI', system-ui, sans-serif;
+  --bg: #0d0d0d;
+  --panel: #1a1a1a;
+  --panel-2: #222222;
+  --panel-3: #2a2a2a;
+  --ink: #ffffff;
+  --ink-2: #cccccc;
+  --ink-3: #999999;
 
-  --font-heading: 'Fraunces', 'Georgia', serif;
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  /* L'interface : Silkscreen, substitut libre de Pixel Operator, qui dessine
+     les capitales accentuées en entier (É, È, À…). */
+  --font-pixel: 'Silkscreen', 'Courier New', monospace;
+  /* L'arcade pure, pour les textes sans accents : titres de jeux, PRESS START. */
+  --font-arcade: 'Press Start 2P', 'Courier New', monospace;
+  /* Stand-in libre de VCR OSD Mono. */
+  --font-vcr: 'VT323', 'Courier New', monospace;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
-  --shadow-sm: 0 1px 3px rgba(59, 42, 30, 0.08);
-  --shadow-md: 0 4px 16px rgba(59, 42, 30, 0.1);
-  --shadow-lg: 0 12px 32px rgba(59, 42, 30, 0.16);
+  /* --- Néon ---------------------------------------------------------------- */
+  --neon-glow-sm: 0 0 6px rgb(var(--neon-rgb) / 0.5);
+  --neon-glow: 0 0 10px rgb(var(--neon-rgb) / 0.6);
+  --neon-glow-lg: 0 0 20px rgb(var(--neon-rgb) / 0.75), 0 0 40px rgb(var(--neon-rgb) / 0.4);
+  --text-glow: 0 0 5px rgb(var(--neon-rgb) / 0.8), 0 0 10px rgb(var(--neon-rgb) / 0.55), 0 0 20px rgb(var(--neon-rgb) / 0.35);
+  /* Le cadre des bornes : trait épais, halo dehors, lueur dedans. */
+  --frame-w: 3px;
+  --frame: var(--frame-w) solid var(--neon);
+  --frame-glow: 0 0 10px rgb(var(--neon-rgb) / 0.55), inset 0 0 5px rgb(var(--neon-rgb) / 0.45);
+  --frame-glow-hover: 0 0 20px rgb(var(--neon-rgb) / 0.8), 0 0 40px rgb(var(--neon-rgb) / 0.45), inset 0 0 10px rgb(var(--neon-rgb) / 0.55);
 
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 22px;
+  /* --- Anciens jetons, branchés sur la charte --------------------------------
+     Les pages de compte, d'amis et les jeux lisent encore ces noms. */
+  --color-primary: var(--neon);
+  --color-primary-dark: var(--neon-deep);
+  --color-primary-darker: var(--neon-soft);
+  --color-primary-light: var(--neon-soft);
+  --color-primary-tint: rgb(var(--neon-rgb) / 0.12);
+  --color-gold: var(--neon);
+  --color-bg: var(--bg);
+  --color-surface: var(--panel);
+  --color-surface-raised: var(--panel-2);
+  --color-text: var(--ink);
+  --color-heading: var(--neon);
+  --color-text-muted: var(--ink-2);
+  --color-border: rgb(var(--neon-rgb) / 0.28);
+  --color-success: var(--neon);
+  --color-danger: var(--danger);
+  /* Le halo des pages de compte et d'amis, en triplet RGB : rgb(var(--glow) / a). */
+  --glow: var(--neon-rgb);
 
-  color-scheme: light;
-}
+  --font-ui: var(--font-mono);
+  --font-heading: var(--font-pixel);
+  --font-body: var(--font-mono);
 
-/* Fonds « marron casino » et « Terre » : marron foncé, texte crème */
-:root[data-theme='dark'] {
-  --color-bg: #1a1a1a;
-  --color-surface: #2a2622;
-  --color-surface-raised: #3d3429;
-  --color-text: #f5f1eb;
-  --color-heading: #e6d3a3;
-  --color-text-muted: #c9a961;
-  --color-border: #3d3429;
-  --color-success: #7cb47c;
-  --color-danger: #d97b64;
+  --shadow-sm: 0 0 6px rgb(var(--neon-rgb) / 0.22);
+  --shadow-md: 0 0 12px rgb(var(--neon-rgb) / 0.28);
+  --shadow-lg: 0 0 24px rgb(var(--neon-rgb) / 0.3), 0 18px 40px rgb(0 0 0 / 0.6);
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+
+  /* Hauteur de l'en-tête collant (encoche comprise). */
+  --header-h: 64px;
 
   color-scheme: dark;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -71,86 +110,50 @@ body {
 }
 
 html {
-  background: var(--color-bg);
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-color: var(--neon-deep) #0a0a0a;
 }
 
 body {
-  color: var(--color-text);
-  font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* --- Les trois fonds --------------------------------------------------------- */
-
-/* Or luxe : un dégradé beige vers or, à peine perceptible. */
-/* Sur <html> plutôt que <body> : le décor couvre toute la toile, même quand
-   la page est plus haute que l'écran. */
-html[data-backdrop='gold'] {
-  background:
-    radial-gradient(ellipse at 15% 0%, rgb(212 175 55 / 0.22), transparent 55%) fixed,
-    linear-gradient(180deg, #efe1cf 0%, #e8d5c4 45%, #d9c4a4 100%) fixed,
-    #d9c4a4;
-}
-
-/* Marron casino : un marron très foncé, une lueur chaude en haut. */
-html[data-backdrop='dark'] {
-  background:
-    radial-gradient(ellipse at 50% -10%, rgb(201 169 97 / 0.16), transparent 60%) fixed,
-    radial-gradient(ellipse at 100% 100%, rgb(61 52 41 / 0.6), transparent 55%) fixed,
-    #1a1a1a;
-}
-
-html[data-backdrop] body { background: transparent; }
-
-/* Terre : la photo du fichier Illustrator, voilée pour que le texte reste
-   lisible. Sur un calque fixe, pour qu'elle ne défile pas avec la page. */
-/* Le calque de la photo passe sous le fond du <body> : celui-ci doit donc
-   rester transparent, et la couleur de secours aller sur <html>. */
-html[data-backdrop='earth'] {
-  background: #05070b;
-}
-
-:root[data-backdrop='earth'] body {
+  min-height: 100dvh;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  line-height: 1.55;
   background: transparent;
-}
-
-:root[data-backdrop='earth'] body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, rgb(13 13 13 / 0.35), rgb(13 13 13 / 0.55)),
-    url('/assets/backdrops/earth.webp') center / cover no-repeat,
-    url('/assets/backdrops/earth-small.webp') center / cover no-repeat;
-  /* Un léger flou : la photo reste un décor, pas un sujet. Le calque déborde
-     un peu pour que le flou ne laisse pas de liseré sur les bords. */
-  inset: -16px;
-  filter: blur(3px);
-  pointer-events: none;
-}
-
-/* Changement de fond : fondu enchaîné (View Transitions). */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.35s;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: rgb(var(--neon-rgb) / 0.2);
 }
 
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
+
+/* --- Typographie ------------------------------------------------------------ */
 
 h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-heading);
-  font-weight: 600;
   margin: 0;
-  color: var(--color-heading);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--neon);
+  text-shadow: 0 0 10px rgb(var(--neon-rgb) / 0.45);
+  overflow-wrap: break-word;
 }
+
+h1 { font-size: clamp(22px, 4vw, 30px); }
+h2 { font-size: 20px; }
+h3 { font-size: 15px; }
+h4 { font-size: 15px; }
 
 p {
   margin: 0;
@@ -163,63 +166,377 @@ a {
 }
 
 button {
-  font-family: var(--font-body);
+  font-family: var(--font-mono);
   cursor: pointer;
 }
 
-::selection {
-  background: var(--color-primary-light);
-  color: var(--color-primary-darker);
+strong,
+b {
+  font-weight: 700;
 }
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--neon);
+  color: var(--bg);
+  text-shadow: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neon-deep);
+  border: 2px solid #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--neon);
+}
+
+/* --- Les fonds ---------------------------------------------------------------- */
+
+/* Le décor passe sur un calque fixe sous la page : il couvre toute la toile,
+   même quand la page est plus haute que l'écran, et ne défile pas avec elle. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Grille néon : le noir de la salle, une grille verte, une lueur en haut. */
+html[data-backdrop='grid'] body::before {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -12%, rgb(var(--neon-rgb) / 0.13), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 100% 110%, rgb(var(--neon-rgb) / 0.07), transparent 70%),
+    linear-gradient(rgb(var(--neon-rgb) / 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, rgb(var(--neon-rgb) / 0.045) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--bg);
+}
+
+/* Noir total : rien que du noir. */
+html[data-backdrop='void'] {
+  background: #000;
+}
+
+html[data-backdrop='void'] body::before {
+  background: #000;
+}
+
+/* Phosphore : la lueur verte d'un vieux moniteur. */
+html[data-backdrop='phosphor'] {
+  background: #010801;
+}
+
+html[data-backdrop='phosphor'] body::before {
+  background:
+    radial-gradient(ellipse 75% 65% at 50% 45%, rgb(var(--neon-rgb) / 0.14), transparent 75%),
+    repeating-linear-gradient(0deg, rgb(var(--neon-rgb) / 0.035) 0 1px, transparent 1px 4px),
+    #010801;
+}
+
+/* Les arcs pixelisés de la bannière, aux quatre coins de l'écran (voir App). */
+.plf-arcs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.plf-arcs i {
+  position: absolute;
+  height: clamp(110px, 24vh, 250px);
+  aspect-ratio: 230 / 200;
+  background: center / contain no-repeat;
+  opacity: 0.12;
+}
+
+.plf-arcs i:nth-child(1) { top: 0; left: 0; background-image: url('/brand/corner-tl.svg'); }
+.plf-arcs i:nth-child(2) { top: 0; right: 0; background-image: url('/brand/corner-tr.svg'); }
+.plf-arcs i:nth-child(3) { bottom: 0; left: 0; aspect-ratio: 230 / 264; background-image: url('/brand/corner-bl.svg'); }
+.plf-arcs i:nth-child(4) { bottom: 0; right: 0; aspect-ratio: 230 / 264; background-image: url('/brand/corner-br.svg'); }
+
+html:not([data-backdrop='grid']) .plf-arcs { display: none; }
+
+@media (max-width: 720px) {
+  .plf-arcs i { height: clamp(80px, 16vh, 150px); opacity: 0.1; }
+}
+
+/* --- L'écran cathodique ------------------------------------------------------- */
+
+/* Les lignes de balayage et le vignettage, par-dessus tout — sauf les
+   fenêtres modales, qui vivent dans la couche supérieure du navigateur. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -30px 0 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgb(0 0 0 / 0.2) 0 1px, transparent 1px 3px);
+  animation: plf-scan 8s linear infinite;
+}
+
+/* Le bandeau lumineux qui descend l'écran, comme un rafraîchissement. */
+.plf-scanband {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22vh;
+  z-index: 2147482999;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgb(var(--neon-rgb) / 0.035) 50%, transparent);
+  transform: translateY(-30vh);
+  animation: plf-band 7s linear infinite;
+}
+
+.plf-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482998;
+  pointer-events: none;
+  /* Assez doux pour ne pas éteindre les commandes logées dans les coins. */
+  background: radial-gradient(ellipse 150% 130% at 50% 50%, transparent 70%, rgb(0 0 0 / 0.22) 100%);
+}
+
+html[data-crt='off'] body::after,
+html[data-crt='off'] .plf-scanband,
+html[data-crt='off'] .plf-vignette {
+  display: none;
+}
+
+@keyframes plf-scan {
+  from { transform: translateY(0); }
+  to { transform: translateY(30px); }
+}
+
+@keyframes plf-band {
+  from { transform: translateY(-30vh); }
+  to { transform: translateY(130vh); }
+}
+
+/* --- Animations partagées ------------------------------------------------------ */
+
+/* La pulsation des bornes : l'opacité d'un halo, calculée par le GPU. */
+@keyframes plf-pulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+/* L'allumage d'un tube néon : trois ratés, puis la lumière tient. */
+@keyframes plf-flicker {
+  0%, 19%, 23%, 27%, 54%, 58%, 100% { opacity: 1; }
+  21%, 25%, 56% { opacity: 0.5; }
+}
+
+/* Le clignotement des consoles (« PRESS START »), sans transition. */
+@keyframes plf-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* Le cycle vert → cyan → magenta (UNO). */
+/* Chaque couleur tient, puis bascule vite : pas d'étape bleutée entre deux. */
+@keyframes plf-cycle {
+  0%, 28%, 100% { color: var(--neon); }
+  33%, 61% { color: var(--cyan); }
+  66%, 94% { color: var(--magenta); }
+}
+
+@keyframes plf-rise {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* Moins d'animations : demandé par le système, ou dans les réglages. */
+@media (prefers-reduced-motion: reduce) {
+  body::after,
+  .plf-scanband { animation: none; }
+  .plf-scanband { display: none; }
+}
+
+html[data-fx='calm'] body::after,
+html[data-fx='calm'] .plf-scanband { animation: none; }
+html[data-fx='calm'] .plf-scanband { display: none; }
+
+/* Changement de réglage : fondu enchaîné (View Transitions). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
+
+/* --- Gabarit ---------------------------------------------------------------------- */
 
 .container {
   width: 100%;
-  max-width: 1140px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
 }
 
 @media (max-width: 480px) {
-  .container { padding: 0 16px; }
+  .container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
 }
 
+/* --- Boutons arcade ------------------------------------------------------------------ */
+
+/* Contour néon ; au survol, le tube s'allume en plein. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 22px;
-  border-radius: 999px;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-}
-
-.btn-primary {
-  background: var(--color-primary);
-  color: #fff;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover {
-  background: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-outline {
+  gap: 10px;
+  min-height: 44px;
+  padding: 12px 20px;
+  border: 2px solid var(--neon);
+  border-radius: 0;
   background: transparent;
-  border: 1.5px solid var(--color-primary-light);
-  color: var(--color-heading);
+  color: var(--neon);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  text-shadow: 0 0 10px rgb(var(--neon-rgb) / 0.8);
+  box-shadow: 0 0 8px rgb(var(--neon-rgb) / 0.35), inset 0 0 6px rgb(var(--neon-rgb) / 0.2);
+  transition: background-color 0.2s ease-out, color 0.2s ease-out, box-shadow 0.2s ease-out, transform 0.1s ease-out;
 }
 
-.btn-outline:hover {
-  background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+.btn:hover:not(:disabled) {
+  background: var(--neon);
+  color: var(--bg);
+  text-shadow: none;
+  box-shadow: 0 0 20px rgb(var(--neon-rgb) / 0.85), 0 0 36px rgb(var(--neon-rgb) / 0.35);
+  animation: plf-flicker 0.45s linear 1;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(2px);
+}
+
+/* L'action principale : un gros bouton de borne, déjà allumé, qui s'enfonce. */
+.btn-primary {
+  background: var(--neon);
+  color: var(--bg);
+  text-shadow: none;
+  box-shadow: 0 4px 0 var(--neon-shade), 0 0 16px rgb(var(--neon-rgb) / 0.5);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #7dff7a;
+  box-shadow: 0 4px 0 var(--neon-shade), 0 0 26px rgb(var(--neon-rgb) / 0.85);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--neon-shade), 0 0 14px rgb(var(--neon-rgb) / 0.6);
 }
 
 .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  border-color: #3a3a3a;
+  background: #161616;
+  color: #6d6d6d;
+  text-shadow: none;
+  box-shadow: none;
+  transform: none !important;
+}
+
+@media (max-width: 480px) {
+  .btn { padding: 11px 14px; font-size: 14px; }
+}
+
+/* --- Champs ------------------------------------------------------------------------- */
+
+:where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color'], [type='submit'], [type='button']), select, textarea) {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 2px solid var(--neon);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--neon);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  caret-color: var(--neon);
+  box-shadow: inset 0 0 5px rgb(var(--neon-rgb) / 0.45);
+  transition: box-shadow 0.2s ease-out, border-color 0.2s ease-out;
+}
+
+:where(input, textarea)::placeholder {
+  color: var(--neon-deep);
+  opacity: 1;
+}
+
+:where(input:not([type='checkbox'], [type='radio'], [type='range']), select, textarea):focus {
+  outline: none;
+  box-shadow: inset 0 0 5px rgb(var(--neon-rgb) / 0.6), 0 0 15px rgb(var(--neon-rgb) / 0.75);
+}
+
+:where(input, select, textarea):disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none !important;
+}
+
+select option {
+  background: var(--panel);
+  color: var(--ink);
+}
+
+input[type='checkbox'],
+input[type='radio'],
+input[type='range'] {
+  accent-color: var(--neon);
+}
+
+/* --- Utilitaires ---------------------------------------------------------------------- */
+
+/* Réservé aux lecteurs d'écran : lu, jamais vu. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* Le texte qui clignote comme une invite de console. */
+.plf-blink {
+  animation: plf-blink 1.1s steps(1, end) infinite;
+}
+
+html[data-fx='calm'] .plf-blink { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .plf-blink { animation: none; }
 }

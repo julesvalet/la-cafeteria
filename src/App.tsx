@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Header } from './components/Header';
+import { ArcadeBackdrop } from './components/ArcadeBackdrop';
 import { Home } from './pages/Home';
 import { NotFound } from './pages/NotFound';
 import { ScopaLobby } from './features/scopa/ScopaLobby';
@@ -33,13 +34,20 @@ const PlayerPage = lazy(() => import('./features/social/pages/PlayerPage').then(
 function App() {
   return (
     <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ArcadeBackdrop />
       {/* Le provider enveloppe l'en-tête autant que les pages : c'est lui qui
           alimente le raccourci de compte, visible partout sur le site. */}
       <AuthProvider>
       <SocialProvider>
       <Header />
       <main className="site-main">
-        <Suspense fallback={<div className="container" role="status" style={{ padding: 40 }}>La table se prépare…</div>}><Routes>
+        <Suspense
+          fallback={
+            <div className="container site-loading" role="status">
+              Chargement<span className="plf-blink">_</span>
+            </div>
+          }
+        ><Routes>
           <Route path="/" element={<Home />} />
           <Route path="/scopa" element={<ScopaLobby />} />
           <Route path="/scopa/:code" element={<ScopaRoom />} />

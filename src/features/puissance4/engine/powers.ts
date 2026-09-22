@@ -36,7 +36,7 @@ export const POWERS: Record<PowerId, PowerDef> = {
     long: "Le jeton ignore ceux déjà présents : il traverse la colonne et se place dans la ligne du bas, tout le reste de la colonne remontant d'une case. Tu choisis ta colonne normalement, l'effet est automatique.",
     target: 'none',
     weight: 3,
-    color: '#e0a33c',
+    color: '#ffc53d',
   },
   destroy: {
     id: 'destroy',
@@ -45,7 +45,7 @@ export const POWERS: Record<PowerId, PowerDef> = {
     long: "Dès que le jeton se pose, on te demande de désigner un jeton adverse : il est pulvérisé, et tout ce qui reposait dessus retombe d'une case. Tu ne peux viser ni tes jetons, ni ceux de ton équipe. S'il n'y a aucune cible sur le plateau, le pouvoir se perd.",
     target: 'disc',
     weight: 2,
-    color: '#c8503f',
+    color: '#ff3d6e',
   },
   invert: {
     id: 'invert',
@@ -54,7 +54,7 @@ export const POWERS: Record<PowerId, PowerDef> = {
     long: "Dès que le jeton se pose, tu désignes une colonne : ses jetons remontent se coller en haut, et ceux joués dessus se posent sous la pile. Au bout d'un tour de table complet la gravité revient et tout retombe — ce qui peut compléter un alignement.",
     target: 'column',
     weight: 2,
-    color: '#8b6bc4',
+    color: '#b45cff',
   },
   double: {
     id: 'double',
@@ -63,7 +63,7 @@ export const POWERS: Record<PowerId, PowerDef> = {
     long: "Ton tour ne passe pas : tu enchaînes immédiatement avec le jeton suivant. Si celui-là est chargé lui aussi, son pouvoir part dans la foulée.",
     target: 'none',
     weight: 2,
-    color: '#3f9e8c',
+    color: '#29f1ff',
   },
   block: {
     id: 'block',
@@ -72,7 +72,7 @@ export const POWERS: Record<PowerId, PowerDef> = {
     long: "Dès que le jeton se pose, tu désignes une colonne : elle est verrouillée et personne ne peut y jouer, toi compris, jusqu'à ce que le tour te revienne. Une colonne déjà bloquée ne peut pas l'être une seconde fois.",
     target: 'column',
     weight: 3,
-    color: '#6d7f95',
+    color: '#9aa7b8',
   },
 };
 

@@ -39,17 +39,17 @@ export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: 
   const canStay = state.options.ruleset === 'cafeteria' || Boolean(me?.cards.length);
   useEffect(() => setSelected(null), [state.turn, state.pending?.by, state.phase]);
   return <div className="f7-game-area">
-    <div className="f7-table-caption"><span><i className="f7-live-dot" /> {state.options.mode === 'solo' ? 'ENTRAÎNEMENT' : state.options.mode === 'bots' ? 'FACE AUX BOTS' : 'ENTRE AMIS'}</span><span>{state.options.ruleset === 'official' ? 'OBJECTIF 200 POINTS' : 'VARIANTE CAFÉTÉRIA'}</span></div>
+    <div className="f7-table-caption"><span><i className="f7-live-dot" /> {state.options.mode === 'solo' ? 'ENTRAÎNEMENT' : state.options.mode === 'bots' ? 'FACE AUX BOTS' : 'ENTRE AMIS'}</span><span>{state.options.ruleset === 'official' ? 'OBJECTIF 200 POINTS' : 'VARIANTE PLAFEE'}</span></div>
     <div className={`f7-table-wrap players-${state.players.length}`}>
       <div className="f7-seats">
-        {state.players.map((p, i) => <button type="button" key={p.id} className={`f7-seat seat-${i} ${state.phase === 'playing' && p.id === turnPlayer.id ? 'is-current' : ''} ${p.status === 'busted' ? 'is-busted' : ''} ${p.status === 'frozen' || p.skip ? 'is-frozen' : ''}`} onClick={() => setSelected(p.id)} aria-label={`Voir les cartes de ${p.name}`} style={{ '--seat-color': ['#d6b456', '#79b9ad', '#a99ace', '#e29b86', '#9eb775'][i] } as CSSProperties}>
+        {state.players.map((p, i) => <button type="button" key={p.id} className={`f7-seat seat-${i} ${state.phase === 'playing' && p.id === turnPlayer.id ? 'is-current' : ''} ${p.status === 'busted' ? 'is-busted' : ''} ${p.status === 'frozen' || p.skip ? 'is-frozen' : ''}`} onClick={() => setSelected(p.id)} aria-label={`Voir les cartes de ${p.name}`} style={{ '--seat-color': ['#50ff4d', '#00ffff', '#ff00ff', '#ffe14d', '#ff9f1c'][i] } as CSSProperties}>
           <span className="f7-avatar">{p.bot ? '✦' : p.name.charAt(0).toUpperCase()}{hasChance(p) && <ShieldCheck className="f7-avatar-badge" size={18} />}{(p.status === 'frozen' || p.skip) && <Snowflake className="f7-avatar-badge" size={18} />}</span>
           <span className="f7-seat-info"><b>{p.name}{p.id === selfId ? ' · toi' : ''}</b><span>{!p.connected ? 'Déconnecté·e' : p.status === 'busted' ? 'Doublon · 0 pt' : p.status === 'frozen' ? 'Gelé·e · points assurés' : p.status === 'stayed' ? 'Points assurés' : p.chanceUsed ? 'Seconde chance utilisée' : `${points(p, state.options.ruleset)} points en jeu`}</span></span>
           <strong>{p.total}<small>PTS</small></strong>
         </button>)}
       </div>
       <div className={`f7-table ${state.lastEvent.kind === 'bust' ? 'has-bust' : ''}`}>
-        <div className="f7-table-ornament" aria-hidden="true">♠ <span>LA CAFÉTÉRIA</span> ♠</div>
+        <div className="f7-table-ornament" aria-hidden="true">♠ <span>PLAFEE</span> ♠</div>
         <div className="f7-table-body">
           <div className="f7-deck"><FlipCard back /><span>{state.deckCount} cartes</span></div>
           <div className="f7-hand-area">

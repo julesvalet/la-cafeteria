@@ -1,14 +1,22 @@
-/* Les noms des jeux dans leur typographie (voir GameTitle.tsx). */
+/* Les noms des jeux en lettres de borne (voir GameTitle.tsx). */
 
 .gt {
+  /* Taille de base × correction de la police : à taille égale, une police
+     pixel étroite (VT323) paraît plus petite que Press Start 2P. */
+  --gt-size: 16px;
+  --gt-scale: 1;
+  --gt-glow: var(--neon);
   display: inline-flex;
   flex-direction: column;
   /* Centré par défaut ; --gt-align: flex-start pour un en-tête aligné à gauche. */
   align-items: var(--gt-align, center);
-  gap: 0.25em;
+  gap: 0.6em;
   max-width: 100%;
-  line-height: 1.05;
-  font-weight: 900;
+  font-size: calc(var(--gt-size) * var(--gt-scale));
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--neon);
 }
 
 .gt-name {
@@ -16,27 +24,28 @@
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: var(--gt-align, center);
-  column-gap: 0.45em;
-  row-gap: 0.1em;
+  column-gap: 0.7em;
+  row-gap: 0.35em;
   max-width: 100%;
 }
 
-/* Le mot peut passer à la ligne entre ses morceaux, jamais déborder. */
+/* Le mot passe à la ligne entre ses morceaux, jamais au-delà du cadre. */
 .gt-word {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: var(--gt-align, center);
-  column-gap: 0.28em;
-  letter-spacing: 0.15em;
+  column-gap: 0.45em;
+  row-gap: 0.25em;
   transform-origin: center;
-  transition: transform 0.25s ease, text-shadow 0.25s ease, filter 0.25s ease;
+  text-shadow: 0 0 10px var(--gt-glow);
+  transition: transform 0.3s ease-out, text-shadow 0.3s ease-out;
 }
 
-.gt-word > :last-child { margin-right: -0.15em; }
-.gt-orn { font-size: 0.62em; align-self: center; }
 .gt-part { white-space: nowrap; }
-.gt-dot { margin: 0 0.3em; font-size: 0.8em; opacity: 0.85; }
+.gt-orn { opacity: 0.75; }
+.gt-brk { opacity: 0.55; }
+.gt-dot { color: var(--neon); }
 
 .gt-sr {
   position: absolute;
@@ -48,123 +57,103 @@
 }
 
 .gt-suffix {
-  font-family: var(--font-ui, inherit);
-  font-size: 0.55em;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: max(12px, 0.5em);
+  font-weight: 500;
   letter-spacing: 0.02em;
-  color: var(--color-text-muted);
+  text-transform: none;
+  color: var(--ink-2);
+  text-shadow: none;
 }
 
 .gt-motto {
-  font-family: var(--font-ui, inherit);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-family: var(--font-arcade);
+  font-size: clamp(8px, calc(var(--gt-size) * 0.34), 12px);
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  color: var(--neon-soft);
+  text-shadow: 0 0 6px rgb(var(--neon-rgb) / 0.45);
 }
 
 /* Tailles */
-.gt[data-size='sm'] { font-size: 1rem; }
-.gt[data-size='md'] { font-size: 1.35rem; }
-.gt[data-size='lg'] { font-size: clamp(1.3rem, 2.3vw, 2.5rem); }
-.gt[data-size='xl'] { font-size: clamp(1.8rem, 6vw, 3.2rem); }
-.gt[data-size='sm'] .gt-motto { font-size: 0.7rem; }
-.gt:not([data-size='sm']) .gt-motto { font-size: clamp(0.7rem, 0.4em, 0.95rem); }
+.gt[data-size='sm'] { --gt-size: 12px; }
+.gt[data-size='md'] { --gt-size: 16px; }
+.gt[data-size='lg'] { --gt-size: clamp(15px, 1.6vw, 20px); }
+.gt[data-size='xl'] { --gt-size: clamp(20px, 5vw, 36px); }
 
 /* --- Chaque jeu ------------------------------------------------------------ */
 
-.gt[data-game='scopa'] { font-family: 'Montserrat', var(--font-ui), sans-serif; color: #d4af37; }
-.gt[data-game='scopa'] .gt-motto { color: #c9a961; }
-
-.gt[data-game='puissance4'] { font-family: 'Oswald', var(--font-ui), sans-serif; color: #c9a961; }
-.gt[data-game='puissance4'] .gt-motto { color: #d4af37; }
-
-.gt[data-game='puissance4-original'] { font-family: 'Oswald', var(--font-ui), sans-serif; font-weight: 700; color: #f5f1eb; }
-.gt[data-game='puissance4-original'] .gt-motto { color: #c9a961; }
-
-.gt[data-game='uno'] { font-family: 'Montserrat', var(--font-ui), sans-serif; color: #4444ff; }
-.gt[data-game='uno'] .gt-part[data-i='0'] { color: #ff4444; }
-.gt[data-game='uno'] .gt-part[data-i='1'] { color: #ffdd33; }
-.gt[data-game='uno'] .gt-part[data-i='2'] { color: #44dd44; }
-.gt[data-game='uno'] .gt-orn { color: #4444ff; }
-.gt[data-game='uno'] .gt-word { column-gap: 0.12em; text-shadow: 0 2px 0 rgb(0 0 0 / 0.35); }
-.gt[data-game='uno'] .gt-motto { color: #ffdd33; }
-
-.gt[data-game='flip7'] { font-family: 'Oswald', var(--font-ui), sans-serif; font-weight: 800; color: #00d9ff; }
-.gt[data-game='flip7'] .gt-motto { color: #d4af37; }
-
-/* Sur le fond or clair, les teintes claires s'assombrissent pour rester lisibles. */
-:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='scopa'] { color: #8a6d1c; }
-:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='puissance4'] { color: #7a5c22; }
-:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='puissance4-original'] { color: #2a2622; }
-:root[data-theme='light'] .gt:not(.gt-vivid)[data-game='flip7'] { color: #007a91; }
-:root[data-theme='light'] .gt:not(.gt-vivid) .gt-motto { color: #6b5a3e; }
-
-/* --- Survol ---------------------------------------------------------------- */
-
-:is(a, button):hover .gt[data-game='scopa'] .gt-word,
-.gt[data-game='scopa']:hover .gt-word {
-  transform: scale(1.08);
-  text-shadow: 0 0 14px rgb(212 175 55 / 0.7);
+.gt[data-game='scopa'] {
+  font-family: var(--font-arcade);
+  letter-spacing: 0.1em;
 }
 
-:is(a, button):hover .gt[data-game='puissance4'] .gt-word,
-.gt[data-game='puissance4']:hover .gt-word {
-  transform: scale(1.06);
-  animation: gt-pulse 1.4s ease-in-out infinite;
+.gt[data-game='puissance4'],
+.gt[data-game='puissance4-original'] {
+  --gt-scale: 1.4;
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
-:is(a, button):hover .gt[data-game='puissance4-original'] .gt-word,
-.gt[data-game='puissance4-original']:hover .gt-word {
-  transform: scale(1.04);
+.gt[data-game='puissance4-original'] { color: var(--ink); }
+
+.gt[data-game='uno'] {
+  font-family: var(--font-arcade);
+  letter-spacing: 0.06em;
+}
+
+/* UNO change de couleur en boucle : vert, cyan, magenta. */
+.gt[data-game='uno'] .gt-word {
+  text-shadow: 0 0 15px currentColor;
+  animation: plf-cycle 3.6s linear infinite;
+}
+
+.gt[data-game='flip7'] {
+  --gt-scale: 1.7;
+  --gt-glow: var(--neon);
+  font-family: var(--font-vcr);
+  letter-spacing: 0.06em;
+  color: var(--cyan);
+}
+
+.gt[data-game='flip7'] .gt-word { text-shadow: 0 0 12px var(--neon); }
+
+/* --- Survol : la lueur monte, le nom grossit ---------------------------------- */
+
+:is(a, button):hover .gt .gt-word,
+.gt:hover .gt-word {
+  transform: scale(1.05);
+  text-shadow: 0 0 5px var(--gt-glow), 0 0 14px var(--gt-glow), 0 0 28px var(--gt-glow);
 }
 
 :is(a, button):hover .gt[data-game='uno'] .gt-word,
 .gt[data-game='uno']:hover .gt-word {
-  transform: scale(1.1);
+  text-shadow: 0 0 5px currentColor, 0 0 16px currentColor, 0 0 30px currentColor;
+  animation-duration: 1.2s;
 }
 
-:is(a, button):hover .gt[data-game='uno'] :is(.gt-part, .gt-orn),
-.gt[data-game='uno']:hover :is(.gt-part, .gt-orn) {
-  animation: gt-rainbow 1.2s linear infinite;
-}
-
-.gt[data-game='uno'] .gt-part[data-i='1'] { animation-delay: -0.3s; }
-.gt[data-game='uno'] .gt-part[data-i='2'] { animation-delay: -0.6s; }
-.gt[data-game='uno'] .gt-orn:last-of-type { animation-delay: -0.9s; }
-
-:is(a, button):hover .gt[data-game='flip7'] .gt-word,
-.gt[data-game='flip7']:hover .gt-word {
-  transform: scale(1.07) rotate(-2.5deg);
-  text-shadow: 0 0 16px rgb(0 217 255 / 0.75);
-}
-
-@keyframes gt-pulse {
-  0%, 100% { text-shadow: 0 0 4px rgb(201 169 97 / 0.2); }
-  50% { text-shadow: 0 0 16px rgb(201 169 97 / 0.75); }
-}
-
-@keyframes gt-rainbow {
-  0% { color: #ff4444; }
-  25% { color: #ffdd33; }
-  50% { color: #44dd44; }
-  75% { color: #4444ff; }
-  100% { color: #ff4444; }
-}
+html[data-fx='calm'] .gt[data-game='uno'] .gt-word { animation: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .gt-word { transition: none; }
-  .gt .gt-word, .gt :is(.gt-part, .gt-orn) { animation: none !important; transform: none !important; }
+  .gt .gt-word { animation: none !important; transform: none !important; }
 }
 
 /* --- Contextes -------------------------------------------------------------- */
 
-/* Sur une tuile colorée : les teintes vives, détachées par une ombre. */
-.gt-vivid { filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.55)); }
-.gt-vivid .gt-motto { color: #fff !important; opacity: 0.92; }
-
 /* Dans une liste ou un en-tête de partie : aligné à gauche. */
 .gt-start, .gt-room { --gt-align: flex-start; }
-.gt-room { margin: 0; font-size: clamp(1.2rem, 4vw, 1.7rem); }
-.gt-room .gt-name { row-gap: 0.2em; }
+.gt-room { margin: 0; --gt-size: clamp(14px, 3.2vw, 20px); }
+.gt-room .gt-name { row-gap: 0.3em; }
 
-/* Le titre de l'accueil de Flip 7, en grand. */
-.f7-title { --gt-align: flex-start; font-size: clamp(2.8rem, 9vw, 6rem) !important; margin: 6px 0 14px; }
+/* Le grand titre du salon de Flip 7. */
+.f7-title { --gt-align: flex-start; --gt-size: clamp(30px, 7vw, 64px); margin: 8px 0 14px; }
+
+/* Dans une liste, ou dans un cadre étroit, les ornements cèdent la place au
+   nom : ils ne doivent jamais passer seuls à la ligne. */
+.gt[data-size='sm'] .gt-orn { display: none; }
+
+@container (max-width: 250px) {
+  .gt .gt-orn { display: none; }
+}

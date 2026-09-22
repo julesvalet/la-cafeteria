@@ -251,7 +251,9 @@ export function Board({
                         width: cell.w,
                         height: cell.h,
                         background: discColor(state.mode, disc.owner),
-                      }}
+                        // Le halo néon du jeton (voir .p4-disc-face).
+                        '--disc': discColor(state.mode, disc.owner),
+                      } as React.CSSProperties}
                       initial={
                         wasSeen(disc.id)
                           ? false

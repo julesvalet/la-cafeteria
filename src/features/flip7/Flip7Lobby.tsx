@@ -39,7 +39,7 @@ export function Flip7Lobby() {
       <nav className="f7-nav"><Link to="/"><ArrowLeft size={16} /> Les jeux</Link><button onClick={() => setRules(true)}><BookOpen size={16} /> Comment jouer</button></nav>
       <div className="f7-lobby-grid">
         <section className="f7-hero">
-          <p className="f7-eyebrow"><span className="f7-live-dot" /> LA CAFÉTÉRIA PRÉSENTE</p>
+          <p className="f7-eyebrow"><span className="f7-live-dot" /> PLAFEE PRÉSENTE</p>
           <GameTitle as="h1" game="flip7" size="xl" motto className="f7-title" />
           <h2>La prochaine carte<br />peut tout changer.</h2>
           <p className="f7-hero-copy">Un peu d’audace. Beaucoup de suspense.<br />Accumule les points, évite le doublon…<br />et sache quand t’arrêter.</p>
@@ -70,7 +70,7 @@ export function Flip7Lobby() {
                 <option value="easy">Facile · À pile ou face</option><option value="medium">Moyen · Un risque mesuré</option><option value="hard">Difficile · Les probabilités en tête</option>
               </select></>}
             <label className="f7-label" htmlFor="f7-ruleset">Les règles de la table</label>
-            <select id="f7-ruleset" value={ruleset} onChange={e => setRuleset(e.target.value as Ruleset)}><option value="official">Flip 7 · 94 cartes, de 0 à 12</option><option value="cafeteria">Variante Cafétéria · 62 cartes, de 0 à 7</option></select>
+            <select id="f7-ruleset" value={ruleset} onChange={e => setRuleset(e.target.value as Ruleset)}><option value="official">Flip 7 · 94 cartes, de 0 à 12</option><option value="cafeteria">Variante PLAFEE · 62 cartes, de 0 à 7</option></select>
             {mode === 'online' && <SessionVisibility value={visibility} onChange={setVisibility} />}
             <p className="f7-setup-note">{mode === 'solo' ? 'Pas d’adversaire, pas de limite. Bats ton record de manche.' : mode === 'bots' ? 'La table est prête. Tes adversaires aussi.' : 'Crée la table, puis partage son code à tes amis.'}</p>
             <button className="f7-primary f7-start" type="submit">{mode === 'online' ? 'Créer une table' : 'Entrer dans la partie'}<ArrowRight size={19} /></button>

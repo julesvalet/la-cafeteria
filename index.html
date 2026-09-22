@@ -1,36 +1,49 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-backdrop="grid" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="%BASE_URL%assets/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="color-scheme" content="dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="description" content="La Cafétéria — le hub de mini-applications et jeux entre potes." />
-    <title>La Cafétéria</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Montserrat:wght@900&family=Oswald:wght@700;800;900&family=Source+Sans+3:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="apple-mobile-web-app-title" content="PLAFEE" />
+    <meta name="description" content="PLAFEE — la salle d'arcade entre potes : Scopa, UNO, Flip 7 et Puissance 4, en ligne et sans installation." />
+    <title>PLAFEE</title>
+
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%brand/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%BASE_URL%brand/icon-32.png" />
+    <link rel="apple-touch-icon" href="%BASE_URL%brand/icon-180.png" />
+    <link rel="manifest" href="%BASE_URL%manifest.webmanifest" />
+
+    <!-- Aperçu des liens partagés (Discord, WhatsApp…) : les invitations à une table passent par là. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PLAFEE" />
+    <meta property="og:title" content="PLAFEE — la salle d'arcade entre potes" />
+    <meta property="og:description" content="Scopa, UNO, Flip 7 et Puissance 4, en ligne et sans installation." />
+    <meta property="og:image" content="https://julesvalet.github.io/la-cafeteria/brand/og-plafee.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <script>
       (function () {
-        // Le fond choisi (voir src/hooks/useTheme.ts), appliqué avant le
-        // premier rendu pour éviter un éclair du mauvais fond.
-        var b = 'dark';
+        // Les réglages d'affichage (voir src/hooks/useTheme.ts), appliqués avant
+        // le premier rendu pour éviter un éclair du mauvais fond.
+        var root = document.documentElement;
+        var b = 'grid', crt = 'on', fx = 'on';
         try {
           var v = localStorage.getItem('userTheme');
-          var legacy = localStorage.getItem('cafeteria-theme');
-          if (v === 'gold' || v === 'dark' || v === 'earth') b = v;
-          else if (legacy === 'light') b = 'gold';
-          else if (legacy === 'dark') b = 'dark';
+          if (v === 'grid' || v === 'void' || v === 'phosphor') b = v;
+          if (localStorage.getItem('plafee-crt') === 'off') crt = 'off';
+          if (localStorage.getItem('plafee-fx') === 'calm') fx = 'calm';
         } catch (e) {}
-        document.documentElement.setAttribute('data-backdrop', b);
-        document.documentElement.setAttribute('data-theme', b === 'gold' ? 'light' : 'dark');
+        root.setAttribute('data-backdrop', b);
+        root.setAttribute('data-theme', 'dark');
+        root.setAttribute('data-crt', crt);
+        root.setAttribute('data-fx', fx);
       })();
     </script>
     <div id="root"></div>
