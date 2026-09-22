@@ -127,6 +127,13 @@
   letter-spacing: 0.08em;
 }
 
+/* Sa devise a des accents aussi : pas de Press Start 2P ici. */
+.gt[data-game='verite'] .gt-motto {
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: clamp(10px, calc(var(--gt-size) * 0.42), 14px);
+}
+
 /* --- Survol : la lueur monte, le nom grossit ---------------------------------- */
 
 :is(a, button):hover .gt .gt-word,
