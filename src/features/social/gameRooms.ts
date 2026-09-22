@@ -9,14 +9,14 @@ import type { GameTypeId } from '../account/types';
  * en un clic depuis sa liste d'amis, sans passer par le salon du jeu.
  */
 
-export const INVITABLE_GAMES: GameTypeId[] = ['scopa', 'uno', 'puissance4', 'puissance4-original', 'flip7'];
+export const INVITABLE_GAMES: GameTypeId[] = ['scopa', 'uno', 'puissance4', 'puissance4-original', 'flip7', 'verite'];
 
-// Alphabet sans 0/O ni 1/I, comme les salons. Flip 7 attend six caractères,
-// les autres jeux cinq.
+// Alphabet sans 0/O ni 1/I, comme les salons. Flip 7 et la Roulette de Vérité
+// attendent six caractères, les autres jeux cinq.
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
 export function newRoomCode(game: GameTypeId): string {
-  const length = game === 'flip7' ? 6 : 5;
+  const length = game === 'flip7' || game === 'verite' ? 6 : 5;
   const bytes = crypto.getRandomValues(new Uint8Array(length));
   return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join('');
 }

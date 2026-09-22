@@ -36,6 +36,9 @@ jobs:
       - name: Test Flip 7 rules
         run: npm run test:flip7
 
+      - name: Test Roulette de Vérité rules
+        run: npm run test:verite
+
       - name: Lint
         run: npm run lint
 

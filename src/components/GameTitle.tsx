@@ -26,6 +26,7 @@ const GAME_TITLES: Record<GameTypeId, TitleSpec> = {
   'puissance4-original': { label: 'P4 Classic', parts: ['[P4]', 'CLASSIC'], motto: 'PURE MODE' },
   uno: { label: 'UNO', before: '***', after: '***', parts: ['UNO'], motto: 'CHAOS MODE' },
   flip7: { label: 'Flip 7', parts: ['[FLIP.7]'], motto: 'STOP OR CONTINUE' },
+  verite: { label: 'Roulette de Vérité', parts: ['ROULETTE', 'DE', 'VÉRITÉ'], motto: 'VÉRITÉ OU MYTHO ?' },
 };
 
 interface Props {

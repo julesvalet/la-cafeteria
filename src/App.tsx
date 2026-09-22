@@ -20,6 +20,8 @@ import { SocialProvider } from './features/social/SocialProvider';
 
 const Flip7Lobby = lazy(() => import('./features/flip7/Flip7Lobby').then(m => ({ default: m.Flip7Lobby })));
 const Flip7Room = lazy(() => import('./features/flip7/Flip7Room').then(m => ({ default: m.Flip7Room })));
+const VeriteLobby = lazy(() => import('./features/verite/VeriteLobby').then(m => ({ default: m.VeriteLobby })));
+const VeriteRoom = lazy(() => import('./features/verite/VeriteRoom').then(m => ({ default: m.VeriteRoom })));
 // L'espace joueur n'intéresse que les joueurs connectés (et les curieux des
 // classements) : il se charge à la demande plutôt que d'alourdir la page
 // d'accueil et les tables de jeu.
@@ -59,6 +61,8 @@ function App() {
           <Route path="/uno/:code" element={<UnoRoom />} />
           <Route path="/flip7" element={<Flip7Lobby />} />
           <Route path="/flip7/:code" element={<Flip7Room />} />
+          <Route path="/verite" element={<VeriteLobby />} />
+          <Route path="/verite/:code" element={<VeriteRoom />} />
           <Route path="/connexion" element={<LoginPage />} />
           <Route path="/inscription" element={<RegisterPage />} />
           <Route path="/compte" element={<ProfilePage />} />
