@@ -17,6 +17,9 @@ import { LoginPage } from './features/account/LoginPage';
 import { RegisterPage } from './features/account/RegisterPage';
 import { ProfilePage } from './features/account/ProfilePage';
 import { SocialProvider } from './features/social/SocialProvider';
+import { PlafeeProvider } from './features/plafee/PlafeeProvider';
+import { EventBanner, EventPopup, StandingNotice } from './features/plafee/components/site';
+import { VictoryFx } from './features/plafee/components/VictoryFx';
 
 const Flip7Lobby = lazy(() => import('./features/flip7/Flip7Lobby').then(m => ({ default: m.Flip7Lobby })));
 const Flip7Room = lazy(() => import('./features/flip7/Flip7Room').then(m => ({ default: m.Flip7Room })));
@@ -32,6 +35,11 @@ const GroupDetailPage = lazy(() => import('./features/social/pages/GroupDetailPa
 const LeaderboardsPage = lazy(() => import('./features/social/pages/LeaderboardsPage').then(m => ({ default: m.LeaderboardsPage })));
 const SessionsPage = lazy(() => import('./features/social/pages/SessionsPage').then(m => ({ default: m.SessionsPage })));
 const PlayerPage = lazy(() => import('./features/social/pages/PlayerPage').then(m => ({ default: m.PlayerPage })));
+// PLAFEE V2 : boutique, hall des trophées, événements, et le tableau de bord admin.
+const ShopPage = lazy(() => import('./features/plafee/pages/ShopPage').then(m => ({ default: m.ShopPage })));
+const TrophyHallPage = lazy(() => import('./features/plafee/pages/TrophyHallPage').then(m => ({ default: m.TrophyHallPage })));
+const EventsPage = lazy(() => import('./features/plafee/pages/EventsPage').then(m => ({ default: m.EventsPage })));
+const AdminPage = lazy(() => import('./features/plafee/admin/AdminPage').then(m => ({ default: m.AdminPage })));
 
 function App() {
   return (
@@ -41,7 +49,12 @@ function App() {
           alimente le raccourci de compte, visible partout sur le site. */}
       <AuthProvider>
       <SocialProvider>
+      <PlafeeProvider>
       <Header />
+      <StandingNotice />
+      <EventBanner />
+      <EventPopup />
+      <VictoryFx />
       <main className="site-main">
         <Suspense
           fallback={
@@ -73,9 +86,14 @@ function App() {
           <Route path="/classements" element={<LeaderboardsPage />} />
           <Route path="/sessions" element={<SessionsPage />} />
           <Route path="/joueur/:username" element={<PlayerPage />} />
+          <Route path="/boutique" element={<ShopPage />} />
+          <Route path="/trophees" element={<TrophyHallPage />} />
+          <Route path="/evenements" element={<EventsPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes></Suspense>
       </main>
+      </PlafeeProvider>
       </SocialProvider>
       </AuthProvider>
     </BrowserRouter>

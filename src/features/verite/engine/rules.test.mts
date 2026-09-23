@@ -9,6 +9,7 @@ import {
   typeDelay,
 } from './rules.ts';
 import { BASE_QUESTIONS } from './questions.ts';
+import { veriteOutcome, veriteStats } from '../../account/gameOutcomes.ts';
 import type { VeriteAction, VeriteState } from './types.ts';
 
 let failures = 0;
@@ -310,6 +311,42 @@ console.log('Cadence');
   const long = 'x'.repeat(150);
   check('frappe plafonnée à 4,5 s pour une longue question', [...long].length * typeDelay(long) <= 5300);
   check('pause avant de répondre comprise', revealDuration('abc') === 800 + 300 + 1500);
+}
+
+console.log('Esquive, fin de partie et compteurs');
+{
+  let s = run(lobby(3, 21), { type: 'SET_OPTIONS', playerId: 'host', theme: 'hard', rounds: 4 });
+  s = run(s, { type: 'ADD_CUSTOM', playerId: 'p1', text: 'Ta pire honte au collège ?', theme: 'hard' });
+  s = run(s, { type: 'START', playerId: 'host' });
+  check('numéro de partie', s.gameNo === 1 && !s.completed);
+  const first = s.round!.targetId;
+  check('pas d’esquive avant la fin de la question', Boolean(errorOf(s, { type: 'SKIP', playerId: first })));
+  s = toAnswering(s);
+  check('un autre n’esquive pas pour lui', Boolean(errorOf(s, { type: 'SKIP', playerId: first === 'p1' ? 'p2' : 'p1' })));
+  s = run(s, { type: 'SKIP', playerId: first });
+  check('esquive : manche close, invalide, sans point', s.round?.stage === 'verdict' && s.round.skipped && s.history.at(-1)?.skipped === true);
+  for (let i = 0; i < 3; i++) {
+    s = run(s, { type: 'SPIN', playerId: 'host' });
+    s = playRound(s, true);
+  }
+  s = run(s, { type: 'SPIN', playerId: 'host' });
+  check('dernière manche jouée : partie complète', s.phase === 'ended' && s.completed);
+  const chef = veriteOutcome(s, 'host', 'TEST');
+  check('le chef ne gagne pas, sa partie complète compte', chef?.won === false && chef.details?.chef_complete === 1, chef);
+  const stats = veriteStats(s, first);
+  check('l’esquive casse la série', stats.answer_streak <= stats.answered && stats.answered === s.history.filter((h) => h.targetId === first && !h.skipped).length, stats);
+  const author = s.history.some((h) => h.questionBy === 'p1' && h.targetId !== 'p1' && h.verdict) ? 1 : 0;
+  check('question perso validée créditée à son auteur', veriteStats(s, 'p1').custom_validated === author);
+  const o1 = veriteOutcome(s, 'p1', 'TEST');
+  const o2 = veriteOutcome(s, 'p2', 'TEST');
+  check('même signature chez tous les joueurs', o1?.signature === o2?.signature && o1?.signature === chef?.signature);
+  check('au plus un vainqueur', [o1, o2].filter((o) => o?.won).length <= 1);
+
+  let again = run(s, { type: 'REMATCH', playerId: 'host' });
+  again = run(again, { type: 'START', playerId: 'host' });
+  again = run(again, { type: 'END', playerId: 'host' });
+  check('arrêtée avant la fin : pas complète', again.phase === 'ended' && !again.completed);
+  check('revanche : nouvelle signature', veriteOutcome(again, 'host', 'TEST')?.signature !== chef?.signature || again.history.length === 0);
 }
 
 console.log(failures ? `\n${failures} échec(s)` : '\nTout est vert.');

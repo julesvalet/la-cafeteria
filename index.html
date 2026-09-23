@@ -39,6 +39,11 @@
           if (v === 'grid' || v === 'void' || v === 'phosphor') b = v;
           if (localStorage.getItem('plafee-crt') === 'off') crt = 'off';
           if (localStorage.getItem('plafee-fx') === 'calm') fx = 'calm';
+          // Thèmes achetés à la boutique (voir src/features/plafee/PlafeeProvider.tsx).
+          var skin = localStorage.getItem('plafee-skin');
+          var cards = localStorage.getItem('plafee-cards');
+          if (skin && /^[a-z]+$/.test(skin)) root.setAttribute('data-skin', skin);
+          if (cards && /^[a-z]+$/.test(cards)) root.setAttribute('data-cards', cards);
         } catch (e) {}
         root.setAttribute('data-backdrop', b);
         root.setAttribute('data-theme', 'dark');

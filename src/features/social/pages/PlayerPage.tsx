@@ -7,6 +7,7 @@ import { ProfileCard } from '../components/ProfileCard';
 import { GameStats } from '../components/GameStats';
 import { GameHistory } from '../components/GameHistory';
 import { AchievementPanel } from '../../achievements/AchievementPanel';
+import { BadgesPanel } from '../../plafee/components/panels';
 import { getProfileByUsername } from '../api';
 
 type Loaded = Awaited<ReturnType<typeof getProfileByUsername>>;
@@ -50,6 +51,7 @@ export function PlayerPage() {
         <>
           <ProfileCard profile={profile} stats={stats} />
           <GameStats userId={profile.id} />
+          <BadgesPanel userId={profile.id} />
           <AchievementPanel userId={profile.id} />
           <GameHistory userId={profile.id} />
         </>

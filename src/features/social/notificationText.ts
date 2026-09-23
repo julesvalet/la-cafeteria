@@ -37,6 +37,20 @@ export function describeNotification(
     }
     case 'achievement':
       return { text: `Trophée débloqué : ${n.payload.title ?? 'nouveau trophée'}.`, to: '/compte#trophees' };
+    case 'fees':
+      return {
+        text: `+${(n.payload.amount ?? 0).toLocaleString('fr-FR')} FEES${n.payload.description ? ` — ${n.payload.description}` : ''}.`,
+        to: '/compte#fees',
+      };
+    case 'badge':
+      return { text: `Nouveau badge : ${n.payload.name ?? 'badge'}.`, to: '/compte#badges' };
+    case 'event_completed':
+      return {
+        text: `Événement complété : ${n.payload.name ?? ''} ! Trophée débloqué${n.payload.fees ? `, +${n.payload.fees} FEES` : ''}.`,
+        to: '/compte#trophees',
+      };
+    case 'warning':
+      return { text: `Avertissement de l'équipe PLAFEE : ${n.payload.message ?? ''}`, to: null };
     default:
       return { text: 'Nouvelle notification.', to: null };
   }

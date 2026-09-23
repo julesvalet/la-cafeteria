@@ -9,6 +9,7 @@ import { getTrendingGame, refreshMyAchievements } from '../features/achievements
 import { useAuth } from '../features/account/useAuth';
 import { Splash } from './home/Splash';
 import { HomeSide } from './home/HomeSide';
+import { HomeEvents } from '../features/plafee/components/site';
 import './home/home.css';
 
 // Le tableau de bord (tables, classement, parties, groupes) sous l'écran
@@ -119,6 +120,8 @@ export function Home() {
               </Link>
             </div>
           </section>
+
+          <HomeEvents />
 
           <div className="home-main">
             <section className="home-games-wrap" aria-labelledby="home-games-title">

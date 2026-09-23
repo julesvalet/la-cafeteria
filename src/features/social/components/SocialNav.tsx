@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { House, MessagesSquare, Radio, Trophy, User, Users } from 'lucide-react';
+import { House, MessagesSquare, Radio, Store, Trophy, User, Users } from 'lucide-react';
 import { useSocial } from '../useSocial';
 
 /**
@@ -18,6 +18,7 @@ export function SocialNav({ variant = 'page' }: { variant?: 'page' | 'header' })
     { to: '/groupes', label: 'Groupes', icon: MessagesSquare, badge: groupInvitations.length },
     { to: '/sessions', label: 'Sessions', icon: Radio, badge: 0 },
     { to: '/classements', label: 'Classements', icon: Trophy, badge: 0 },
+    { to: '/boutique', label: 'Boutique', icon: Store, badge: 0 },
     { to: '/compte', label: 'Profil', icon: User, badge: 0 },
   ];
 

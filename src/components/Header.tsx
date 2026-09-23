@@ -6,6 +6,7 @@ import { NotificationBell } from '../features/social/components/NotificationBell
 import { SocialNav } from '../features/social/components/SocialNav';
 import { accountsEnabled } from '../lib/supabase';
 import { useAuth } from '../features/account/useAuth';
+import { HeaderExtras } from '../features/plafee/components/site';
 
 const BRAND = `${import.meta.env.BASE_URL}brand/`;
 
@@ -34,6 +35,7 @@ export function Header() {
               <Trophy size={17} aria-hidden />
             </Link>
           )}
+          <HeaderExtras />
           <NotificationBell />
           <AccountMenu />
           <ThemeToggle />

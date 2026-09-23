@@ -1,36 +1,68 @@
 import {
   Award,
+  BadgeCheck,
   Brain,
+  Building2,
+  Cake,
+  CalendarCheck,
+  Castle,
+  ChefHat,
   Coffee,
+  Coins,
   Crown,
+  Dices,
+  Disc,
+  Feather,
   Flame,
   Footprints,
   Gem,
   Grid3x3,
+  Hammer,
   Hand,
+  Heart,
   HeartHandshake,
   HeartPulse,
+  Infinity as InfinityIcon,
+  Joystick,
   Layers,
   Medal,
+  MessageCircle,
   MessagesSquare,
+  PartyPopper,
+  PiggyBank,
+  Shield,
+  ShieldCheck,
+  ShoppingBag,
+  Shuffle,
+  Spade,
+  Sparkle,
   Sparkles,
+  Star,
   Stars,
+  Sun,
   Swords,
+  Tornado,
   TrendingUp,
   Trophy,
   Users,
+  Wine,
   Zap,
   type LucideIcon,
 } from 'lucide-react';
 
 /**
- * Les icônes des trophées, par le nom que la base leur donne. Une table
- * explicite plutôt qu'un import dynamique de toute la bibliothèque : seules
- * ces icônes entrent dans le bundle.
+ * Les icônes des trophées et des badges, par le nom que la base leur donne.
+ * Une table explicite plutôt qu'un import dynamique de toute la bibliothèque :
+ * seules ces icônes entrent dans le bundle. Un nom inconnu (trophée créé par
+ * un admin) retombe sur la médaille.
  */
 const ICONS: Record<string, LucideIcon> = {
-  Footprints, Swords, Trophy, Crown, HeartPulse, Hand, Sparkles, Gem, Zap, Layers,
-  Grid3x3, Brain, Users, MessagesSquare, HeartHandshake, Medal, Flame, TrendingUp, Stars, Coffee,
+  Award, BadgeCheck, Brain, Building2, Cake, CalendarCheck, Castle, ChefHat, Coffee, Coins, Crown, Dices, Disc,
+  Feather, Flame, Footprints, Gem, Grid3x3, Hammer, Hand, Heart, HeartHandshake, HeartPulse, Infinity: InfinityIcon,
+  Joystick, Layers, Medal, MessageCircle, MessagesSquare, PartyPopper, PiggyBank, Shield, ShieldCheck, ShoppingBag,
+  Shuffle, Spade, Sparkle, Sparkles, Star, Stars, Sun, Swords, Tornado, TrendingUp, Trophy, Users, Wine, Zap,
 };
 
-export const achievementIcon = (name: string): LucideIcon => ICONS[name] ?? Award;
+export const ICON_NAMES = Object.keys(ICONS).sort();
+
+export const achievementIcon = (name: string | null | undefined): LucideIcon => (name && ICONS[name]) || Award;

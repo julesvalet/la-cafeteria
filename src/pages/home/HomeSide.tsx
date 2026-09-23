@@ -77,7 +77,7 @@ function SignedInSide({ userId, username, avatar, createdAt }: { userId: string;
       </header>
 
       <Link to="/compte" className="home-profile">
-        <UserAvatar username={username} src={avatar} size={56} />
+        <UserAvatar username={username} src={avatar} size={56} userId={userId} />
         <div className="home-profile-id">
           <strong>{username}</strong>
           <span className="home-level" aria-label={`Niveau ${lvl.level}`}>

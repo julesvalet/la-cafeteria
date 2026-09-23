@@ -10,7 +10,7 @@ import { FlipCard } from './components/FlipCard';
 import { FACE_MS, REVEAL_MS } from './utils/animation';
 import { CasinoAudio } from './utils/sound';
 import { readPreference, recordRound, savePreference } from './utils/storage';
-import { numbers } from './engine/rules';
+import { numbers, points } from './engine/rules';
 import { useRecordGame } from '../account/useRecordGame';
 import { useGameTally, withTally } from '../account/gameTally';
 import { flip7Outcome } from '../account/gameOutcomes';
@@ -53,13 +53,15 @@ function GameSession({ isPublic, ...options }: SessionOptions & { isPublic: bool
   // Vaut `null` hors partie en ligne terminée — le solo et les parties contre
   // des bots ne comptent pas. Pas de useMemo : le hook se repère à la clé de
   // session, une chaîne, et non à l'identité de l'objet.
-  // Arrêts dès la première carte, pour le trophée « Timide ».
+  // Arrêts dès la première carte, et arrêts à 0 point (trophée « Zéro pointé »).
   const tally = useGameTally(state?.phase, ['finished']);
   if (state) {
     tally.event(state.lastEvent.seq, () => {
       const e = state.lastEvent;
       const me = state.players.findIndex(p => p.id === selfId);
-      return e.kind === 'stay' && me >= 0 && e.by === me && state.players[me].cards.length === 1 ? 'early_stays' : null;
+      if (e.kind !== 'stay' || me < 0 || e.by !== me) return null;
+      if (points(state.players[me], state.options.ruleset) === 0) return 'zero_stays';
+      return state.players[me].cards.length === 1 ? 'early_stays' : null;
     });
   }
   const record = useRecordGame(withTally(flip7Outcome(state, selfId), tally.counts));

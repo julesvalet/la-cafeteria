@@ -15,6 +15,8 @@ import { UserAvatar } from '../social/components/UserAvatar';
 const AvatarUpload = lazy(() => import('./components/AvatarUpload').then((m) => ({ default: m.AvatarUpload })));
 import { GameStats } from '../social/components/GameStats';
 import { RankStrip } from '../social/components/RankStrip';
+import { PlayerFlair } from '../plafee/components/bits';
+import { BadgesPanel, WalletPanel } from '../plafee/components/panels';
 
 const DATE_FMT = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 const SHORT_FMT = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
@@ -107,7 +109,7 @@ export function ProfilePage() {
                 onClick={() => setUploading(true)}
                 aria-label="Changer ma photo de profil"
               >
-                <UserAvatar username={profile?.username ?? '?'} src={profile?.avatar} size={68} />
+                <UserAvatar username={profile?.username ?? '?'} src={profile?.avatar} size={68} userId={profile?.id} />
                 <Camera size={16} aria-hidden className="acc-avatar-cam" />
               </button>
               <button type="button" className="acc-avatar-change" onClick={() => setUploading(true)}>
@@ -116,6 +118,7 @@ export function ProfilePage() {
             </div>
             <div className="acc-profile-id">
               <h1 className="acc-title">{profile?.username ?? 'Profil'}</h1>
+              {profile && <PlayerFlair userId={profile.id} />}
               <p className="acc-subtitle">
                 {profile?.bio || <em>Aucune description pour l'instant.</em>}
               </p>
@@ -239,6 +242,8 @@ export function ProfilePage() {
           )}
         </section>
 
+        <WalletPanel />
+        {user && <BadgesPanel userId={user.id} self />}
         {user && <GameStats userId={user.id} />}
         {user && <AchievementPanel userId={user.id} self />}
 

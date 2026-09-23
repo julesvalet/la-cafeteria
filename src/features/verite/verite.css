@@ -899,6 +899,7 @@ button.rv-card { cursor: pointer; }
 .rv-answer:empty { display: none; }
 
 .rv-answer-form { display: flex; flex-direction: column; gap: 10px; }
+.rv-answer-actions { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 10px; }
 .rv .rv-answer-input { font-size: 1.45rem; min-height: 64px; }
 
 .rv-reply {

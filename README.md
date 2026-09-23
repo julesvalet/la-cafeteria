@@ -266,6 +266,52 @@ public `avatars` sous `users/<id>/`. Une contrainte en base interdit à
 `profiles.avatar` de pointer ailleurs que dans le dossier du joueur.
 
 
+## PLAFEE V2 : trophées, FEES, boutique, événements, admin
+
+Schéma : [supabase/migrations/0006_plafee_v2.sql](supabase/migrations/0006_plafee_v2.sql),
+à appliquer après 0005. Même règle que tout le reste : lecture par la RLS,
+écriture uniquement par des fonctions en base. Code client :
+[src/features/plafee/](src/features/plafee/).
+
+**Trophées.** 50 trophées maison (catégories Victoires, Flip 7, Scopa, UNO,
+Puissance 4, Roulette de Vérité, Sociabilité, Défis) et six raretés : bronze,
+argent, or, platine, divin, OG. Tout se calcule en base après chaque partie
+(`_achievement_progress`) ; les compteurs propres à un jeu (arrêts à 0 point,
+scopas d'affilée, réponses validées, séries par difficulté…) viennent du
+client, bornés, comme avant. L'OG demande 50 trophées : les 49 autres plus au
+moins un trophée d'événement ou créé par un admin. Hall des trophées :
+`/trophees` (top 10, raretés, déblocages récents, richesse).
+
+**FEES.** La monnaie : gains par victoire (réglables par jeu), chef d'une
+Roulette menée au bout, série de 7 jours avec une victoire (+200), événements,
+parrainage (lien `/inscription?ref=pseudo` : 50 FEES quand le filleul a joué
+7 jours de suite, 5 par mois au plus). Plafond de victoires payées par jour
+contre les victoires fabriquées en P2P. Chaque mouvement est tracé
+(`fees_transactions`) ; un débit ne descend jamais sous zéro.
+
+**Boutique** (`/boutique`) : thèmes de cartes, thèmes du site (ils
+redéfinissent `--neon`, donc tout le site suit), badges, contours d'avatar,
+plaques (dont une plaque perso de 5 caractères), animations de victoire.
+Un objet par rayon est équipé ; les achats sont définitifs.
+
+**Badges** : cosmétiques décernés par l'admin (titre, icône, contour, plaque,
+temporaire), ou gagnés (événement, parrainage, boutique).
+
+**Événements** (`/evenements`) : un objectif (victoires, parties, ou objectif
+commun) entre deux dates, un trophée en édition limitée, un badge temporaire
+et des FEES en récompense. Bandeau en haut du site, carte sur l'accueil,
+fenêtre à la première visite.
+
+**Admin** (`/admin`) : réservé aux e-mails (confirmés) de `admin_users` —
+`julesvalet71250@gmail.com` au départ. Statistiques (visites anonymes par
+navigateur et par jour, joueurs, parties, par jeu), joueurs (ban, avertissement,
+remise à zéro, FEES), trophées, badges, événements, modération (bannis,
+questions de la Roulette signalées), signalements, FEES (prix, gains,
+plafonds, objets, transactions) et journal. Le site est statique : un ban
+ferme toutes les écritures (parties, amis, groupes, messages), pas la
+connexion elle-même. Images : bucket public `plafee-assets`, écrit par les
+admins seulement.
+
 ## Ajouter une nouvelle feature
 
 Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour

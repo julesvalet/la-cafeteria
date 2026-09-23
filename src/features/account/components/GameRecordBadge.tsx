@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Check, Flame, Loader2, Trophy } from 'lucide-react';
+import { AlertTriangle, Check, Coins, Flame, Loader2, Trophy } from 'lucide-react';
 import type { RecordState } from '../useRecordGame';
 
 /**
@@ -45,10 +45,17 @@ export function GameRecordBadge({ state }: { state: RecordState }) {
     );
   }
 
+  const fees = state.fees > 0 && (
+    <span className="game-record-fees">
+      <Coins size={13} aria-hidden /> +{state.fees} FEES
+    </span>
+  );
+
   if (state.points === 0) {
     return (
-      <p className="game-record" data-tone="muted" role="status">
+      <p className="game-record" data-tone={state.fees > 0 ? 'win' : 'muted'} role="status">
         <Check size={14} aria-hidden /> Partie enregistrée.
+        {fees}
       </p>
     );
   }
@@ -62,6 +69,7 @@ export function GameRecordBadge({ state }: { state: RecordState }) {
           <Flame size={13} aria-hidden /> série de {state.streak}
         </span>
       )}
+      {fees}
     </p>
   );
 }

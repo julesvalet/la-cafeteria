@@ -7,6 +7,9 @@ import { useAuth } from '../account/useAuth';
 import { useRoomIdentity } from '../rooms/playerName';
 import { useRoomSession } from '../rooms/useRoomSession';
 import { InviteFriendsButton } from '../social/components/InviteFriendsButton';
+import { useRecordGame, type RecordState } from '../account/useRecordGame';
+import { veriteOutcome } from '../account/gameOutcomes';
+import { GameRecordBadge } from '../account/components/GameRecordBadge';
 import { Bottle } from './components/Bottle';
 import { QuestionCard } from './components/QuestionCard';
 import { CustomQuestionDialog } from './components/CustomQuestionDialog';
@@ -113,6 +116,9 @@ function VeriteGameView({
   const lockRef = useRef(false);
 
   const me = state?.players.find((p) => p.id === selfId);
+  // Parties, trophées et FEES : chacun enregistre sa ligne à la fin (le chef
+  // compris, pour sa partie menée au bout).
+  const record = useRecordGame(veriteOutcome(state, selfId, code));
   useRoomSession({
     game: 'verite',
     code,
@@ -197,7 +203,7 @@ function VeriteGameView({
           <WaitingRoom state={state} selfId={selfId} isHost={isHost} act={act} starting={starting} setup={setup} />
         )}
         {state.phase === 'playing' && <PlayView state={state} selfId={selfId} isHost={isHost} act={act} />}
-        {state.phase === 'ended' && <Results state={state} isHost={isHost} selfId={selfId} act={act} />}
+        {state.phase === 'ended' && <Results state={state} isHost={isHost} selfId={selfId} act={act} record={record} />}
 
         {toast && (
           <p className="rv-toast" role="alert">
@@ -571,9 +577,20 @@ function PlayView({ state, selfId, isHost, act }: { state: VeriteState; selfId: 
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={onKey}
                 />
-                <button type="submit" className="rv-btn" disabled={stage !== 'answering' || !draft.trim()}>
-                  Envoyer
-                </button>
+                <div className="rv-answer-actions">
+                  <button type="submit" className="rv-btn" disabled={stage !== 'answering' || !draft.trim()}>
+                    Envoyer
+                  </button>
+                  <button
+                    type="button"
+                    className="rv-btn rv-btn-ghost"
+                    disabled={stage !== 'answering'}
+                    title="Esquiver la question : réponse comptée invalide"
+                    onClick={() => act({ type: 'SKIP', playerId: selfId })}
+                  >
+                    Passer
+                  </button>
+                </div>
               </form>
             )}
 
@@ -675,7 +692,19 @@ function PlayView({ state, selfId, isHost, act }: { state: VeriteState; selfId: 
 
 // --- Fin de partie -----------------------------------------------------------
 
-function Results({ state, isHost, selfId, act }: { state: VeriteState; isHost: boolean; selfId: string; act: Act }) {
+function Results({
+  state,
+  isHost,
+  selfId,
+  act,
+  record,
+}: {
+  state: VeriteState;
+  isHost: boolean;
+  selfId: string;
+  act: Act;
+  record: RecordState;
+}) {
   const ranking = standings(state);
   const best = ranking[0]?.score ?? 0;
 
@@ -704,6 +733,7 @@ function Results({ state, isHost, selfId, act }: { state: VeriteState; isHost: b
         ) : (
           <p className="rv-blink">En attente de l’hôte pour une nouvelle partie…</p>
         )}
+        <GameRecordBadge state={record} />
       </section>
 
       {state.history.length > 0 && (
@@ -715,7 +745,7 @@ function Results({ state, isHost, selfId, act }: { state: VeriteState; isHost: b
                 <span className="rv-recap-head">
                   M{h.seq} · {h.targetName}
                   <span className="rv-recap-verdict" data-ok={h.verdict || undefined}>
-                    {h.verdict === null ? '—' : h.verdict ? '✓' : '✗'}
+                    {h.skipped ? 'esquivée' : h.verdict === null ? '—' : h.verdict ? '✓' : '✗'}
                   </span>
                 </span>
                 <span className="rv-recap-q">{h.question}</span>

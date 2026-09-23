@@ -117,6 +117,8 @@ export function createInitialState(roomCode: string, hostId: string, seed = 1): 
     seed: seed >>> 0 || 1,
     round: null,
     history: [],
+    gameNo: 0,
+    completed: false,
   };
 }
 
@@ -246,6 +248,7 @@ function spin(state: VeriteState, rng: Rng): VeriteState {
     answer: null,
     verdict: null,
     voided: false,
+    skipped: false,
   };
   return {
     ...state,
@@ -264,6 +267,8 @@ function record(state: VeriteState, round: VeriteRound): RoundRecord {
     theme: round.question.theme,
     answer: round.answer,
     verdict: round.verdict,
+    skipped: round.skipped,
+    questionBy: round.question.byId ?? null,
   };
 }
 
@@ -409,6 +414,8 @@ function start(state: VeriteState, actorId: string, publicPool: VeriteQuestion[]
     decks: emptyDecks(),
     round: null,
     history: [],
+    gameNo: state.gameNo + 1,
+    completed: false,
     players: state.players.map((p) => ({ ...p, score: 0, turns: 0 })),
   };
   return { state: withRng(ready, (rng) => spin(ready, rng)) };
@@ -480,6 +487,15 @@ export function applyAction(state: VeriteState, action: VeriteAction): ActionRes
       return { state: { ...state, round: { ...round, answer: text, stage: 'judging' } } };
     }
 
+    case 'SKIP': {
+      const round = state.round;
+      if (state.phase !== 'playing' || !round) return fail(state, 'Aucune question en cours.');
+      if (round.targetId !== action.playerId) return fail(state, 'Ce n’est pas ta question.');
+      if (round.stage !== 'answering') return fail(state, 'Attends la fin de la question.');
+      const skipped: VeriteRound = { ...round, stage: 'verdict', answer: null, verdict: false, skipped: true };
+      return { state: { ...state, round: skipped, history: [...state.history, record(state, skipped)] } };
+    }
+
     case 'VERDICT': {
       const round = state.round;
       if (!canReferee(state, action.playerId)) return fail(state, 'Seul le chef du jeu valide les réponses.');
@@ -513,7 +529,7 @@ export function applyAction(state: VeriteState, action: VeriteAction): ActionRes
       if (!canReferee(state, action.playerId)) return fail(state, 'C’est le chef du jeu qui lance la bouteille.');
       if (state.phase !== 'playing') return fail(state, 'La partie n’est pas en cours.');
       if (state.round && state.round.stage !== 'verdict') return fail(state, 'La manche n’est pas terminée.');
-      if (isLastRound(state)) return { state: { ...state, phase: 'ended' } };
+      if (isLastRound(state)) return { state: { ...state, phase: 'ended', completed: true } };
       if (eligiblePlayers(state).length < MIN_PLAYERS) {
         return fail(state, `Il faut au moins ${MIN_PLAYERS} joueurs en plus du chef.`);
       }
@@ -542,6 +558,7 @@ export function applyAction(state: VeriteState, action: VeriteAction): ActionRes
           publicPool: [],
           round: null,
           history: [],
+          completed: false,
         },
       };
     }

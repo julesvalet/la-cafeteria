@@ -9,6 +9,8 @@ import { useFriends } from '../useFriends';
 import { winRate } from '../format';
 import { RankStrip } from './RankStrip';
 import { UserAvatar } from './UserAvatar';
+import { PlayerFlair } from '../../plafee/components/bits';
+import { ReportButton } from '../../plafee/components/panels';
 import { AchievementBadge } from '../../achievements/AchievementBadge';
 import { bestAchievements, getAchievements, type AchievementState } from '../../achievements/api';
 
@@ -78,11 +80,13 @@ export function ProfileCard({ profile, stats }: { profile: PublicProfile; stats:
             username={profile.username}
             src={profile.avatar}
             size={120}
+            userId={profile.id}
             online={friend && presenceLive ? online.has(profile.id) : undefined}
           />
         </div>
         <div className="acc-profile-id">
           <h1 className="acc-title">{profile.username}</h1>
+          <PlayerFlair userId={profile.id} />
           <TopTrophies userId={profile.id} />
           <p className="acc-subtitle">{profile.bio || <em>Aucune description.</em>}</p>
           <p className="neon-hint">
@@ -91,6 +95,7 @@ export function ProfileCard({ profile, stats }: { profile: PublicProfile; stats:
           </p>
         </div>
         <div className="acc-profile-actions">
+          <ReportButton userId={profile.id} username={profile.username} />
           {self ? (
             <Link to="/compte" className="neon-btn">
               <Pencil size={16} aria-hidden /> Modifier

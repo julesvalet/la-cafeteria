@@ -83,7 +83,11 @@ export type NotificationKind =
   | 'group_removed'
   | 'group_deleted'
   | 'game_invite'
-  | 'achievement';
+  | 'achievement'
+  | 'fees'
+  | 'badge'
+  | 'event_completed'
+  | 'warning';
 
 export interface AppNotification {
   id: number;
@@ -101,6 +105,15 @@ export interface AppNotification {
     title?: string;
     icon?: string;
     tier?: string;
+    /** FEES, badges, événements, avertissements (PLAFEE V2). */
+    amount?: number;
+    type?: string;
+    description?: string | null;
+    badge_id?: string;
+    name?: string;
+    event_id?: string;
+    fees?: number;
+    message?: string;
   };
   created_at: string;
   read_at: string | null;

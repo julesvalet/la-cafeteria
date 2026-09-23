@@ -5,6 +5,7 @@ import { AuthContext, type AuthValue, type SignUpResult } from './authContext';
 import { DEFAULT_PREFERENCES, type Profile } from './types';
 import { translateAuthError } from './validation';
 import { clearSavedPseudo, savePseudo } from '../rooms/playerName';
+import { clearReferral, pendingReferral } from '../plafee/api';
 
 /** Remonte l'erreur Supabase en français, sans perdre la cause d'origine. */
 function fail(message: string): never {
@@ -142,12 +143,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           // Lu par le trigger `handle_new_user` pour créer le profil dans la
-          // même transaction que le compte.
-          data: { username: wanted },
+          // même transaction que le compte — et le parrain d'un lien ?ref=.
+          data: { username: wanted, ...(pendingReferral() ? { ref: pendingReferral() } : {}) },
           emailRedirectTo: authRedirectUrl('compte'),
         },
       });
       if (error) fail(error.message);
+      clearReferral();
 
       return { needsEmailConfirmation: data.session === null };
     },

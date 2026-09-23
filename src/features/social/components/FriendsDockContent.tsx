@@ -118,7 +118,7 @@ export function DockContent({ onClose }: { onClose: () => void }) {
             return (
               <li key={f.user_id} className="dock-friend" data-status={status}>
                 <div className="dock-friend-id">
-                  <UserAvatar username={f.username} src={f.avatar} size={32} status={status} />
+                  <UserAvatar username={f.username} src={f.avatar} size={32} status={status} userId={f.user_id} />
                   <div className="dock-friend-text">
                     <Link to={`/joueur/${f.username}`} className="dock-name" onClick={onClose}>
                       {f.username}

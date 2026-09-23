@@ -5,6 +5,7 @@ import { AccBanner } from '../../account/components/AccBanner';
 import { GAME_LABELS, type GameTypeId, type LeaderboardRow } from '../../account/types';
 import { winRate } from '../format';
 import { UserAvatar } from './UserAvatar';
+import { TemporalBadges } from '../../plafee/components/bits';
 import { LEADERBOARD_GAMES, PERIODS, PERIOD_LABELS, type LeaderboardPeriod, type LeaderboardRank } from '../types';
 
 /** Les trois premières places : une médaille en icône, teintée or, argent, bronze. */
@@ -130,10 +131,11 @@ export function LeaderboardTable({
               </td>
               <td>
                 <Link to={`/joueur/${r.username}`} className="soc-name soc-lb-player">
-                  <UserAvatar username={r.username} src={r.avatar} size={compact ? 26 : 32} />
+                  <UserAvatar username={r.username} src={r.avatar} size={compact ? 26 : 32} userId={r.user_id} />
                   {r.username}
                 </Link>
                 <TrophyMark count={trophies.get(r.user_id) ?? 0} />
+                <TemporalBadges userId={r.user_id} />
                 {r.user_id === selfId && <span className="soc-tag">toi</span>}
               </td>
               <td className="soc-num soc-lb-points">{r.points}</td>

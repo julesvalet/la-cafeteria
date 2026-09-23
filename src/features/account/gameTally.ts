@@ -1,7 +1,20 @@
 import { useRef } from 'react';
 import type { GameOutcome } from './recordGame';
 
-export type TallyKey = 'scopas' | 'special_cards' | 'early_stays';
+export type TallyKey =
+  | 'scopas'
+  | 'scopa_streak'
+  | 'special_cards'
+  | 'early_stays'
+  | 'zero_stays'
+  | 'answered'
+  | 'valid_answers'
+  | 'answer_streak'
+  | 'streak_clean'
+  | 'streak_normal'
+  | 'streak_hard'
+  | 'custom_validated'
+  | 'chef_complete';
 
 /**
  * Les compteurs d'une partie, pour les trophées (scopas, cartes spéciales…).
@@ -52,6 +65,10 @@ export function useGameTally(phase: string | undefined, endPhases: string[]) {
       if (delta > 0) t.counts[key] = (t.counts[key] ?? 0) + delta;
       t.trackKey = scope;
       t.trackValue = value;
+    },
+    /** Un record de la partie (meilleure série) : on garde le plus haut. */
+    max(key: TallyKey, value: number) {
+      if (value > (t.counts[key] ?? 0)) t.counts[key] = value;
     },
     counts: t.counts,
   };

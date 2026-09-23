@@ -1,10 +1,12 @@
 import { lazy, Suspense, useId, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Award, Camera, House, LogIn, LogOut, Settings, Trophy, User, Users } from 'lucide-react';
+import { Award, Camera, Gauge, House, LogIn, LogOut, PartyPopper, Settings, Store, Trophy, User, Users } from 'lucide-react';
 import { accountsEnabled } from '../../../lib/supabase';
 import { useAuth } from '../useAuth';
 import { useSocial } from '../../social/useSocial';
 import { UserAvatar } from '../../social/components/UserAvatar';
+import { usePlafee } from '../../plafee/usePlafee';
+import { FeesAmount } from '../../plafee/components/bits';
 // Le recadrage d'image ne sert qu'au moment de changer de photo.
 const AvatarUpload = lazy(() => import('./AvatarUpload').then((m) => ({ default: m.AvatarUpload })));
 
@@ -19,6 +21,7 @@ const AvatarUpload = lazy(() => import('./AvatarUpload').then((m) => ({ default:
 export function AccountMenu() {
   const { status, profile, signOut } = useAuth();
   const { panelOpen, setPanelOpen, online, friends } = useSocial();
+  const { wallet, isAdmin } = usePlafee();
   const navigate = useNavigate();
   const menuId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
@@ -71,15 +74,21 @@ export function AccountMenu() {
         title={profile?.username ?? 'Mon compte'}
         aria-label={profile ? `Menu du compte de ${profile.username}` : 'Menu du compte'}
       >
-        {profile ? <UserAvatar username={profile.username} src={profile.avatar} size={36} /> : <User size={17} aria-hidden />}
+        {profile ? <UserAvatar username={profile.username} src={profile.avatar} size={36} userId={profile.id} /> : <User size={17} aria-hidden />}
       </button>
 
       <div id={menuId} ref={menuRef} popover="auto" className="acc-menu acc-scope" role="menu">
         {profile && (
           <div className="acc-menu-head">
-            <UserAvatar username={profile.username} src={profile.avatar} size={40} />
+            <UserAvatar username={profile.username} src={profile.avatar} size={40} userId={profile.id} />
             <strong>{profile.username}</strong>
+            <FeesAmount value={wallet?.balance ?? 0} size="sm" />
           </div>
+        )}
+        {isAdmin && (
+          <Link role="menuitem" to="/admin" onClick={close} className="acc-menu-admin">
+            <Gauge size={16} aria-hidden /> Dashboard admin
+          </Link>
         )}
         <Link role="menuitem" to="/" onClick={close}>
           <House size={16} aria-hidden /> Accueil
@@ -91,6 +100,15 @@ export function AccountMenu() {
         )}
         <Link role="menuitem" to="/compte#trophees" onClick={close}>
           <Award size={16} aria-hidden /> Mes trophées
+        </Link>
+        <Link role="menuitem" to="/boutique" onClick={close}>
+          <Store size={16} aria-hidden /> Boutique
+        </Link>
+        <Link role="menuitem" to="/trophees" onClick={close}>
+          <Trophy size={16} aria-hidden /> Hall des trophées
+        </Link>
+        <Link role="menuitem" to="/evenements" onClick={close}>
+          <PartyPopper size={16} aria-hidden /> Événements
         </Link>
         <Link role="menuitem" to="/classements" onClick={close}>
           <Trophy size={16} aria-hidden /> Classements

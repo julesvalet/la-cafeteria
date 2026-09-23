@@ -84,7 +84,7 @@ function Dashboard({ withFriends }: { withFriends: boolean }) {
           <ul className="soc-list">
             {onlineFriends.map((f) => (
               <li key={f.user_id} className="soc-row">
-                <UserAvatar username={f.username} src={f.avatar} status={presence.get(f.user_id) ?? 'online'} />
+                <UserAvatar username={f.username} src={f.avatar} status={presence.get(f.user_id) ?? 'online'} userId={f.user_id} />
                 <div className="soc-row-main">
                   <Link to={`/joueur/${f.username}`} className="soc-name">
                     {f.username}

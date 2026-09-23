@@ -144,6 +144,28 @@ function ScopaGameView({
   // Scopas réussies sur tout le match, pour le trophée « Scopeur ».
   const tally = useGameTally(state?.phase, ['match-end']);
   if (state && myIndex >= 0) tally.track(String(state.handNumber), state.players[myIndex].scope, 'scopas');
+  // Scopas d'affilée : chacun de mes coups (ma main raccourcit) prolonge la
+  // série s'il fait une scopa, la remet à zéro sinon. Idempotent : un rendu
+  // répété ne voit pas de nouveau coup.
+  const scopaRun = useRef({ hand: -1, len: 0, scope: 0, run: 0 });
+  if (state && myIndex >= 0) {
+    const r = scopaRun.current;
+    const p = state.players[myIndex];
+    if (state.phase === 'lobby' || state.handNumber < r.hand) r.run = 0;
+    if (state.handNumber !== r.hand) {
+      r.hand = state.handNumber;
+      r.len = p.hand.length;
+      r.scope = p.scope;
+    } else if (p.hand.length < r.len) {
+      r.run = p.scope > r.scope ? r.run + 1 : 0;
+      tally.max('scopa_streak', r.run);
+      r.len = p.hand.length;
+      r.scope = p.scope;
+    } else if (p.hand.length > r.len) {
+      // Nouvelle donne dans la même manche : ce n'est pas un coup.
+      r.len = p.hand.length;
+    }
+  }
   const outcome = withTally(scopaOutcome(state, selfId, code), tally.counts);
   const record = useRecordGame(outcome);
 

@@ -56,6 +56,8 @@ export interface VeriteRound {
   verdict: boolean | null;
   /** Le joueur désigné est parti avant la fin : manche annulée. */
   voided: boolean;
+  /** Le joueur désigné a esquivé la question. */
+  skipped: boolean;
 }
 
 export interface RoundRecord {
@@ -66,6 +68,9 @@ export interface RoundRecord {
   theme: VeriteTheme;
   answer: string | null;
   verdict: boolean | null;
+  skipped: boolean;
+  /** Auteur de la question, pour une question perso. */
+  questionBy: string | null;
 }
 
 export type VeritePhase = 'lobby' | 'playing' | 'ended';
@@ -91,6 +96,10 @@ export interface VeriteState {
   seed: number;
   round: VeriteRound | null;
   history: RoundRecord[];
+  /** Numéro de partie dans la room : distingue une revanche de la précédente. */
+  gameNo: number;
+  /** Vrai quand la partie est allée jusqu'à sa dernière manche (pas arrêtée avant). */
+  completed: boolean;
 }
 
 export type VeriteAction =
@@ -104,6 +113,7 @@ export type VeriteAction =
   | { type: 'START'; playerId: string; publicPool?: VeriteQuestion[] }
   | { type: 'ADVANCE'; seq: number; draw: number; to: 'reveal' | 'answering' }
   | { type: 'ANSWER'; playerId: string; text: string }
+  | { type: 'SKIP'; playerId: string }
   | { type: 'VERDICT'; playerId: string; valid: boolean }
   | { type: 'REDRAW'; playerId: string }
   | { type: 'SPIN'; playerId: string }

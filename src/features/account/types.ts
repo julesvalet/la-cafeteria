@@ -54,6 +54,12 @@ export interface RecordedGame {
   already: boolean;
   /** Trophées débloqués par cette partie (le pop-up passe par les notifications). */
   unlocked?: { id: string; title: string }[];
+  /** FEES gagnés par cette partie (victoire, chef, bonus de série). */
+  fees?: number;
+  /** Jours de suite avec au moins une victoire (0 : pas de victoire). */
+  daily_streak?: number;
+  /** Événements complétés par cette partie. */
+  events_done?: { event_id: string; name: string }[];
 }
 
 export const DEFAULT_PREFERENCES: ProfilePreferences = {

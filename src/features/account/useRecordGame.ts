@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { accountsEnabled } from '../../lib/supabase';
 import { useAuth } from './useAuth';
 import { recordGame, sessionKeyFor, type GameOutcome } from './recordGame';
+import { celebrate } from '../plafee/victory';
 
 export type RecordState =
   /** Partie en cours, ou rien à enregistrer. */
@@ -9,7 +10,7 @@ export type RecordState =
   /** Personne n'est connecté : la partie ne compte pour aucun classement. */
   | { kind: 'anonymous' }
   | { kind: 'saving' }
-  | { kind: 'saved'; points: number; streak: number; streakBonus: boolean; already: boolean }
+  | { kind: 'saved'; points: number; streak: number; streakBonus: boolean; already: boolean; fees: number; dailyStreak: number }
   | { kind: 'error'; message: string };
 
 /**
@@ -74,7 +75,15 @@ export function useRecordGame(outcome: GameOutcome | null): RecordState {
           streak: res.streak,
           streakBonus: res.streak_bonus,
           already: res.already,
+          fees: Number(res.fees ?? 0),
+          dailyStreak: res.daily_streak ?? 0,
         });
+        if (!res.already) {
+          const fees = Number(res.fees ?? 0);
+          // L'animation de victoire et le solde de l'en-tête (voir plafee/).
+          if (outcome.won) celebrate({ fees, streak: res.daily_streak ?? 0 });
+          if (fees > 0 || outcome.won) window.dispatchEvent(new Event('plafee:wallet'));
+        }
       })
       .catch((err: unknown) => {
         if (cancelled) return;
