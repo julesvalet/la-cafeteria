@@ -75,7 +75,7 @@ export function getSupabase(): Promise<SupabaseClient> {
 /**
  * Où renvoyer le joueur depuis un e-mail de confirmation.
  *
- * `BASE_URL` vaut "/la-cafeteria/" en production et "/" en développement :
+ * `BASE_URL` vaut "/plafee/" en production et "/" en développement :
  * reconstruire l'URL absolue à partir de l'origine courante évite de coder en
  * dur un domaine qui diffère entre la préversion locale et GitHub Pages.
  */

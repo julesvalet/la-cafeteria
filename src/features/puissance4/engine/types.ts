@@ -11,6 +11,8 @@ export interface Disc {
 export interface P4Player {
   id: string;
   name: string;
+  /** Le compte du joueur, pour afficher ses cosmétiques (absent : invité ou bot). */
+  userId?: string | null;
   /** Free-for-all modes give everyone their own team, so win checks are uniform. */
   team: number;
   connected: boolean;
@@ -89,7 +91,7 @@ export interface P4State {
 }
 
 export type P4Action =
-  | { type: 'JOIN'; playerId: string; name: string }
+  | { type: 'JOIN'; playerId: string; name: string; userId?: string | null }
   | { type: 'SET_MODE'; mode: P4Mode }
   | { type: 'START' }
   /** Drop the next disc. Whether it is charged is the engine's business. */

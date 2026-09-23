@@ -1,0 +1,54 @@
+/* La carte « Contre les bots » des salons : chips et niveaux dans la charte. */
+
+.bot-card h2 { display: flex; align-items: center; gap: 8px; }
+.bot-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.bot-chip {
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 2px solid rgb(var(--neon-rgb) / 0.35);
+  background: var(--panel);
+  color: var(--ink-2);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.bot-chip:hover { border-color: var(--neon); color: var(--ink); }
+.bot-chip[aria-checked='true'] { border-color: var(--neon); background: rgb(var(--neon-rgb) / 0.15); color: var(--neon); }
+.bot-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.bot-fixed { margin: 0; font-family: var(--font-pixel); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--neon); }
+
+.bot-levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.bot-levels legend { margin-bottom: 8px; padding: 0; font-family: var(--font-pixel); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.bot-level {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 2px solid rgb(var(--neon-rgb) / 0.25);
+  background: var(--panel);
+  cursor: pointer;
+}
+.bot-level input { position: absolute; opacity: 0; pointer-events: none; }
+.bot-level-name { font-family: var(--font-pixel); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.bot-level-hint { font-size: 12px; line-height: 1.35; color: var(--ink-3); }
+.bot-level:hover { border-color: rgb(var(--neon-rgb) / 0.7); }
+.bot-level:has(input:checked) { border-color: var(--neon); background: rgb(var(--neon-rgb) / 0.12); box-shadow: 0 0 10px rgb(var(--neon-rgb) / 0.3); }
+.bot-level:has(input:checked) .bot-level-name { color: var(--neon); }
+.bot-level:has(input:focus-visible) { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.bot-level[data-level='hard']:has(input:checked) { border-color: var(--danger); background: rgb(var(--danger-rgb) / 0.1); box-shadow: none; }
+.bot-level[data-level='hard']:has(input:checked) .bot-level-name { color: var(--danger); }
+.bot-level[data-level='random']:has(input:checked) { border-color: var(--magenta); background: rgb(var(--magenta-rgb) / 0.1); box-shadow: none; }
+.bot-level[data-level='random']:has(input:checked) .bot-level-name { color: var(--magenta); }
+
+@media (max-width: 380px) {
+  .bot-levels { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Trois bornes dans le salon : elles se rangent selon la place. */
+.p4-lobby-grid:has(.bot-card),
+.scopa-lobby-grid:has(.bot-card) { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); }

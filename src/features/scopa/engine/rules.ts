@@ -31,12 +31,13 @@ export function createInitialState(roomCode: string, hostId: string): GameState 
   };
 }
 
-export function addPlayer(state: GameState, id: string, name: string): GameState {
+export function addPlayer(state: GameState, id: string, name: string, userId: string | null = null): GameState {
   if (state.players.some((p) => p.id === id)) return state;
   if (state.players.length >= 4 || state.phase !== 'lobby') return state;
   const player: Player = {
     id,
     name: name.trim() || 'Joueur',
+    userId,
     hand: [],
     handCount: 0,
     captured: [],
@@ -267,7 +268,7 @@ function scoreHand(state: GameState): GameState {
 export function applyAction(state: GameState, action: ScopaAction): { state: GameState; error?: string } {
   switch (action.type) {
     case 'JOIN':
-      return { state: addPlayer(state, action.playerId, action.name) };
+      return { state: addPlayer(state, action.playerId, action.name, action.userId ?? null) };
     case 'START': {
       if (state.players.length < 2) return { state, error: 'Il faut au moins 2 joueurs pour commencer.' };
       if (state.phase !== 'lobby') return { state, error: 'La partie a déjà commencé.' };

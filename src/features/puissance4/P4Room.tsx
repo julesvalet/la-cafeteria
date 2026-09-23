@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Check, Copy, LogOut, Repeat2, TriangleAlert } from 'lucide-react';
 import { GameTitle } from '../../components/GameTitle';
 import { useP4Room } from './net/useP4Room';
@@ -21,6 +21,9 @@ import type { Impact } from './components/ImpactFx';
 import type { FxShot } from './components/PowerFx';
 import type { P4Mode } from './engine/types';
 import { useRoomIdentity } from '../rooms/playerName';
+import { SeatAvatar } from '../plafee/components/SeatFlair';
+import { useOpponentVictory } from '../plafee/seatCosmetics';
+import { isBotRoomCode, type BotSetup } from '../bots/bots';
 
 interface LocationState {
   isHost?: boolean;
@@ -28,6 +31,8 @@ interface LocationState {
   mode?: P4Mode;
   /** Choisi à la création : une table publique est annoncée aux amis. */
   visibility?: 'public' | 'private';
+  /** Contre des bots : aucune connexion, la table vit dans ce navigateur. */
+  bots?: BotSetup;
 }
 
 /** Roughly how long a disc takes to fall, so the dust lands with it. */
@@ -42,7 +47,11 @@ export function P4Room() {
   const identity = useRoomIdentity(navState?.name);
   const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
+  const bots = navState?.bots ?? null;
   const mode = navState?.mode ?? 'duel';
+
+  // Une table de bots ne survit pas à un rechargement : retour au salon.
+  if (isBotRoomCode(code) && !bots) return <Navigate to="/puissance4" replace />;
 
   if (identity.pending) {
     return (
@@ -84,7 +93,7 @@ export function P4Room() {
     );
   }
 
-  return <P4GameView code={code} name={identity.name} isHost={isHost} mode={mode} isPublic={isPublic} />;
+  return <P4GameView code={code} name={identity.name} isHost={isHost} mode={mode} isPublic={isPublic} bots={bots} />;
 }
 
 function P4GameView({
@@ -93,14 +102,16 @@ function P4GameView({
   isHost,
   mode,
   isPublic,
+  bots,
 }: {
   code: string;
   name: string;
   isHost: boolean;
   mode: P4Mode;
   isPublic: boolean;
+  bots: BotSetup | null;
 }) {
-  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useP4Room(code, name, isHost, mode);
+  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useP4Room(code, name, isHost, mode, 'powers', bots);
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [impact, setImpact] = useState<Impact | null>(null);
@@ -137,7 +148,7 @@ function P4GameView({
     code: code.toUpperCase(),
     isHost,
     isPublic,
-    role: !state ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
+    role: !state || bots ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
     status: state?.phase === 'lobby' ? 'waiting' : 'playing',
     players: state?.players.filter((p) => p.connected).length ?? 0,
     maxPlayers: MODES[state?.mode ?? mode].players,
@@ -148,6 +159,14 @@ function P4GameView({
   // the game still counts towards a player's total.
   const outcome = useMemo(() => p4Outcome(state, selfId, code, 'puissance4'), [state, selfId, code]);
   const record = useRecordGame(outcome);
+
+  // L'équipe adverse aligne ses 4 jetons : tout le monde voit l'animation de son joueur.
+  const myTeam = state?.players.find((p) => p.id === selfId)?.team;
+  const p4Winner =
+    state?.phase === 'won' && state.winner && state.winner.team !== myTeam
+      ? state.players.find((p) => p.team === state.winner!.team && p.userId) ?? null
+      : null;
+  useOpponentVictory(p4Winner && state ? { userId: p4Winner.userId, name: p4Winner.name, key: `${state.winner?.cells.join('-')}|${state.log.length}` } : null);
 
   /* The power of a disc I just landed, waiting for me to aim it. */
   const aiming = state?.pendingPower?.by === seat ? (state.pendingPower?.power ?? null) : null;
@@ -307,8 +326,10 @@ function P4GameView({
 
       <div className="p4-room-topbar">
         <div>
-          <GameTitle as="h1" game="puissance4" suffix={`room ${code}`} className="gt-room" />
+          <GameTitle as="h1" game="puissance4" suffix={bots ? 'contre les bots' : `room ${code}`} className="gt-room" />
           <div className="p4-topbar-actions">
+            {!bots && (
+            <>
             <button
               type="button"
               className={`btn btn-outline p4-chip-btn${copied ? ' is-copied' : ''}`}
@@ -325,6 +346,8 @@ function P4GameView({
               )}
             </button>
             <InviteFriendsButton game="puissance4" code={code} className="btn btn-outline p4-chip-btn" />
+            </>
+            )}
             <button type="button" className="btn btn-outline p4-chip-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -335,7 +358,8 @@ function P4GameView({
         </Link>
       </div>
 
-      <ObserverBar
+      {!bots && (
+        <ObserverBar
         spectators={spectators}
         selfId={selfId}
         isSpectator={isSpectator}
@@ -343,6 +367,7 @@ function P4GameView({
         onSeat={requestSeat}
         exitTo="/puissance4"
       />
+      )}
 
       {state.phase === 'lobby' && (
         <div className="p4-lobby-card p4-waiting">
@@ -409,7 +434,7 @@ function P4GameView({
                 }`}
                 style={{ '--p4-player-color': discColor(state.mode, i) } as CSSProperties}
               >
-                <span className="p4-dot" />
+                {p.userId ? <SeatAvatar userId={p.userId} name={p.name} color={discColor(state.mode, i)} size={22} /> : <span className="p4-dot" />}
                 <span className="p4-score-name">
                   {p.name}
                   {p.id === selfId ? ' (toi)' : ''}

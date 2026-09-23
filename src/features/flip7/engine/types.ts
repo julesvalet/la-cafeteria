@@ -1,10 +1,17 @@
 export type CardKind = 'number' | 'bonus' | 'double' | 'flip3' | 'freeze' | 'chance';
 export interface Card { id: string; kind: CardKind; value: number }
 export type Ruleset = 'official' | 'cafeteria';
-export type Difficulty = 'easy' | 'medium' | 'hard';
+/** « random » : chaque bot tire son niveau à la création de la table. */
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'random';
+export type BotSkill = Exclude<Difficulty, 'random'>;
 export type GameMode = 'online' | 'bots' | 'solo';
 export interface Player {
   id: string; name: string; bot: boolean; connected: boolean;
+  /** Le compte du joueur, pour afficher ses cosmétiques (absent : invité ou bot). */
+  userId?: string | null;
+
+  /** Le niveau d'un bot (absent pour un humain). */
+  level?: BotSkill;
   cards: Card[]; status: 'active' | 'stayed' | 'busted' | 'frozen' | 'left';
   total: number; roundPoints: number; variantPoints: number;
   skip: boolean; chanceUsed: boolean;
@@ -26,7 +33,7 @@ export interface GameState {
 }
 export type PublicState = Omit<GameState, 'deck' | 'queue'> & { deckCount: number; automatic: boolean; risk: number[] };
 export type PlayerAction =
-  | { type: 'JOIN'; name: string }
+  | { type: 'JOIN'; name: string; userId?: string | null }
   | { type: 'START' | 'NEXT_ROUND' | 'REMATCH' | 'HIT' | 'STAY' }
   | { type: 'TARGET'; targetId: string }
   | { type: 'CHAT'; text: string };

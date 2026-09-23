@@ -11,6 +11,9 @@ import {
   type Spectator,
   type SpectatorsMessage,
 } from '../../rooms/spectators';
+import { getCurrentUserId } from '../../account/currentUser';
+import { createBotRunner, LOCAL_SELF_ID, makeBots, type BotSetup } from '../../bots/bots';
+import { scopaDecide } from '../engine/ai';
 
 const PEER_PREFIX = 'la-cafeteria-scopa-';
 
@@ -46,7 +49,7 @@ function maskState(state: GameState, viewerId: string): GameState {
   };
 }
 
-export function useScopaRoom(roomCode: string, playerName: string, isHost: boolean): UseScopaRoomResult {
+export function useScopaRoom(roomCode: string, playerName: string, isHost: boolean, bots: BotSetup | null = null): UseScopaRoomResult {
   const [state, setState] = useState<GameState | null>(null);
   const [selfId, setSelfId] = useState<string | null>(null);
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
@@ -64,6 +67,36 @@ export function useScopaRoom(roomCode: string, playerName: string, isHost: boole
   useEffect(() => {
     let cancelled = false;
     const code = roomCode.trim().toUpperCase();
+
+    // Contre des bots : pas de réseau, la table vit dans ce navigateur.
+    if (bots) {
+      const seats = makeBots(bots);
+      const runner = createBotRunner<GameState, ScopaAction>({
+        get: () => hostStateRef.current,
+        apply: (action) => hostApplyRef.current(action),
+        decide: (s) => scopaDecide(s, seats),
+      });
+      const commit = (next: GameState) => {
+        hostStateRef.current = next;
+        setState(maskState(next, LOCAL_SELF_ID));
+        runner.poke();
+      };
+      hostApplyRef.current = (action) => {
+        if (!hostStateRef.current) return undefined;
+        const { state: next, error: err } = applyAction(hostStateRef.current, action);
+        commit(next);
+        return err;
+      };
+      let initial = applyAction(createInitialState(code, LOCAL_SELF_ID), { type: 'JOIN', playerId: LOCAL_SELF_ID, name: nameRef.current, userId: getCurrentUserId() }).state;
+      for (const b of seats) initial = applyAction(initial, { type: 'JOIN', playerId: b.id, name: b.name }).state;
+      setSelfId(LOCAL_SELF_ID);
+      commit(applyAction(initial, { type: 'START' }).state);
+      setStatus('connected');
+      return () => {
+        runner.stop();
+        hostApplyRef.current = () => undefined;
+      };
+    }
 
     if (isHost) {
       const hostId = PEER_PREFIX + code;
@@ -184,7 +217,7 @@ export function useScopaRoom(roomCode: string, playerName: string, isHost: boole
         hostConnRef.current = conn;
 
         conn.on('open', () => {
-          conn.send({ type: 'ACTION', action: { type: 'JOIN', playerId: id, name: nameRef.current } } satisfies WireMessage);
+          conn.send({ type: 'ACTION', action: { type: 'JOIN', playerId: id, name: nameRef.current, userId: getCurrentUserId() } } satisfies WireMessage);
           setStatus('connected');
         });
         conn.on('data', (data) => {

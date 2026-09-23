@@ -12,7 +12,8 @@ const PAYLOAD_HINTS: Record<ShopCategory, { key: string; hint: string; options?:
   card_theme: { key: 'skin', hint: 'Style des cartes.', options: ['classic', 'pixel', 'holo', 'neon', 'gold'] },
   site_theme: { key: 'skin', hint: 'Couleurs du site.', options: ['arcade', 'retro', 'synthwave', 'cyber'] },
   badge: { key: 'badge_sku', hint: 'Code du badge offert (colonne « sku » d’un badge).' },
-  profile_border: { key: 'border', hint: 'Style du contour.', options: ['silver', 'gold', 'platine', 'rainbow'] },
+  profile_border: { key: 'border', hint: 'Style du contour.', options: ['silver', 'gold', 'platine', 'rainbow', 'flame'] },
+  avatar_accessory: { key: 'accessory', hint: 'Posé sur la photo.', options: ['bow'] },
   nameplate: { key: 'plate', hint: 'Texte de la plaque (majuscules).' },
   victory_animation: { key: 'anim', hint: 'Animation.', options: ['confetti', 'fireworks', 'pixels', 'hologram'] },
 };

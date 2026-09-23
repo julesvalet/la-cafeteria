@@ -1,0 +1,198 @@
+/*
+ * Les thèmes du site (réglages, sous l'engrenage) — `data-look` sur <html> :
+ *   - arcade (défaut, « Moderne » dans les réglages) : la salle vert et noir ;
+ *   - noir  : une interface sobre, typo moderne, fond noir ;
+ *   - blanc : la même, sur fond blanc ;
+ *   - rgb   : l'arcade, dont le néon change de couleur (voir hooks/useTheme.ts).
+ *
+ * Tout passe par les jetons de index.css : redéfinir les couleurs et les
+ * polices suffit à repeindre le site. Les tables de jeu gardent leurs tapis
+ * sombres, comme de vrais objets posés dans la pièce. Chargé en dernier.
+ */
+
+/* --- Le socle commun aux deux thèmes sobres ---------------------------------- */
+
+html:is([data-look='noir'], [data-look='blanc']) {
+  --font-pixel: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Roboto, Arial, sans-serif;
+  --font-arcade: var(--font-pixel);
+  --font-vcr: var(--font-pixel);
+  --font-mono: var(--font-pixel);
+
+  --neon-glow-sm: none;
+  --text-glow: none;
+  --frame-w: 1px;
+  --frame: 1px solid var(--line-2);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+/* Pas de néon : ni halo sur le texte, ni lueur sur le logo, ni décor. */
+html:is([data-look='noir'], [data-look='blanc']) *,
+html:is([data-look='noir'], [data-look='blanc']) *::before,
+html:is([data-look='noir'], [data-look='blanc']) *::after {
+  text-shadow: none !important;
+}
+html:is([data-look='noir'], [data-look='blanc']) .site-brand { filter: none; }
+html:is([data-look='noir'], [data-look='blanc']) :is(.plf-arcs, .plf-scanband, .plf-vignette),
+html:is([data-look='noir'], [data-look='blanc']) body::after { display: none; }
+html:is([data-look='noir'], [data-look='blanc']),
+html:is([data-look='noir'], [data-look='blanc']) body::before { background: var(--bg) !important; }
+
+/* Des cartes arrondies, une ombre douce plutôt qu'un cadre lumineux. */
+html:is([data-look='noir'], [data-look='blanc']) :is(.acc-card, .p4-lobby-card, .scopa-lobby-card, .f7-card-panel, .soc-modal, .adm-tab, .neon-btn, .neon-input, .btn, .account-chip, .theme-toggle, .soc-nav-link, .bot-level, .bot-chip, .soc-tab, .god-row, .god-toggle) {
+  border-radius: var(--radius-sm);
+}
+html:is([data-look='noir'], [data-look='blanc']) :is(.acc-card, .p4-lobby-card, .scopa-lobby-card, .soc-modal) {
+  border-radius: var(--radius-lg);
+}
+html:is([data-look='noir'], [data-look='blanc']) :is(h1, h2, h3, .acc-title, .acc-section-title) {
+  letter-spacing: 0.01em;
+}
+
+/* --- Noir -------------------------------------------------------------------- */
+
+html[data-look='noir'] {
+  --neon-rgb: 74 222 128;
+  --neon: #4ade80;
+  --neon-soft: #86efac;
+  --neon-deep: #22c55e;
+  --neon-shade: #15803d;
+  --neon-ink: #052e16;
+  --cyan-rgb: 56 189 248;
+  --cyan: #38bdf8;
+  --magenta-rgb: 232 121 249;
+  --magenta: #e879f9;
+
+  --bg: #0b0b0c;
+  --bg-rgb: 11 11 12;
+  --well: #101012;
+  --panel: #161618;
+  --panel-2: #1e1e21;
+  --panel-3: #26262a;
+  --line: #2a2a2e;
+  --line-2: #3a3a3f;
+  --ink: #f4f4f5;
+  --ink-rgb: 244 244 245;
+  --ink-2: #c4c4c8;
+  --ink-3: #8b8b93;
+
+  --neon-glow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --neon-glow-lg: 0 10px 30px rgb(0 0 0 / 0.5);
+  --frame-glow: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.35);
+  --frame-glow-hover: 0 4px 18px rgb(0 0 0 / 0.55);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.5);
+}
+
+/* --- Blanc ------------------------------------------------------------------- */
+
+html[data-look='blanc'] {
+  --neon-rgb: 22 163 74;
+  --neon: #16a34a;
+  --neon-soft: #15803d;
+  --neon-deep: #15803d;
+  --neon-shade: #166534;
+  --neon-ink: #dcfce7;
+  --cyan-rgb: 8 145 178;
+  --cyan: #0891b2;
+  --magenta-rgb: 192 38 211;
+  --magenta: #c026d3;
+  --amber-rgb: 217 119 6;
+  --amber: #d97706;
+  --danger-rgb: 220 38 38;
+  --danger: #dc2626;
+
+  --bg: #f4f5f7;
+  --bg-rgb: 244 245 247;
+  --well: #eceef2;
+  --panel: #ffffff;
+  --panel-2: #f3f4f6;
+  --panel-3: #e5e7eb;
+  --line: #e2e5ea;
+  --line-2: #cfd4db;
+  --ink: #14161a;
+  --ink-rgb: 20 22 26;
+  --ink-2: #454b55;
+  --ink-3: #6b7280;
+
+  --neon-glow: 0 1px 2px rgb(15 23 42 / 0.08);
+  --neon-glow-lg: 0 10px 30px rgb(15 23 42 / 0.12);
+  --frame-glow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px rgb(15 23 42 / 0.06);
+  --frame-glow-hover: 0 6px 20px rgb(15 23 42 / 0.12);
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.08);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.1);
+  --shadow-lg: 0 12px 32px rgb(15 23 42 / 0.14);
+
+  color-scheme: light;
+}
+
+/* L'en-tête et les bandeaux, sur fond clair. */
+html[data-look='blanc'] .site-header {
+  background: rgb(255 255 255 / 0.92);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 12px rgb(15 23 42 / 0.06);
+}
+html[data-look='noir'] .site-header {
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 12px rgb(0 0 0 / 0.5);
+}
+/* Le logo néon garde du contraste sur le blanc. */
+html[data-look='blanc'] :is(.site-brand-mark, .site-brand-word) { filter: brightness(0.62) saturate(1.4); }
+
+/* --- RGB --------------------------------------------------------------------- */
+
+/* Les couleurs changent seules (hooks/useTheme.ts) : pas de fondu CSS, le
+   script pousse déjà une teinte à chaque image. */
+html[data-look='rgb'] .site-brand-mark,
+html[data-look='rgb'] .site-brand-word { filter: hue-rotate(var(--rgb-turn, 0deg)) drop-shadow(0 0 5px rgb(var(--neon-rgb) / 0.55)); }
+
+/* --- Le choix du thème, dans les réglages ------------------------------------ */
+
+.thm-heading { margin: 18px 0 10px; font-family: var(--font-pixel); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.thm-heading:first-child { margin-top: 0; }
+.thm-looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.thm-look:disabled { opacity: 0.6; cursor: wait; }
+.thm-swatch { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border: 1px solid var(--line-2); }
+/* Chaque aperçu dessine un bout d'interface : un bandeau, une carte, un bouton. */
+.thm-swatch::before, .thm-swatch::after { content: ''; position: absolute; }
+.thm-swatch::before { left: 10%; right: 10%; top: 14%; height: 12%; background: var(--sw-line); }
+.thm-swatch::after { left: 10%; top: 40%; width: 46%; height: 42%; background: var(--sw-card); border: 1px solid var(--sw-accent); }
+.thm-swatch[data-look-preview='arcade'] { --sw-line: #50ff4d; --sw-card: #1a1a1a; --sw-accent: #50ff4d; background: #0d0d0d; }
+.thm-swatch[data-look-preview='noir'] { --sw-line: #3a3a3f; --sw-card: #1e1e21; --sw-accent: #4ade80; background: #0b0b0c; }
+.thm-swatch[data-look-preview='blanc'] { --sw-line: #e2e5ea; --sw-card: #ffffff; --sw-accent: #16a34a; background: #f4f5f7; }
+.thm-swatch[data-look-preview='rgb'] { --sw-line: transparent; --sw-card: #1a1a1a; --sw-accent: #fff; background: #0d0d0d; }
+.thm-swatch[data-look-preview='rgb']::before { background: linear-gradient(90deg, #ff4d4d, #ffc53d, #50ff4d, #29f1ff, #6a5cff, #ff4fd8, #ff4d4d); background-size: 200% 100%; animation: thm-rainbow 3s linear infinite; }
+.thm-swatch[data-skin-preview] { --sw-card: #1a1a1a; background: #0d0d0d; }
+.thm-swatch[data-skin-preview='synthwave'] { --sw-line: #ff4fd8; --sw-accent: #ff4fd8; }
+.thm-swatch[data-skin-preview='cyber'] { --sw-line: #33b5ff; --sw-accent: #33b5ff; }
+.thm-swatch[data-skin-preview='retro'] { --sw-line: #ffa726; --sw-accent: #ffa726; }
+@keyframes thm-rainbow { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .thm-swatch[data-look-preview='rgb']::before { animation: none; } }
+
+.thm-rgb { display: flex; flex-direction: column; gap: 10px; }
+.thm-rgb .thm-heading { margin-bottom: 0; }
+.thm-rgb-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.thm-chip {
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 2px solid rgb(var(--neon-rgb) / 0.35);
+  background: var(--panel);
+  color: var(--ink-2);
+  font-family: var(--font-pixel);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.thm-chip:hover { border-color: var(--neon); color: var(--ink); }
+.thm-chip[aria-checked='true'] { border-color: var(--neon); background: rgb(var(--neon-rgb) / 0.15); color: var(--neon); }
+.thm-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.thm-rgb-slider { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-3); }
+.thm-rgb-slider input { width: 100%; accent-color: var(--neon); }
+.thm-rgb-ms { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.thm-rgb-ms .neon-input { width: 96px; min-height: 34px; padding: 4px 8px; }
+html:is([data-look='noir'], [data-look='blanc']) :is(.thm-option, .thm-swatch, .thm-chip) { border-radius: var(--radius-sm); }

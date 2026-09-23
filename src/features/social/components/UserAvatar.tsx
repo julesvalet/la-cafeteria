@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useCosmetics } from '../../plafee/useCosmetics';
 import { achievementIcon } from '../../achievements/icons';
 
+const BOW = `${import.meta.env.BASE_URL}cosmetics/bow.svg`;
+
 export type AvatarStatus = 'online' | 'away' | 'offline';
 
 /**
@@ -18,6 +20,7 @@ export function UserAvatar({
   online,
   status,
   userId,
+  preview,
 }: {
   username: string;
   src?: string | null;
@@ -28,11 +31,14 @@ export function UserAvatar({
   status?: AvatarStatus;
   /** Pour afficher contour et badge du joueur. */
   userId?: string | null;
+  /** Aperçu de boutique : un contour ou un accessoire, à la place des siens. */
+  preview?: { border?: string | null; accessory?: string | null };
 }) {
   // Une image cassée (fichier supprimé, réseau coupé) retombe sur l'initiale
   // plutôt que d'afficher l'icône d'image brisée du navigateur.
   const [broken, setBroken] = useState<string | null>(null);
   const cosmetics = useCosmetics(userId);
+  const accessory = preview && 'accessory' in preview ? preview.accessory : cosmetics?.accessory;
   const shown = src && broken !== src ? src : null;
   const dot = status ?? (online === undefined ? undefined : online ? 'online' : 'offline');
   const visual = size >= 40 ? cosmetics?.badges.find((b) => b.type === 'visual') : undefined;
@@ -41,7 +47,8 @@ export function UserAvatar({
   return (
     <span
       className="soc-avatar"
-      data-border={cosmetics?.border ?? undefined}
+      data-border={(preview && 'border' in preview ? preview.border : cosmetics?.border) ?? undefined}
+      data-accessory={accessory ?? undefined}
       style={{ width: size, height: size, fontSize: size * 0.44 }}
       aria-hidden
     >
@@ -51,6 +58,7 @@ export function UserAvatar({
         username.charAt(0).toUpperCase()
       )}
       {dot && <span className="soc-presence" data-status={dot} data-online={dot === 'online'} />}
+      {accessory === 'bow' && <img className="cos-bow" src={BOW} alt="" draggable={false} />}
       {visual && (
         <span className="plf-avatar-badge" style={{ color: visual.style.color }} title={visual.name}>
           {visual.image_url ? <img src={visual.image_url} alt="" /> : VisualIcon && <VisualIcon size={Math.max(11, size * 0.24)} />}

@@ -66,7 +66,7 @@ html[data-fx='calm'] .ach-badge[data-unlocked][data-tier='og'] { animation: none
 .ach-parts { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
 .ach-parts span {
   padding: 2px 5px;
-  border: 1px dashed #555;
+  border: 1px dashed var(--line-2);
   font-family: var(--font-vcr);
   font-size: 13px;
   color: var(--ink-3);
@@ -245,10 +245,10 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   height: 100%;
   padding: 14px;
   border: var(--frame);
-  background: linear-gradient(160deg, rgb(var(--magenta-rgb) / 0.1), #0c0c0c 55%);
+  background: linear-gradient(160deg, rgb(var(--magenta-rgb) / 0.1), var(--well) 55%);
   box-shadow: var(--frame-glow);
 }
-.plf-event-card[data-status='ended'] { border-color: #444; box-shadow: none; opacity: 0.8; }
+.plf-event-card[data-status='ended'] { border-color: var(--line-2); box-shadow: none; opacity: 0.8; }
 .plf-event-card header { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-pixel); font-weight: 700; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 .plf-event-status { color: var(--magenta); }
 .plf-event-card[data-status='ended'] .plf-event-status { color: var(--ink-3); }
@@ -289,8 +289,8 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   flex-direction: column;
   gap: 8px;
   padding: 14px;
-  border: 2px solid #333;
-  background: #0e0e0e;
+  border: 2px solid var(--line-2);
+  background: var(--well);
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .plf-shop-item:hover { border-color: rgb(var(--neon-rgb) / 0.7); transform: translateY(-2px); }
@@ -310,8 +310,8 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   display: grid;
   place-items: center;
   height: 96px;
-  border: 1px dashed #333;
-  background: #080808;
+  border: 1px dashed var(--line-2);
+  background: var(--well);
 }
 .plf-prev-card span {
   display: grid;
@@ -320,7 +320,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   height: 74px;
   border-radius: 6px;
   background: #f5f1e8;
-  color: #111;
+  color: var(--well);
   font-family: var(--font-vcr);
   font-size: 34px;
 }
@@ -374,7 +374,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   padding: 18px;
   background:
     linear-gradient(120deg, transparent 35%, rgb(255 255 255 / 0.25) 48%, transparent 60%) 0 0 / 250% 100%,
-    #0b0b0b;
+    var(--well);
   text-align: center;
   animation: plf-holo-sheen 2.2s linear infinite;
 }
@@ -415,7 +415,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   align-items: center;
   gap: 12px;
   padding: 8px 4px;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--panel-2);
 }
 .plf-rare-icon { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--tier); color: var(--tier); }
 .plf-rare-name { display: flex; flex-direction: column; min-width: 0; }
@@ -423,7 +423,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
 .plf-rare-pct { display: flex; flex-direction: column; align-items: flex-end; font-family: var(--font-vcr); font-size: 20px; color: var(--ink); }
 .plf-rare-pct small { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
 
-.plf-recent-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid #222; font-size: 14px; }
+.plf-recent-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--panel-2); font-size: 14px; }
 .plf-recent-list li > span { flex: 1; min-width: 200px; }
 .plf-recent-list time { font-size: 12px; color: var(--ink-3); }
 
@@ -442,7 +442,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
 .plf-wallet-stats dt { font-family: var(--font-pixel); font-weight: 700; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
 .plf-wallet-stats dd { margin: 4px 0 0; font-family: var(--font-vcr); font-size: 22px; color: var(--ink); }
 .plf-wallet-stats dd small { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); }
-.plf-tx-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #222; font-size: 13px; }
+.plf-tx-list li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--panel-2); font-size: 13px; }
 .plf-tx-type { font-family: var(--font-pixel); font-weight: 700; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
 .plf-tx-desc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-3); }
 .plf-tx-list time { font-size: 11px; color: var(--ink-3); }
@@ -451,7 +451,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
 .plf-ref .neon-input { flex: 1; min-width: 200px; }
 .plf-wallet-side { padding-left: 20px; border-left: 2px solid rgb(var(--neon-rgb) / 0.2); }
 @media (max-width: 860px) { .plf-wallet-side { padding-left: 0; border-left: 0; } }
-.plf-mini-rank li { display: grid; grid-template-columns: 2.5ch minmax(0, 1fr) auto; gap: 8px; padding: 5px 0; border-bottom: 1px solid #1f1f1f; font-size: 13px; }
+.plf-mini-rank li { display: grid; grid-template-columns: 2.5ch minmax(0, 1fr) auto; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--panel); font-size: 13px; }
 .plf-mini-rank li[data-self] { color: var(--neon); }
 .plf-mini-rank a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; }
 .plf-mini-pos { color: var(--ink-3); }
@@ -467,7 +467,7 @@ html[data-fx='calm'] .soc-avatar[data-border='rainbow'] { animation: none; box-s
   gap: 10px;
   padding: 18px 28px;
   border: var(--frame);
-  background: rgb(8 8 8 / 0.88);
+  background: rgb(var(--bg-rgb) / 0.88);
   box-shadow: var(--frame-glow-hover);
   animation: plf-victory-in 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both, plf-victory-out 0.4s ease-in 2.6s forwards;
 }
@@ -522,7 +522,8 @@ html[data-skin='retro'] {
 
 /* --- Thèmes des cartes (boutique) ---------------------------------------------------------------
    Appliqués aux cartes de tous les jeux, et à l'aperçu de la boutique. */
-html[data-cards='pixel'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+html[data-cards='pixel'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front):not([data-seat-cards] *),
+html [data-seat-cards='pixel'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
 .plf-prev-card[data-cards-preview='pixel'] span {
   border-radius: 0 !important;
   image-rendering: pixelated;
@@ -530,18 +531,21 @@ html[data-cards='pixel'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-
   filter: contrast(1.08) saturate(1.2);
 }
 
-html[data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+html[data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front):not([data-seat-cards] *),
+html [data-seat-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
 .plf-prev-card[data-cards-preview='holo'] span {
   filter: saturate(1.25);
   animation: plf-card-holo 3s linear infinite;
 }
 
-html[data-cards='neon'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+html[data-cards='neon'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front):not([data-seat-cards] *),
+html [data-seat-cards='neon'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
 .plf-prev-card[data-cards-preview='neon'] span {
   box-shadow: 0 0 0 2px #00ffff, 0 0 12px 2px rgb(255 0 255 / 0.75), 0 0 24px rgb(0 255 255 / 0.45) !important;
 }
 
-html[data-cards='gold'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+html[data-cards='gold'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front):not([data-seat-cards] *),
+html [data-seat-cards='gold'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
 .plf-prev-card[data-cards-preview='gold'] span {
   box-shadow: 0 0 0 2px #ffd700, 0 0 0 4px #7a5c00, 0 0 18px rgb(255 215 0 / 0.65) !important;
   filter: sepia(0.12) saturate(1.12) brightness(1.04);
@@ -553,7 +557,100 @@ html[data-cards='gold'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-f
   50% { box-shadow: 0 0 0 2px #4dff6a, 0 0 14px rgb(77 255 106 / 0.6); }
   75% { box-shadow: 0 0 0 2px #4de3ff, 0 0 14px rgb(77 227 255 / 0.6); }
 }
-html[data-fx='calm'][data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front) { animation: none; box-shadow: 0 0 0 2px #b04dff; }
+html[data-fx='calm'][data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+html[data-fx='calm'] [data-seat-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front) { animation: none; box-shadow: 0 0 0 2px #b04dff; }
 @media (prefers-reduced-motion: reduce) {
-  html[data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front) { animation: none; box-shadow: 0 0 0 2px #b04dff; }
+  html[data-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front),
+  html [data-seat-cards='holo'] :is(.scopa-card-img, .uno-card-svg, .f7-card, .rv-card-front) { animation: none; box-shadow: 0 0 0 2px #b04dff; }
+}
+
+/* L'avertissement s'efface seul : une jauge montre le temps qui lui reste. */
+.plf-standing { position: relative; }
+.plf-standing-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  background: var(--amber);
+  transform-origin: left;
+  animation: plf-timer linear forwards;
+}
+@keyframes plf-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { .plf-standing-timer { display: none; } }
+
+/* --- Contour Flammes et nœud papillon ------------------------------------------ */
+
+/* Les flammes débordent de la photo : le cadre SVG (public/cosmetics/flame.svg)
+   entoure le carré central, qui en occupe 54 %. Elles vacillent doucement. */
+.soc-avatar[data-border='flame'] { border-color: #ffb300; box-shadow: 0 0 14px rgb(255 120 0 / 0.7); }
+.soc-avatar[data-border='flame']::after {
+  content: '';
+  position: absolute;
+  inset: -43%;
+  background: url('/cosmetics/flame.svg') center / contain no-repeat;
+  pointer-events: none;
+  transform-origin: 50% 60%;
+  animation: cos-flicker 1.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 4px rgb(255 110 0 / 0.6));
+}
+@keyframes cos-flicker {
+  0% { transform: scale(1) skewX(0deg); filter: drop-shadow(0 0 4px rgb(255 110 0 / 0.6)) brightness(1); }
+  35% { transform: scale(1.03, 1.06) skewX(1.5deg); filter: drop-shadow(0 0 7px rgb(255 140 0 / 0.75)) brightness(1.12); }
+  70% { transform: scale(0.99, 1.02) skewX(-1.5deg); filter: drop-shadow(0 0 5px rgb(255 90 0 / 0.65)) brightness(0.95); }
+  100% { transform: scale(1.02, 1.04) skewX(0.5deg); filter: drop-shadow(0 0 6px rgb(255 120 0 / 0.7)) brightness(1.06); }
+}
+html[data-fx='calm'] .soc-avatar[data-border='flame']::after { animation: none; }
+@media (prefers-reduced-motion: reduce) { .soc-avatar[data-border='flame']::after { animation: none; } }
+
+/* Le nœud, en haut à droite de la photo, un peu penché. */
+.cos-bow {
+  position: absolute;
+  top: -22%;
+  right: -26%;
+  width: 62%;
+  height: auto;
+  transform: rotate(14deg);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.5));
+  z-index: 1;
+}
+/* Avec un nœud, le badge visuel passe en bas à droite. */
+.soc-avatar[data-accessory='bow'] .plf-avatar-badge { top: auto; bottom: -6px; }
+
+/* --- Cosmétiques en partie (components/SeatFlair.tsx) ----------------------------- */
+
+/* L'avatar d'une place, habillé : le contour se pose en anneau sur l'avatar du
+   jeu, quelle que soit sa forme ; flammes et nœud débordent comme sur le profil. */
+.cos-seat { position: relative; display: inline-grid; place-items: center; flex: none; }
+.cos-seat[data-border='silver'] > :first-child { box-shadow: 0 0 0 2px #e0e0e0, 0 0 10px rgb(220 220 220 / 0.6) !important; }
+.cos-seat[data-border='gold'] > :first-child { box-shadow: 0 0 0 2px #ffd700, 0 0 16px rgb(255 215 0 / 0.75) !important; }
+.cos-seat[data-border='platine'] > :first-child { box-shadow: 0 0 0 2px #fff, 0 0 22px rgb(255 255 255 / 0.85) !important; }
+.cos-seat[data-border='badge'] > :first-child { box-shadow: 0 0 0 2px var(--magenta), 0 0 12px rgb(var(--magenta-rgb) / 0.6) !important; }
+.cos-seat[data-border='rainbow'] > :first-child { animation: plf-rainbow-ring 3s linear infinite; }
+.cos-seat[data-border='flame'] > :first-child { box-shadow: 0 0 0 2px #ffb300, 0 0 14px rgb(255 120 0 / 0.7) !important; }
+.cos-seat[data-border='flame']::after {
+  content: '';
+  position: absolute;
+  inset: -43%;
+  background: url('/cosmetics/flame.svg') center / contain no-repeat;
+  pointer-events: none;
+  transform-origin: 50% 60%;
+  animation: cos-flicker 1.6s ease-in-out infinite alternate;
+}
+html[data-fx='calm'] .cos-seat[data-border='flame']::after,
+html[data-fx='calm'] .cos-seat[data-border='rainbow'] > :first-child { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .cos-seat[data-border='flame']::after, .cos-seat[data-border='rainbow'] > :first-child { animation: none; }
+}
+.cos-seat .cos-bow { top: -30%; right: -34%; width: 70%; }
+
+.cos-seat-avatar {
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--seat-color, var(--neon));
+  background: var(--panel-2);
+  color: var(--seat-color, var(--neon));
+  font-family: var(--font-arcade);
+  line-height: 1;
 }

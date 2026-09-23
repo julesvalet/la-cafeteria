@@ -12,6 +12,9 @@ import {
   type Spectator,
   type SpectatorsMessage,
 } from '../../rooms/spectators';
+import { getCurrentUserId } from '../../account/currentUser';
+import { createBotRunner, LOCAL_SELF_ID, makeBots, type BotSetup } from '../../bots/bots';
+import { p4Decide } from '../engine/ai';
 
 export type P4Variant = 'powers' | 'original';
 
@@ -72,6 +75,7 @@ export function useP4Room(
   isHost: boolean,
   mode: P4Mode,
   variant: P4Variant = 'powers',
+  bots: BotSetup | null = null,
 ): UseP4RoomResult {
   const [state, setState] = useState<P4State | null>(null);
   const [selfId, setSelfId] = useState<string | null>(null);
@@ -99,6 +103,37 @@ export function useP4Room(
     let cancelled = false;
     const code = roomCode.trim().toUpperCase();
     const conns = connsRef.current;
+
+    // Contre des bots : pas de réseau, la table vit dans ce navigateur.
+    if (bots) {
+      const seats = makeBots(bots);
+      const runner = createBotRunner<P4State, P4Action>({
+        get: () => hostStateRef.current,
+        apply: (action) => hostApplyRef.current(action),
+        decide: (s) => p4Decide(s, seats),
+      });
+      const commit = (next: P4State) => {
+        hostStateRef.current = next;
+        setState(maskState(next, LOCAL_SELF_ID));
+        runner.poke();
+      };
+      hostApplyRef.current = (action) => {
+        if (!hostStateRef.current) return undefined;
+        const { state: next, error: err } = applyAction(hostStateRef.current, action, modes, powersEnabled);
+        commit(next);
+        return err;
+      };
+      let initial = createInitialState(code, LOCAL_SELF_ID, modeRef.current, modes);
+      initial = applyAction(initial, { type: 'JOIN', playerId: LOCAL_SELF_ID, name: nameRef.current, userId: getCurrentUserId() }, modes, powersEnabled).state;
+      for (const b of seats) initial = applyAction(initial, { type: 'JOIN', playerId: b.id, name: b.name }, modes, powersEnabled).state;
+      setSelfId(LOCAL_SELF_ID);
+      commit(applyAction(initial, { type: 'START' }, modes, powersEnabled).state);
+      setStatus('connected');
+      return () => {
+        runner.stop();
+        hostApplyRef.current = () => undefined;
+      };
+    }
 
     if (isHost) {
       const hostId = peerPrefix + code;
@@ -141,7 +176,7 @@ export function useP4Room(
         setSelfId(id);
         const initial = applyAction(
           createInitialState(code, id, modeRef.current, modes),
-          { type: 'JOIN', playerId: id, name: nameRef.current },
+          { type: 'JOIN', playerId: id, name: nameRef.current, userId: getCurrentUserId() },
           modes,
           powersEnabled,
         ).state;
@@ -219,7 +254,7 @@ export function useP4Room(
         conn.on('open', () => {
           conn.send({
             type: 'ACTION',
-            action: { type: 'JOIN', playerId: id, name: nameRef.current },
+            action: { type: 'JOIN', playerId: id, name: nameRef.current, userId: getCurrentUserId() },
           } satisfies WireMessage);
           setStatus('connected');
         });
@@ -257,7 +292,7 @@ export function useP4Room(
       conns.clear();
       hostApplyRef.current = () => undefined;
     };
-  }, [roomCode, isHost, variant, modes, powersEnabled, peerPrefix]);
+  }, [roomCode, isHost, variant, modes, powersEnabled, peerPrefix, bots]);
 
   const sendAction = useCallback(
     (action: P4Action) => {

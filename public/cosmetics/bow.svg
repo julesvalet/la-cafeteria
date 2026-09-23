@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 92">
+  <!-- Le nœud papillon de la boutique : deux boucles, un nœud, contour magenta. -->
+  <g stroke="#ff0a8a" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M52 44 C40 30 26 14 13 22 C3 29 5 46 11 57 C18 69 34 67 52 50 Z" fill="#ff85c8"/>
+    <path d="M66 46 C79 33 95 24 106 32 C117 40 114 60 107 70 C99 82 82 80 66 54 Z" fill="#ff85c8"/>
+    <ellipse cx="59" cy="48" rx="11" ry="10" fill="#ff85c8"/>
+  </g>
+  <g fill="none" stroke="#ff0a8a" stroke-width="4.5" stroke-linecap="round">
+    <path d="M47 42 C39 36 32 33 26 34"/>
+    <path d="M47 51 C41 55 36 58 30 58"/>
+    <path d="M72 46 C80 42 87 41 93 43"/>
+    <path d="M72 55 C79 58 85 62 90 66"/>
+  </g>
+</svg>

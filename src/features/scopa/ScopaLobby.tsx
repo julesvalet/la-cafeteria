@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BotPlayCard } from '../bots/BotPlayCard';
+import { botRoomCode, type BotSetup } from '../bots/bots';
 import { BookOpen } from 'lucide-react';
 import { GameTitle } from '../../components/GameTitle';
 import { RulesModal } from './components/RulesModal';
@@ -32,6 +34,15 @@ export function ScopaLobby() {
     const code = randomRoomCode();
     savePseudo(name);
     navigate(`/scopa/${code}`, { state: { isHost: true, visibility, name: name.trim() } });
+  };
+
+  const handleBots = (bots: BotSetup) => {
+    if (!name.trim()) {
+      setNameError('Choisis un pseudo pour commencer.');
+      return;
+    }
+    savePseudo(name);
+    navigate(`/scopa/${botRoomCode()}`, { state: { isHost: true, name: name.trim(), bots } });
   };
 
   const handleJoin = (e: FormEvent) => {
@@ -73,6 +84,8 @@ export function ScopaLobby() {
       </div>
 
       <div className="scopa-lobby-grid">
+        <BotPlayCard className="scopa-lobby-card" counts={[1, 2, 3]} onPlay={handleBots} />
+
         <form className="scopa-lobby-card" onSubmit={handleCreate}>
           <h2>Créer une partie</h2>
           <p>Un nouveau code de room sera généré. Partage-le à tes potes pour qu'ils te rejoignent.</p>

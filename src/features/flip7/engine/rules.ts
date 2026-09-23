@@ -1,8 +1,8 @@
 import { cardLabel, createDeck, shuffle } from './deck';
-import type { Card, GameOptions, GameState, Player, PlayerAction, PublicState } from './types';
+import type { BotSkill, Card, GameOptions, GameState, Player, PlayerAction, PublicState } from './types';
 
-const freshPlayer = (id: string, name: string, bot = false): Player => ({
-  id, name: name.trim().slice(0, 18) || 'Joueur', bot, connected: true, cards: [],
+const freshPlayer = (id: string, name: string, bot = false, level?: BotSkill): Player => ({
+  id, name: name.trim().slice(0, 18) || 'Joueur', bot, level, connected: true, cards: [],
   status: 'active', total: 0, roundPoints: 0, variantPoints: 0, skip: false, chanceUsed: false,
 });
 export const numbers = (p: Player) => p.cards.filter(c => c.kind === 'number').map(c => c.value);
@@ -15,11 +15,15 @@ export function points(p: Player, ruleset: GameOptions['ruleset']): number {
     + p.cards.filter(c => c.kind === 'bonus').reduce((a, c) => a + c.value, 0) + (ns.length === 7 ? 15 : 0);
 }
 
-export function createGame(code: string, hostId: string, name: string, options: GameOptions, random = Math.random): GameState {
+export function createGame(code: string, hostId: string, name: string, options: GameOptions, random = Math.random, userId: string | null = null): GameState {
   const normalized = { ...options, maxPlayers: options.mode === 'solo' ? 1 : Math.max(2, Math.min(options.mode === 'bots' ? 4 : 5, options.maxPlayers)) };
-  const players = [freshPlayer(hostId, name)];
+  const players: Player[] = [{ ...freshPlayer(hostId, name), userId }];
   if (options.mode === 'bots') {
-    for (let i = 1; i < normalized.maxPlayers; i++) players.push(freshPlayer(`bot-${i}`, ['Moka', 'Nova', 'Paco'][i - 1], true));
+    const skills: BotSkill[] = ['easy', 'medium', 'hard'];
+    for (let i = 1; i < normalized.maxPlayers; i++) {
+      const level = options.difficulty === 'random' ? skills[Math.floor(random() * skills.length)] : options.difficulty;
+      players.push(freshPlayer(`bot-${i}`, ['Moka', 'Nova', 'Paco'][i - 1], true, level));
+    }
   }
   return { id: `${code}-${Math.floor(random() * 1e12)}`, code, hostId, options: normalized,
     phase: 'lobby', players, deck: shuffle(createDeck(options.ruleset), random), discard: [], spent: [],
@@ -166,7 +170,7 @@ export function applyAction(input: GameState, actor: string, action: PlayerActio
     if (input.phase !== 'lobby') return fail('Cette partie a déjà commencé.');
     if (input.players.length >= input.options.maxPlayers) return fail('Cette table est complète.');
     if (typeof action.name !== 'string' || !action.name.trim()) return fail('Choisis un pseudo.');
-    const s = structuredClone(input); s.players.push(freshPlayer(actor, action.name)); s.revision++; return { state: s };
+    const s = structuredClone(input); s.players.push({ ...freshPlayer(actor, action.name), userId: typeof action.userId === 'string' ? action.userId : null }); s.revision++; return { state: s };
   }
   if (seat < 0 || !input.players[seat].connected) return fail('Rejoins la table avant de jouer.');
   if (action.type === 'CHAT') {
@@ -187,7 +191,7 @@ export function applyAction(input: GameState, actor: string, action: PlayerActio
     if (action.type === 'NEXT_ROUND') s.dealer = (s.dealer + 1) % s.players.length;
     if (action.type === 'REMATCH') {
       s.id = `${s.code}-${Math.floor(random() * 1e12)}`; s.round = 0; s.dealer = 0; s.winnerId = null;
-      s.players = s.players.filter(p => p.connected).map(p => freshPlayer(p.id, p.name, p.bot));
+      s.players = s.players.filter(p => p.connected).map(p => ({ ...freshPlayer(p.id, p.name, p.bot, p.level), userId: p.userId ?? null }));
       s.deck = shuffle(createDeck(s.options.ruleset), random); s.discard = []; s.spent = [];
     }
     beginRound(s); return { state: s };
@@ -245,8 +249,9 @@ export function botAction(s: GameState, seat: number, random = Math.random): Pla
     return { type: 'TARGET', targetId: s.players[choice].id };
   }
   const p = s.players[seat]; const score = points(p, s.options.ruleset);
-  if (!p.cards.length || (hasChance(p) && s.options.difficulty === 'hard')) return { type: 'HIT' };
-  const hit = s.options.difficulty === 'easy' ? random() < .5 : s.options.difficulty === 'medium'
+  const level: BotSkill = p.level ?? (s.options.difficulty === 'random' ? 'medium' : s.options.difficulty);
+  if (!p.cards.length || (hasChance(p) && level === 'hard')) return { type: 'HIT' };
+  const hit = level === 'easy' ? random() < .5 : level === 'medium'
     ? score < 10 || (score <= 20 && random() < .6) : duplicateRisk(s, seat) < .3;
   return { type: hit ? 'HIT' : 'STAY' };
 }

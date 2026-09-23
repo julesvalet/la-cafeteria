@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BotPlayCard } from '../bots/BotPlayCard';
+import { botRoomCode, type BotSetup } from '../bots/bots';
 import { BookOpen, Check, Layers } from 'lucide-react';
 import { GameTitle } from '../../components/GameTitle';
 import { UnoRulesModal } from './components/UnoRulesModal';
@@ -46,6 +48,12 @@ export function UnoLobby() {
     navigate(`/uno/${randomRoomCode()}`, {
       state: { isHost: true, visibility, name: name.trim(), maxPlayers: players, stackingEnabled: stacking },
     });
+  };
+
+  const handleBots = (bots: BotSetup) => {
+    if (!requireName()) return;
+    savePseudo(name);
+    navigate(`/uno/${botRoomCode()}`, { state: { isHost: true, name: name.trim(), bots, maxPlayers: players, stackingEnabled: stacking } });
   };
 
   const handleJoin = (e: FormEvent) => {
@@ -150,6 +158,8 @@ export function UnoLobby() {
       </section>
 
       <div className="p4-lobby-grid">
+        <BotPlayCard className="p4-lobby-card" fixedCount={players - 1} fixedNote="selon le nombre de joueurs choisi plus haut" onPlay={handleBots} />
+
         <form className="p4-lobby-card" onSubmit={handleCreate}>
           <h2>Créer une partie</h2>
           <p>

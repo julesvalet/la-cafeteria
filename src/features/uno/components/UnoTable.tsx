@@ -3,6 +3,7 @@ import { RotateCw, RotateCcw } from 'lucide-react';
 import { COLOR_HEX, COLOR_LABEL, isWild } from '../engine/deck';
 import { UnoCardBack, UnoCardFace } from './UnoCardFace';
 import type { UnoState } from '../engine/types';
+import { SeatAvatar, SeatCards } from '../../plafee/components/SeatFlair';
 
 interface UnoTableProps {
   state: UnoState;
@@ -15,12 +16,14 @@ interface UnoTableProps {
 /** Opponents' hands: a count and a fan of backs, never any contents. */
 function Opponent({
   name,
+  userId,
   count,
   active,
   gone,
   declaredUno,
 }: {
   name: string;
+  userId?: string | null;
   count: number;
   active: boolean;
   gone: boolean;
@@ -30,7 +33,7 @@ function Opponent({
 
   return (
     <div className={`uno-opponent${active ? ' is-active' : ''}${gone ? ' is-gone' : ''}`}>
-      <div className="uno-opponent-cards">
+      <SeatCards userId={userId} className="uno-opponent-cards">
         {Array.from({ length: shown }, (_, i) => (
           <span
             key={i}
@@ -40,8 +43,9 @@ function Opponent({
             <UnoCardBack className="uno-card-svg" />
           </span>
         ))}
-      </div>
+      </SeatCards>
       <div className="uno-opponent-meta">
+        <SeatAvatar userId={userId} name={name} size={22} />
         <span className="uno-opponent-name">{name}</span>
         <span className="uno-opponent-count">{count}</span>
         {declaredUno && <span className="uno-opponent-uno">UNO</span>}
@@ -68,6 +72,7 @@ export function UnoTable({ state, seat, canDraw, onDraw }: UnoTableProps) {
           <Opponent
             key={p.id}
             name={p.name}
+            userId={p.userId}
             count={p.handCount}
             active={state.turn === i && state.phase === 'playing'}
             gone={!p.connected}

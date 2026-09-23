@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Gauge, PartyPopper, ShieldAlert, Store, X } from 'lucide-react';
 import { useAuth } from '../../account/useAuth';
@@ -27,7 +27,7 @@ export function EventBanner() {
   const live = events.filter((e) => e.status === 'live');
   const [hidden, setHidden] = useState<string[]>(() => {
     try {
-      return JSON.parse(sessionStorage.getItem(DISMISS_KEY) ?? '[]');
+      return JSON.parse(localStorage.getItem(DISMISS_KEY) ?? '[]');
     } catch {
       return [];
     }
@@ -39,9 +39,9 @@ export function EventBanner() {
     const next = [...hidden, shown.id];
     setHidden(next);
     try {
-      sessionStorage.setItem(DISMISS_KEY, JSON.stringify(next));
+      localStorage.setItem(DISMISS_KEY, JSON.stringify(next.slice(-50)));
     } catch {
-      // Masqué pour cette page seulement.
+      // Masqué pour cette visite seulement.
     }
   };
 
@@ -219,7 +219,6 @@ export function HeaderExtras() {
 /** Compte suspendu, ou avertissement récent d'un admin. */
 export function StandingNotice() {
   const { standing } = usePlafee();
-  const [dismissed, setDismissed] = useState(false);
   if (!standing) return null;
   if (standing.banned) {
     return (
@@ -235,8 +234,47 @@ export function StandingNotice() {
       </div>
     );
   }
-  const recent = standing.warnings.find((w) => Date.now() - new Date(w.created_at).getTime() < 7 * 86_400_000);
-  if (!recent || dismissed) return null;
+  return <WarningNotice warnings={standing.warnings} />;
+}
+
+const WARN_SEEN_KEY = 'plafee-warnings-seen';
+const WARN_MS = 10_000;
+
+function seenWarnings(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(WARN_SEEN_KEY) ?? '[]');
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Un avertissement ne s'affiche qu'une fois : il s'efface seul au bout de
+ * quelques secondes (ou d'un clic) et ne revient plus. Il reste lisible dans
+ * la cloche. Seule la suspension du compte, plus haut, reste en place.
+ */
+function WarningNotice({ warnings }: { warnings: { message: string; created_at: string }[] }) {
+  const [seen, setSeen] = useState(seenWarnings);
+  const recent = warnings.find((w) => Date.now() - new Date(w.created_at).getTime() < 7 * 86_400_000 && !seen.includes(w.created_at));
+
+  const close = useCallback(() => {
+    if (!recent) return;
+    const next = [...seenWarnings(), recent.created_at].slice(-20);
+    try {
+      localStorage.setItem(WARN_SEEN_KEY, JSON.stringify(next));
+    } catch {
+      // Masqué pour cette visite seulement.
+    }
+    setSeen(next);
+  }, [recent]);
+
+  useEffect(() => {
+    if (!recent) return;
+    const t = window.setTimeout(close, WARN_MS);
+    return () => window.clearTimeout(t);
+  }, [recent, close]);
+
+  if (!recent) return null;
   return (
     <div className="plf-standing" data-kind="warn" role="status">
       <div className="container plf-standing-inner">
@@ -244,10 +282,11 @@ export function StandingNotice() {
         <span>
           <strong>Avertissement de l'équipe PLAFEE :</strong> {recent.message}
         </span>
-        <button type="button" className="plf-event-banner-close" onClick={() => setDismissed(true)} aria-label="Fermer">
+        <button type="button" className="plf-event-banner-close" onClick={close} aria-label="Fermer">
           <X size={16} />
         </button>
       </div>
+      <span className="plf-standing-timer" style={{ animationDuration: `${WARN_MS}ms` }} aria-hidden />
     </div>
   );
 }

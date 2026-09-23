@@ -11,6 +11,9 @@ import {
   type Spectator,
   type SpectatorsMessage,
 } from '../../rooms/spectators';
+import { getCurrentUserId } from '../../account/currentUser';
+import { createBotRunner, LOCAL_SELF_ID, makeBots, type BotSetup } from '../../bots/bots';
+import { unoDecide } from '../engine/ai';
 
 const PEER_PREFIX = 'la-cafeteria-uno-';
 
@@ -63,6 +66,7 @@ export function useUnoRoom(
   isHost: boolean,
   maxPlayers: number,
   stackingEnabled: boolean,
+  bots: BotSetup | null = null,
 ): UseUnoRoomResult {
   const [state, setState] = useState<UnoState | null>(null);
   const [selfId, setSelfId] = useState<string | null>(null);
@@ -86,6 +90,39 @@ export function useUnoRoom(
     let cancelled = false;
     const code = roomCode.trim().toUpperCase();
     const conns = connsRef.current;
+
+    // Contre des bots : pas de réseau, la table vit dans ce navigateur.
+    if (bots) {
+      const seats = makeBots(bots);
+      const runner = createBotRunner<UnoState, UnoAction>({
+        get: () => hostStateRef.current,
+        apply: (action) => hostApplyRef.current(action),
+        decide: (s) => unoDecide(s, seats),
+      });
+      const commit = (next: UnoState) => {
+        hostStateRef.current = next;
+        setState(maskState(next, LOCAL_SELF_ID));
+        runner.poke();
+      };
+      hostApplyRef.current = (action) => {
+        if (!hostStateRef.current) return undefined;
+        const { state: next, error: err } = applyAction(hostStateRef.current, action);
+        commit(next);
+        return err;
+      };
+      const max = seats.length + 1;
+      let initial = createInitialState(code, LOCAL_SELF_ID, max);
+      initial = applyAction(initial, { type: 'SET_OPTIONS', maxPlayers: max, stackingEnabled: optionsRef.current.stackingEnabled }).state;
+      initial = applyAction(initial, { type: 'JOIN', playerId: LOCAL_SELF_ID, name: nameRef.current, userId: getCurrentUserId() }).state;
+      for (const b of seats) initial = applyAction(initial, { type: 'JOIN', playerId: b.id, name: b.name }).state;
+      setSelfId(LOCAL_SELF_ID);
+      commit(applyAction(initial, { type: 'START' }).state);
+      setStatus('connected');
+      return () => {
+        runner.stop();
+        hostApplyRef.current = () => undefined;
+      };
+    }
 
     if (isHost) {
       const hostId = PEER_PREFIX + code;
@@ -130,7 +167,7 @@ export function useUnoRoom(
         const { maxPlayers: max, stackingEnabled: stacking } = optionsRef.current;
         let initial = createInitialState(code, id, max);
         initial = applyAction(initial, { type: 'SET_OPTIONS', maxPlayers: max, stackingEnabled: stacking }).state;
-        initial = applyAction(initial, { type: 'JOIN', playerId: id, name: nameRef.current }).state;
+        initial = applyAction(initial, { type: 'JOIN', playerId: id, name: nameRef.current, userId: getCurrentUserId() }).state;
         hostStateRef.current = initial;
         setState(maskState(initial, id));
         setStatus('connected');
@@ -206,7 +243,7 @@ export function useUnoRoom(
         conn.on('open', () => {
           conn.send({
             type: 'ACTION',
-            action: { type: 'JOIN', playerId: id, name: nameRef.current },
+            action: { type: 'JOIN', playerId: id, name: nameRef.current, userId: getCurrentUserId() },
           } satisfies WireMessage);
           setStatus('connected');
         });
@@ -244,7 +281,7 @@ export function useUnoRoom(
       conns.clear();
       hostApplyRef.current = () => undefined;
     };
-  }, [roomCode, isHost]);
+  }, [roomCode, isHost, bots]);
 
   const sendAction = useCallback(
     (action: UnoAction) => {

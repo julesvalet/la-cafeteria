@@ -248,7 +248,7 @@ export function withTeams(state: P4State): P4State {
   };
 }
 
-export function addPlayer(state: P4State, id: string, name: string): P4State {
+export function addPlayer(state: P4State, id: string, name: string, userId: string | null = null): P4State {
   if (state.players.some((p) => p.id === id)) return state;
   if (state.phase !== 'lobby') return state;
   if (state.players.length >= MODES[state.mode].players) return state;
@@ -256,6 +256,7 @@ export function addPlayer(state: P4State, id: string, name: string): P4State {
   const player: P4Player = {
     id,
     name: name.trim() || 'Joueur',
+    userId,
     team: state.players.length,
     connected: true,
     // Filled in when the game starts; an empty run in the lobby is correct.
@@ -425,6 +426,11 @@ export function dropDisc(state: P4State, playerId: string, col: number): ActionR
   if (next.phase !== 'playing') return { state: next };
 
   if (charged === 'double') {
+    // Un double-tour sur son dernier jeton n'a rien à rejouer : garder la main
+    // bloquerait la partie.
+    if (next.players[playerIndex].charges.length === 0) {
+      return { state: endTurn({ ...next, log: [...next.log, `${player.name} n'a plus de jeton pour son double-tour.`] }) };
+    }
     next = { ...next, pendingDouble: true, log: [...next.log, `${player.name} enchaîne : double-tour !`] };
     return { state: next };
   }
@@ -553,7 +559,7 @@ export function applyAction(
 ): ActionResult {
   switch (action.type) {
     case 'JOIN':
-      return { state: addPlayer(state, action.playerId, action.name) };
+      return { state: addPlayer(state, action.playerId, action.name, action.userId ?? null) };
     case 'SET_MODE':
       return setMode(state, action.mode, modes);
     case 'START':

@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BotPlayCard } from '../../bots/BotPlayCard';
+import { botRoomCode, type BotSetup } from '../../bots/bots';
 import { BookOpen, Check } from 'lucide-react';
 import { GameTitle } from '../../../components/GameTitle';
 import { ORIGINAL_MODES, MODE_ORDER, discColor } from '../engine/modes';
@@ -39,6 +41,12 @@ export function OriginalLobby() {
     navigate(`/puissance4-original/${randomRoomCode()}`, {
       state: { isHost: true, visibility, name: name.trim(), mode },
     });
+  };
+
+  const handleBots = (bots: BotSetup) => {
+    if (!requireName()) return;
+    savePseudo(name);
+    navigate(`/puissance4-original/${botRoomCode()}`, { state: { isHost: true, name: name.trim(), bots, mode } });
   };
 
   const handleJoin = (e: FormEvent) => {
@@ -121,6 +129,8 @@ export function OriginalLobby() {
       </section>
 
       <div className="p4-lobby-grid">
+        <BotPlayCard className="p4-lobby-card" fixedCount={ORIGINAL_MODES[mode].players - 1} fixedNote={mode === 'teams' ? 'ton coéquipier est un bot' : 'selon le mode choisi plus haut'} onPlay={handleBots} />
+
         <form className="p4-lobby-card" onSubmit={handleCreate}>
           <h2>Créer une partie</h2>
           <p>

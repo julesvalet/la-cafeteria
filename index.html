@@ -22,7 +22,7 @@
     <meta property="og:site_name" content="PLAFEE" />
     <meta property="og:title" content="PLAFEE — la salle d'arcade entre potes" />
     <meta property="og:description" content="Scopa, UNO, Flip 7 et Puissance 4, en ligne et sans installation." />
-    <meta property="og:image" content="https://julesvalet.github.io/la-cafeteria/brand/og-plafee.png" />
+    <meta property="og:image" content="https://julesvalet.github.io/plafee/brand/og-plafee.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -39,6 +39,8 @@
           if (v === 'grid' || v === 'void' || v === 'phosphor') b = v;
           if (localStorage.getItem('plafee-crt') === 'off') crt = 'off';
           if (localStorage.getItem('plafee-fx') === 'calm') fx = 'calm';
+          var look = localStorage.getItem('plafee-look');
+          if (look === 'noir' || look === 'blanc' || look === 'rgb') root.setAttribute('data-look', look);
           // Thèmes achetés à la boutique (voir src/features/plafee/PlafeeProvider.tsx).
           var skin = localStorage.getItem('plafee-skin');
           var cards = localStorage.getItem('plafee-cards');
@@ -46,7 +48,7 @@
           if (cards && /^[a-z]+$/.test(cards)) root.setAttribute('data-cards', cards);
         } catch (e) {}
         root.setAttribute('data-backdrop', b);
-        root.setAttribute('data-theme', 'dark');
+        root.setAttribute('data-theme', root.getAttribute('data-look') === 'blanc' ? 'light' : 'dark');
         root.setAttribute('data-crt', crt);
         root.setAttribute('data-fx', fx);
       })();

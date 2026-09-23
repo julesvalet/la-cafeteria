@@ -67,7 +67,7 @@ export function Flip7Lobby() {
               </div></>}
             {mode === 'bots' && <><label className="f7-label" htmlFor="f7-level">Leur petit caractère</label>
               <select id="f7-level" value={difficulty} onChange={e => setDifficulty(e.target.value as Difficulty)}>
-                <option value="easy">Facile · À pile ou face</option><option value="medium">Moyen · Un risque mesuré</option><option value="hard">Difficile · Les probabilités en tête</option>
+                <option value="easy">Facile · À pile ou face</option><option value="medium">Normal · Un risque mesuré</option><option value="hard">Difficile · Les probabilités en tête</option><option value="random">Aléatoire · Chaque bot tire son niveau</option>
               </select></>}
             <label className="f7-label" htmlFor="f7-ruleset">Les règles de la table</label>
             <select id="f7-ruleset" value={ruleset} onChange={e => setRuleset(e.target.value as Ruleset)}><option value="official">Flip 7 · 94 cartes, de 0 à 12</option><option value="cafeteria">Variante PLAFEE · 62 cartes, de 0 à 7</option></select>

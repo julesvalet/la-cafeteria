@@ -286,7 +286,7 @@ function checkWin(state: UnoState, playerIndex: number): UnoState {
   };
 }
 
-export function addPlayer(state: UnoState, id: string, name: string): UnoState {
+export function addPlayer(state: UnoState, id: string, name: string, userId: string | null = null): UnoState {
   if (state.players.some((p) => p.id === id)) return state;
   if (state.phase !== 'lobby') return state;
   if (state.players.length >= state.maxPlayers) return state;
@@ -294,6 +294,7 @@ export function addPlayer(state: UnoState, id: string, name: string): UnoState {
   const player: UnoPlayer = {
     id,
     name: name.trim() || 'Joueur',
+    userId,
     hand: [],
     handCount: 0,
     connected: true,
@@ -650,7 +651,7 @@ export function rematch(state: UnoState): ActionResult {
 export function applyAction(state: UnoState, action: UnoAction): ActionResult {
   switch (action.type) {
     case 'JOIN':
-      return { state: addPlayer(state, action.playerId, action.name) };
+      return { state: addPlayer(state, action.playerId, action.name, action.userId ?? null) };
     case 'SET_OPTIONS':
       return setOptions(state, action.maxPlayers, action.stackingEnabled);
     case 'START':

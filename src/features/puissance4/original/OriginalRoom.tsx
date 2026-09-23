@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Check, Copy, LogOut, TriangleAlert } from 'lucide-react';
 import { GameTitle } from '../../../components/GameTitle';
 import { useP4Room } from '../net/useP4Room';
@@ -18,6 +18,9 @@ import { vacatedSeats } from '../../rooms/spectators';
 import type { Impact } from '../components/ImpactFx';
 import type { P4Mode } from '../engine/types';
 import { useRoomIdentity } from '../../rooms/playerName';
+import { SeatAvatar } from '../../plafee/components/SeatFlair';
+import { useOpponentVictory } from '../../plafee/seatCosmetics';
+import { isBotRoomCode, type BotSetup } from '../../bots/bots';
 
 interface LocationState {
   isHost?: boolean;
@@ -25,6 +28,8 @@ interface LocationState {
   mode?: P4Mode;
   /** Choisi à la création : une table publique est annoncée aux amis. */
   visibility?: 'public' | 'private';
+  /** Contre des bots : aucune connexion, la table vit dans ce navigateur. */
+  bots?: BotSetup;
 }
 
 /** Roughly how long a disc takes to fall, so the dust lands with it. */
@@ -39,7 +44,11 @@ export function OriginalRoom() {
   const identity = useRoomIdentity(navState?.name);
   const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
+  const bots = navState?.bots ?? null;
   const mode = navState?.mode ?? 'duel';
+
+  // Une table de bots ne survit pas à un rechargement : retour au salon.
+  if (isBotRoomCode(code) && !bots) return <Navigate to="/puissance4-original" replace />;
 
   if (identity.pending) {
     return (
@@ -81,7 +90,7 @@ export function OriginalRoom() {
     );
   }
 
-  return <OriginalGameView code={code} name={identity.name} isHost={isHost} mode={mode} isPublic={isPublic} />;
+  return <OriginalGameView code={code} name={identity.name} isHost={isHost} mode={mode} isPublic={isPublic} bots={bots} />;
 }
 
 function OriginalGameView({
@@ -90,14 +99,16 @@ function OriginalGameView({
   isHost,
   mode,
   isPublic,
+  bots,
 }: {
   code: string;
   name: string;
   isHost: boolean;
   mode: P4Mode;
   isPublic: boolean;
+  bots: BotSetup | null;
 }) {
-  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useP4Room(code, name, isHost, mode, 'original');
+  const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useP4Room(code, name, isHost, mode, 'original', bots);
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [impact, setImpact] = useState<Impact | null>(null);
@@ -122,7 +133,7 @@ function OriginalGameView({
     code: code.toUpperCase(),
     isHost,
     isPublic,
-    role: !state ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
+    role: !state || bots ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
     status: state?.phase === 'lobby' ? 'waiting' : 'playing',
     players: state?.players.filter((p) => p.connected).length ?? 0,
     maxPlayers: ORIGINAL_MODES[state?.mode ?? mode].players,
@@ -136,6 +147,14 @@ function OriginalGameView({
     [state, selfId, code],
   );
   const record = useRecordGame(outcome);
+
+  // L'équipe adverse aligne ses 4 jetons : tout le monde voit l'animation de son joueur.
+  const myTeam = state?.players.find((p) => p.id === selfId)?.team;
+  const p4Winner =
+    state?.phase === 'won' && state.winner && state.winner.team !== myTeam
+      ? state.players.find((p) => p.team === state.winner!.team && p.userId) ?? null
+      : null;
+  useOpponentVictory(p4Winner && state ? { userId: p4Winner.userId, name: p4Winner.name, key: `${state.winner?.cells.join('-')}|${state.log.length}` } : null);
 
   useEffect(() => {
     if (!state) return;
@@ -251,8 +270,10 @@ function OriginalGameView({
 
       <div className="p4-room-topbar">
         <div>
-          <GameTitle as="h1" game="puissance4-original" suffix={`room ${code}`} className="gt-room" />
+          <GameTitle as="h1" game="puissance4-original" suffix={bots ? 'contre les bots' : `room ${code}`} className="gt-room" />
           <div className="p4-topbar-actions">
+            {!bots && (
+            <>
             <button
               type="button"
               className={`btn btn-outline p4-chip-btn${copied ? ' is-copied' : ''}`}
@@ -269,6 +290,8 @@ function OriginalGameView({
               )}
             </button>
             <InviteFriendsButton game="puissance4-original" code={code} className="btn btn-outline p4-chip-btn" />
+            </>
+            )}
             <button type="button" className="btn btn-outline p4-chip-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -279,7 +302,8 @@ function OriginalGameView({
         </Link>
       </div>
 
-      <ObserverBar
+      {!bots && (
+        <ObserverBar
         spectators={spectators}
         selfId={selfId}
         isSpectator={isSpectator}
@@ -287,6 +311,7 @@ function OriginalGameView({
         onSeat={requestSeat}
         exitTo="/puissance4-original"
       />
+      )}
 
       {state.phase === 'lobby' && (
         <div className="p4-lobby-card p4-waiting">
@@ -353,7 +378,7 @@ function OriginalGameView({
                 }`}
                 style={{ '--p4-player-color': discColor(state.mode, i) } as CSSProperties}
               >
-                <span className="p4-dot" />
+                {p.userId ? <SeatAvatar userId={p.userId} name={p.name} color={discColor(state.mode, i)} size={22} /> : <span className="p4-dot" />}
                 <span className="p4-score-name">
                   {p.name}
                   {p.id === selfId ? ' (toi)' : ''}

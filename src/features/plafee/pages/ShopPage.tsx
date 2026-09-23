@@ -19,12 +19,13 @@ const TABS: { id: Tab; label: string; categories: ShopCategory[] }[] = [
   { id: 'cards', label: 'Cartes', categories: ['card_theme'] },
   { id: 'site', label: 'Site', categories: ['site_theme'] },
   { id: 'badges', label: 'Badges', categories: ['badge'] },
-  { id: 'profile', label: 'Profil', categories: ['profile_border', 'nameplate'] },
+  { id: 'profile', label: 'Profil', categories: ['profile_border', 'avatar_accessory', 'nameplate'] },
   { id: 'anims', label: 'Animations', categories: ['victory_animation'] },
 ];
 
 const CATEGORY_TITLES: Partial<Record<ShopCategory, string>> = {
   profile_border: 'Contours de profil',
+  avatar_accessory: 'Accessoires de photo',
   nameplate: 'Plaques nominatives',
 };
 
@@ -58,7 +59,13 @@ function ItemPreview({ item, username, avatar }: { item: ShopItem; username: str
     case 'profile_border':
       return (
         <span className="plf-prev-border" data-border-preview={String(p.border)} aria-hidden>
-          <UserAvatar username={username} src={avatar} size={56} />
+          <UserAvatar username={username} src={avatar} size={56} preview={{ border: String(p.border) }} />
+        </span>
+      );
+    case 'avatar_accessory':
+      return (
+        <span className="plf-prev-border" aria-hidden>
+          <UserAvatar username={username} src={avatar} size={56} preview={{ accessory: p.accessory ? String(p.accessory) : null }} />
         </span>
       );
     case 'nameplate':

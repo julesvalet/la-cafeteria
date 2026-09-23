@@ -48,7 +48,7 @@ export function VictoryFx() {
     <div className="plf-victory" data-anim={shot.anim} key={shot.key} aria-live="polite">
       <canvas ref={canvasRef} className="plf-victory-canvas" aria-hidden />
       <div className="plf-victory-card">
-        <span className="plf-victory-title">{shot.preview ? 'Aperçu' : 'Victoire !'}</span>
+        <span className="plf-victory-title">{shot.preview ? 'Aperçu' : shot.winner ? `Victoire de ${shot.winner} !` : 'Victoire !'}</span>
         {shot.fees > 0 && <FeesAmount value={shot.fees} signed size="lg" />}
         {shot.streak && shot.streak > 1 ? <span className="plf-victory-streak">Série de {shot.streak} jours</span> : null}
       </div>

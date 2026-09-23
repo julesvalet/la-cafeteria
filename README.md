@@ -1,9 +1,10 @@
 # PLAFEE 🟩
 
 La salle d'arcade entre potes : plusieurs jeux, un seul endroit, et une borne
-néon pour tout le monde. (Le site s'appelait « La Cafétéria » jusqu'à la refonte
-arcade ; l'URL `/la-cafeteria/` et les clés de stockage ont été gardées pour ne
-casser ni les liens partagés ni les réglages déjà en place.)
+néon pour tout le monde, sur https://julesvalet.github.io/plafee/. (Le site
+s'appelait « La Cafétéria » jusqu'à la refonte arcade, et vivait sous
+`/la-cafeteria/` ; les clés de stockage, elles, n'ont pas changé : les réglages
+déjà en place suivent.)
 
 ## Features
 
@@ -60,12 +61,17 @@ semaine, dernières parties, groupes) suit juste en dessous. Code :
 lettrage lettre par lettre, une jauge qui se remplit, et l'interface arrive par un
 zoom flouté. Le niveau affiché est tiré des points (`level.ts`), rien n'est stocké.
 
-**Réglages d'affichage** (engrenage de l'en-tête) : le décor — grille néon (par
-défaut), noir total, phosphore —, l'effet cathodique (lignes de balayage,
-vignettage, bandeau qui descend) et les animations néon permanentes. Les trois
-choix sont gardés dans `localStorage` (`userTheme`, `plafee-crt`, `plafee-fx`) et
+**Réglages d'affichage** (engrenage de l'en-tête) : le **thème** — Moderne
+(l'arcade vert et noir, par défaut), Noir et Blanc (une interface sobre, typo
+moderne, sans néon), RGB (le néon fait le tour des couleurs, vitesse réglable :
+trois crans, un curseur ou une durée en ms), plus les thèmes achetés à la
+boutique —, le décor de l'arcade — grille néon, noir total, phosphore —, l'effet
+cathodique et les animations néon. Les thèmes redéfinissent les jetons de
+couleur et de police ([src/styles/looks.css](src/styles/looks.css)) ; les tables
+de jeu gardent leurs tapis sombres. Les choix sont gardés dans `localStorage`
+(`plafee-look`, `plafee-rgb-ms`, `userTheme`, `plafee-crt`, `plafee-fx`) et
 appliqués avant le premier rendu par le script d'`index.html`, sous forme
-d'attributs `data-backdrop`, `data-crt` et `data-fx` sur `<html>`. Couper les
+d'attributs `data-look`, `data-backdrop`, `data-crt` et `data-fx` sur `<html>`. Couper les
 animations calme aussi les pulsations des bornes ; `prefers-reduced-motion` fait
 la même chose sans réglage.
 
@@ -322,6 +328,26 @@ badges : tout se modifie dans un brouillon, puis part en un seul envoi
 `game_results` (0 point, datées de l'inscription, `details.admin`) : elles
 comptent dans les totaux et les trophées, pas dans les classements de la
 semaine ni dans l'historique des parties.
+
+**Bots** : Scopa, UNO, Puissance 4 (Forge et Classic) et Flip 7 se jouent
+contre des bots — Facile, Normal, Difficile, ou Aléatoire (chaque bot tire son
+niveau en secret). Aucune connexion : le navigateur tient la table comme l'hôte
+d'une partie en ligne, avec le même moteur, et joue pour les bots
+([src/features/bots/](src/features/bots/), une IA par jeu dans `engine/ai.ts`).
+Ces parties comptent comme les autres (stats, FEES, trophées) ; le plafond de
+victoires payées par jour s'applique. `npm run test:bots` fait jouer des
+centaines de parties bot contre bot : aucune ne doit se bloquer.
+
+**Cosmétiques en partie** : chaque joueur annonce son compte en rejoignant une
+table ; tout le monde voit alors le contour, les flammes et le nœud papillon
+des autres sur leur place, le dos de leurs cartes à leur skin, et leur
+animation de victoire quand ils gagnent. Le nœud papillon (rayon Accessoires)
+et le contour Flammes sont dessinés en SVG dans `public/cosmetics/`
+(migration [0008](supabase/migrations/0008_cosmetics_bow_flame.sql)).
+
+**Avertissements** : le bandeau d'un avertissement d'admin s'efface seul après
+10 secondes et ne revient plus (il reste dans la cloche) ; seule la suspension
+d'un compte reste affichée.
 
 ## Ajouter une nouvelle feature
 

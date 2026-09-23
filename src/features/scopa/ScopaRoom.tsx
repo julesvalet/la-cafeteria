@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import type { PanInfo } from 'framer-motion';
 import { Copy, Check, BookOpen, LogOut, TriangleAlert, Trophy, Sparkles } from 'lucide-react';
 import { GameTitle } from '../../components/GameTitle';
@@ -22,12 +22,17 @@ import { useRoomSession } from '../rooms/useRoomSession';
 import { vacatedSeats } from '../rooms/spectators';
 import type { CardT } from './engine/types';
 import { useRoomIdentity } from '../rooms/playerName';
+import { SeatCards, SeatFlair } from '../plafee/components/SeatFlair';
+import { useOpponentVictory } from '../plafee/seatCosmetics';
+import { isBotRoomCode, type BotSetup } from '../bots/bots';
 
 interface LocationState {
   isHost?: boolean;
   name?: string;
   /** Choisi à la création : une table publique est annoncée aux amis. */
   visibility?: 'public' | 'private';
+  /** Contre des bots : aucune connexion, la table vit dans ce navigateur. */
+  bots?: BotSetup;
 }
 
 const DEAL_STEP = 0.06;
@@ -47,6 +52,10 @@ export function ScopaRoom() {
   const identity = useRoomIdentity(navState?.name);
   const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
+  const bots = navState?.bots ?? null;
+
+  // Une table de bots ne survit pas à un rechargement : retour au salon.
+  if (isBotRoomCode(code) && !bots) return <Navigate to="/scopa" replace />;
 
   if (identity.pending) {
     return (
@@ -88,7 +97,7 @@ export function ScopaRoom() {
     );
   }
 
-  return <ScopaGameView code={code} name={identity.name} isHost={isHost} isPublic={isPublic} />;
+  return <ScopaGameView code={code} name={identity.name} isHost={isHost} isPublic={isPublic} bots={bots} />;
 }
 
 function ScopaGameView({
@@ -96,13 +105,15 @@ function ScopaGameView({
   name,
   isHost,
   isPublic,
+  bots,
 }: {
   code: string;
   name: string;
   isHost: boolean;
   isPublic: boolean;
+  bots: BotSetup | null;
 }) {
-  const { state, selfId, status, error, sendAction, spectators, requestSeat } = useScopaRoom(code, name, isHost);
+  const { state, selfId, status, error, sendAction, spectators, requestSeat } = useScopaRoom(code, name, isHost, bots);
 
   const [selectedTableIds, setSelectedTableIds] = useState<string[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -132,7 +143,7 @@ function ScopaGameView({
     code: code.toUpperCase(),
     isHost,
     isPublic,
-    role: !state ? null : isSpectator ? 'spectator' : myIndex >= 0 ? 'player' : null,
+    role: !state || bots ? null : isSpectator ? 'spectator' : myIndex >= 0 ? 'player' : null,
     status: state?.phase === 'lobby' ? 'waiting' : 'playing',
     players: state?.players.filter((p) => p.connected).length ?? 0,
     maxPlayers: 4,
@@ -168,6 +179,16 @@ function ScopaGameView({
   }
   const outcome = withTally(scopaOutcome(state, selfId, code), tally.counts);
   const record = useRecordGame(outcome);
+
+  // Un autre joueur remporte le match : tout le monde voit son animation.
+  const matchWinner = (() => {
+    if (!state || state.phase !== 'match-end') return null;
+    const best = Math.max(...state.matchScores);
+    if (state.matchScores.filter((x) => x === best).length > 1) return null;
+    const w = state.players[state.matchScores.indexOf(best)];
+    return w && w.id !== selfId ? { userId: w.userId, name: w.name, key: `${state.handNumber}|${state.matchScores.join('-')}` } : null;
+  })();
+  useOpponentVictory(matchWinner);
 
   const orderedOpponents = useMemo(() => {
     if (!state || viewIndex < 0) return [];
@@ -344,8 +365,10 @@ function ScopaGameView({
 
       <div className="scopa-room-topbar">
         <div>
-          <GameTitle as="h1" game="scopa" suffix={`room ${code}`} className="gt-room" />
+          <GameTitle as="h1" game="scopa" suffix={bots ? 'contre les bots' : `room ${code}`} className="gt-room" />
           <div className="scopa-topbar-actions">
+            {!bots && (
+            <>
             <button
               type="button"
               className={`btn btn-outline scopa-invite-btn ${copied ? 'is-copied' : ''}`}
@@ -362,6 +385,8 @@ function ScopaGameView({
               )}
             </button>
             <InviteFriendsButton game="scopa" code={code} className="btn btn-outline scopa-invite-btn" />
+            </>
+            )}
             <button type="button" className="btn btn-outline scopa-invite-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -372,7 +397,8 @@ function ScopaGameView({
         </Link>
       </div>
 
-      <ObserverBar
+      {!bots && (
+        <ObserverBar
         spectators={spectators}
         selfId={selfId}
         isSpectator={isSpectator}
@@ -380,6 +406,7 @@ function ScopaGameView({
         onSeat={requestSeat}
         exitTo="/scopa"
       />
+      )}
 
       {state.phase === 'lobby' && (
         <div className="scopa-lobby-card">
@@ -462,10 +489,12 @@ function ScopaGameView({
               }`}
             >
               <div className="scopa-seat-info">
-                <Avatar active={i === state.turn && state.phase === 'playing'} disconnected={!p.connected} />
+                <SeatFlair userId={p.userId}>
+                  <Avatar active={i === state.turn && state.phase === 'playing'} disconnected={!p.connected} />
+                </SeatFlair>
                 <span className="scopa-seat-name">{p.name}</span>
               </div>
-              <div className="scopa-seat-hand">
+              <SeatCards userId={p.userId} className="scopa-seat-hand">
                 {Array.from({ length: p.handCount }).map((_, idx) => {
                   const fan = fanTransform(idx, p.handCount, 12, 5);
                   return (
@@ -482,14 +511,16 @@ function ScopaGameView({
                     />
                   );
                 })}
-              </div>
+              </SeatCards>
               <CapturedPile cards={p.captured} />
             </div>
           ))}
 
           <div className="scopa-seat scopa-seat-bottom">
             <div className="scopa-seat-info">
-              <Avatar active={Boolean(isMyTurn)} />
+              <SeatFlair userId={seated.userId}>
+                <Avatar active={Boolean(isMyTurn)} />
+              </SeatFlair>
               <span className="scopa-seat-name">
                 {seated.name}
                 {me ? ' (toi)' : ''}

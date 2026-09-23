@@ -32,10 +32,16 @@
   --danger: #ff4d6a;
 
   --bg: #0d0d0d;
+  --bg-rgb: 13 13 13;
+  /* Plus sombre que le fond : puits, champs, lignes de tableau. */
+  --well: #0a0a0a;
+  --line: #262626;
+  --line-2: #333333;
   --panel: #1a1a1a;
   --panel-2: #222222;
   --panel-3: #2a2a2a;
   --ink: #ffffff;
+  --ink-rgb: 255 255 255;
   --ink-2: #cccccc;
   --ink-3: #999999;
 
@@ -113,7 +119,7 @@ html {
   background: var(--bg);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scrollbar-color: var(--neon-deep) #0a0a0a;
+  scrollbar-color: var(--neon-deep) var(--well);
 }
 
 body {
@@ -198,12 +204,12 @@ canvas {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: var(--well);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--neon-deep);
-  border: 2px solid #0a0a0a;
+  border: 2px solid var(--well);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -461,7 +467,7 @@ html[data-fx='calm'] .plf-scanband { display: none; }
   opacity: 0.6;
   cursor: not-allowed;
   border-color: #3a3a3a;
-  background: #161616;
+  background: var(--panel);
   color: #6d6d6d;
   text-shadow: none;
   box-shadow: none;

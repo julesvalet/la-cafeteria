@@ -22,6 +22,7 @@ import { useRoomSession } from '../rooms/useRoomSession';
 import { vacatedSeats } from '../rooms/spectators';
 import type { PlayerAction, PublicState } from './engine/types';
 import './flip7.css';
+import { useOpponentVictory } from '../plafee/seatCosmetics';
 
 export function Flip7Room() {
   const { code = '' } = useParams();
@@ -65,6 +66,9 @@ function GameSession({ isPublic, ...options }: SessionOptions & { isPublic: bool
     });
   }
   const record = useRecordGame(withTally(flip7Outcome(state, selfId), tally.counts));
+  // Un autre joueur atteint l'objectif : tout le monde voit son animation.
+  const f7Winner = state?.phase === 'finished' && state.winnerId && state.winnerId !== selfId ? state.players.find(p => p.id === state.winnerId) : null;
+  useOpponentVictory(f7Winner && state ? { userId: f7Winner.userId, name: f7Winner.name, key: state.id } : null);
   const [visible, setVisible] = useState<PublicState | null>(null);
   const [busy, setBusy] = useState(false);
   const [rules, setRules] = useState(false);

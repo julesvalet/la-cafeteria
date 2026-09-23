@@ -1,5 +1,5 @@
 {
-  "name": "la-cafeteria",
+  "name": "plafee",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,7 +12,8 @@
     "test:flip7": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/flip7/engine/rules.test.mts",
     "test:p4": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/puissance4/engine/rules.test.mts",
     "test:uno": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/uno/engine/rules.test.mts",
-    "test:verite": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/verite/engine/rules.test.mts"
+    "test:verite": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/verite/engine/rules.test.mts",
+    "test:bots": "node --experimental-strip-types --import ./scripts/register-ts.mjs src/features/bots/bots.test.mts"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

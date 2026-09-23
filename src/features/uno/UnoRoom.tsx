@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { BookOpen, Check, Copy, Hand, LogOut, Megaphone, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { GameTitle } from '../../components/GameTitle';
 import { useUnoRoom } from './net/useUnoRoom';
@@ -21,6 +21,8 @@ import { useRoomSession } from '../rooms/useRoomSession';
 import { vacatedSeats } from '../rooms/spectators';
 import type { UnoCard, UnoColor } from './engine/types';
 import { useRoomIdentity } from '../rooms/playerName';
+import { useOpponentVictory } from '../plafee/seatCosmetics';
+import { isBotRoomCode, type BotSetup } from '../bots/bots';
 
 interface LocationState {
   isHost?: boolean;
@@ -29,6 +31,8 @@ interface LocationState {
   stackingEnabled?: boolean;
   /** Choisi à la création : une table publique est annoncée aux amis. */
   visibility?: 'public' | 'private';
+  /** Contre des bots : aucune connexion, la table vit dans ce navigateur. */
+  bots?: BotSetup;
 }
 
 export function UnoRoom() {
@@ -40,8 +44,12 @@ export function UnoRoom() {
   const identity = useRoomIdentity(navState?.name);
   const isPublic = navState?.visibility === 'public';
   const isHost = Boolean(navState?.isHost);
+  const bots = navState?.bots ?? null;
   const maxPlayers = navState?.maxPlayers ?? 2;
   const stackingEnabled = navState?.stackingEnabled ?? false;
+
+  // Une table de bots ne survit pas à un rechargement : retour au salon.
+  if (isBotRoomCode(code) && !bots) return <Navigate to="/uno" replace />;
 
   if (identity.pending) {
     return (
@@ -91,6 +99,7 @@ export function UnoRoom() {
       isPublic={isPublic}
       maxPlayers={maxPlayers}
       stackingEnabled={stackingEnabled}
+      bots={bots}
     />
   );
 }
@@ -102,6 +111,7 @@ function UnoGameView({
   maxPlayers,
   stackingEnabled,
   isPublic,
+  bots,
 }: {
   code: string;
   name: string;
@@ -109,6 +119,7 @@ function UnoGameView({
   isPublic: boolean;
   maxPlayers: number;
   stackingEnabled: boolean;
+  bots: BotSetup | null;
 }) {
   const { state, selfId, status, error, clearError, sendAction, spectators, requestSeat } = useUnoRoom(
     code,
@@ -116,6 +127,7 @@ function UnoGameView({
     isHost,
     maxPlayers,
     stackingEnabled,
+    bots,
   );
 
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -144,7 +156,7 @@ function UnoGameView({
     code: code.toUpperCase(),
     isHost,
     isPublic,
-    role: !state ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
+    role: !state || bots ? null : isSpectator ? 'spectator' : seat >= 0 ? 'player' : null,
     status: state?.phase === 'lobby' ? 'waiting' : 'playing',
     players: state?.players.filter((p) => p.connected).length ?? 0,
     maxPlayers: state?.maxPlayers ?? maxPlayers,
@@ -165,6 +177,10 @@ function UnoGameView({
   }
   const outcome = withTally(unoOutcome(state, selfId, code), tally.counts);
   const record = useRecordGame(outcome);
+
+  // Un autre joueur pose sa dernière carte : tout le monde voit son animation.
+  const unoWinner = state && state.phase === 'won' && state.winner !== null && state.winner !== seat ? state.players[state.winner] : null;
+  useOpponentVictory(unoWinner && state ? { userId: unoWinner.userId, name: unoWinner.name, key: `${state.lastEvent.seq}|${state.log.length}` } : null);
 
   // Every announcement is driven off `lastEvent.seq` rather than off diffing
   // the state: the same effect can legitimately fire twice in a row.
@@ -292,8 +308,10 @@ function UnoGameView({
 
       <div className="p4-room-topbar">
         <div>
-          <GameTitle as="h1" game="uno" suffix={`room ${code}`} className="gt-room" />
+          <GameTitle as="h1" game="uno" suffix={bots ? 'contre les bots' : `room ${code}`} className="gt-room" />
           <div className="p4-topbar-actions">
+            {!bots && (
+            <>
             <button
               type="button"
               className={`btn btn-outline p4-chip-btn${copied ? ' is-copied' : ''}`}
@@ -310,6 +328,8 @@ function UnoGameView({
               )}
             </button>
             <InviteFriendsButton game="uno" code={code} className="btn btn-outline p4-chip-btn" />
+            </>
+            )}
             <button type="button" className="btn btn-outline p4-chip-btn" onClick={() => setRulesOpen(true)}>
               <BookOpen size={14} /> Règles
             </button>
@@ -320,7 +340,8 @@ function UnoGameView({
         </Link>
       </div>
 
-      <ObserverBar
+      {!bots && (
+        <ObserverBar
         spectators={spectators}
         selfId={selfId}
         isSpectator={isSpectator}
@@ -328,6 +349,7 @@ function UnoGameView({
         onSeat={requestSeat}
         exitTo="/uno"
       />
+      )}
 
       {state.phase === 'lobby' && (
         <div className="p4-lobby-card p4-waiting">

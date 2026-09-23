@@ -154,15 +154,13 @@ export function veriteOutcome(state: VeriteState | null, selfId: string | null, 
 }
 
 /**
- * Flip 7 n'enregistre que les parties en ligne.
- *
- * Le mode solo et les parties contre des bots se gagnent à volonté et sans
- * adversaire réel : les compter reviendrait à mettre en tête du classement
- * celui qui a le plus de patience, pas celui qui joue le mieux.
+ * Flip 7 enregistre les parties en ligne et contre des bots, comme les autres
+ * jeux. Le mode solo, sans adversaire du tout, ne se gagne ni ne se perd : il
+ * ne compte pas.
  */
 export function flip7Outcome(state: Flip7State | null, selfId: string | null): GameOutcome | null {
   if (!state || state.phase !== 'finished' || !selfId) return null;
-  if (state.options.mode !== 'online') return null;
+  if (state.options.mode === 'solo') return null;
 
   const me = state.players.findIndex((p) => p.id === selfId);
   if (me === -1) return null;

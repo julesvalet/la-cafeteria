@@ -6,6 +6,7 @@ import { DEFAULT_PREFERENCES, type Profile } from './types';
 import { translateAuthError } from './validation';
 import { clearSavedPseudo, savePseudo } from '../rooms/playerName';
 import { clearReferral, pendingReferral } from '../plafee/api';
+import { setCurrentUserId } from './currentUser';
 
 /** Remonte l'erreur Supabase en français, sans perdre la cause d'origine. */
 function fail(message: string): never {
@@ -202,6 +203,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     [userId],
   );
+
+  // Les rooms annoncent le compte en rejoignant une table (cosmétiques en jeu).
+  useEffect(() => setCurrentUserId(session?.user?.id ?? null), [session]);
 
   const value = useMemo<AuthValue>(
     () => ({

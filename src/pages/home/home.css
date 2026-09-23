@@ -124,7 +124,7 @@
 .home-hero {
   position: relative;
   border: var(--frame);
-  background: #050505;
+  background: var(--well);
   box-shadow: var(--frame-glow);
 }
 
@@ -227,7 +227,7 @@
   background:
     linear-gradient(rgb(var(--neon-rgb) / 0.035) 1px, transparent 1px) 0 0 / 16px 16px,
     linear-gradient(90deg, rgb(var(--neon-rgb) / 0.035) 1px, transparent 1px) 0 0 / 16px 16px,
-    linear-gradient(180deg, #151515, #0a0a0a);
+    linear-gradient(180deg, var(--well), var(--well));
   box-shadow: var(--frame-glow);
   color: var(--ink);
   text-align: center;
@@ -408,7 +408,7 @@
   min-width: 0;
   padding: 10px;
   border: 2px solid rgb(var(--neon-rgb) / 0.35);
-  background: #111;
+  background: var(--well);
   color: var(--ink);
   transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
@@ -529,7 +529,7 @@ a.home-profile:hover {
   min-width: 0;
   padding: 6px 8px;
   border: 1px solid rgb(var(--neon-rgb) / 0.2);
-  background: #111;
+  background: var(--well);
   transition: border-color 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
@@ -583,7 +583,7 @@ a.home-profile:hover {
 
 .home-join:disabled {
   border-color: #3a3a3a;
-  color: #555;
+  color: var(--line-2);
   box-shadow: none;
   cursor: default;
 }

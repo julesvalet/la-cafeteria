@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getCurrentUserId } from '../../account/currentUser';
 import type Peer from 'peerjs';
 import type { DataConnection } from 'peerjs';
 import { applyAction, botAction, createGame, leave, publicState, tick } from '../engine/rules';
@@ -110,7 +111,7 @@ export function useFlip7Game(options: SessionOptions) {
     const initialize = () => {
       if (cancelled) return;
       setSelfId(hostId); setStatus('connected');
-      const game = createGame(opts.code, hostId, opts.name, opts);
+      const game = createGame(opts.code, hostId, opts.name, opts, Math.random, getCurrentUserId());
       commit(local ? applyAction(game, hostId, { type: 'START' }).state : game);
       command.current = action => accept(hostId, action);
     };
@@ -127,7 +128,7 @@ export function useFlip7Game(options: SessionOptions) {
           hostConn = peer!.connect(PREFIX + opts.code, { reliable: true });
           const conn = hostConn;
           conn.on('open', () => {
-            send(conn, { type: 'ACTION', action: { type: 'JOIN', name: opts.name }, revision: 0, requestId: `${id}-${++request}` });
+            send(conn, { type: 'ACTION', action: { type: 'JOIN', name: opts.name, userId: getCurrentUserId() }, revision: 0, requestId: `${id}-${++request}` });
             command.current = action => send(conn, { type: 'ACTION', action, revision: truth?.revision ?? 0, requestId: `${id}-${++request}` });
             seatRequest.current = want => send(conn, { type: 'SEAT', want });
           });

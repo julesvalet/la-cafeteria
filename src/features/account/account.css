@@ -196,7 +196,7 @@ html[data-fx='calm'] .acc-card::before { animation: none; opacity: 0.25; }
   opacity: 0.6;
   cursor: not-allowed;
   border-color: #3a3a3a;
-  background: #161616;
+  background: var(--well);
   color: #6d6d6d;
   text-shadow: none;
   box-shadow: none;
@@ -330,7 +330,7 @@ html[data-fx='calm'] .neon-btn:hover:not(:disabled) { animation: none; }
   padding: 0;
   border: 2px solid var(--neon);
   border-radius: 0;
-  background: #111;
+  background: var(--well);
   box-shadow: var(--neon-glow);
 }
 
@@ -381,7 +381,7 @@ html[data-fx='calm'] .neon-btn:hover:not(:disabled) { animation: none; }
   min-width: 0;
   padding: 12px 14px;
   border: 1px solid rgb(var(--neon-rgb) / 0.28);
-  background: #111;
+  background: var(--well);
 }
 
 .acc-stat dt {

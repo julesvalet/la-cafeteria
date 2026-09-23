@@ -12,6 +12,8 @@ export interface VictoryDetail {
   /** Pour l'aperçu de la boutique : impose une animation. */
   anim?: VictoryAnim;
   preview?: boolean;
+  /** La victoire d'un autre joueur, vue depuis sa place : son nom. */
+  winner?: string;
 }
 
 export function celebrate(detail: VictoryDetail) {

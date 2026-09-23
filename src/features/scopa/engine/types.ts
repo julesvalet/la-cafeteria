@@ -9,6 +9,8 @@ export interface CardT {
 export interface Player {
   id: string;
   name: string;
+  /** Le compte du joueur, pour afficher ses cosmétiques (absent : invité ou bot). */
+  userId?: string | null;
   hand: CardT[];
   handCount: number;
   captured: CardT[];
@@ -45,7 +47,7 @@ export interface GameState {
 }
 
 export type ScopaAction =
-  | { type: 'JOIN'; playerId: string; name: string }
+  | { type: 'JOIN'; playerId: string; name: string; userId?: string | null }
   | { type: 'START' }
   | { type: 'PLAY_CARD'; playerId: string; cardId: string; captureCardIds: string[] }
   | { type: 'NEXT_HAND' }

@@ -14,6 +14,8 @@ export interface UnoCard {
 export interface UnoPlayer {
   id: string;
   name: string;
+  /** Le compte du joueur, pour afficher ses cosmétiques (absent : invité ou bot). */
+  userId?: string | null;
   hand: UnoCard[];
   /**
    * Kept in lockstep with `hand.length` even when `hand` itself is masked to
@@ -71,7 +73,7 @@ export interface UnoState {
 }
 
 export type UnoAction =
-  | { type: 'JOIN'; playerId: string; name: string }
+  | { type: 'JOIN'; playerId: string; name: string; userId?: string | null }
   | { type: 'SET_OPTIONS'; maxPlayers: number; stackingEnabled: boolean }
   | { type: 'START' }
   | { type: 'PLAY_CARD'; playerId: string; cardId: string; chosenColor?: UnoColor }

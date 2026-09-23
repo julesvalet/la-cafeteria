@@ -141,13 +141,14 @@ export const setReferrer = (username: string) => rpc<void>('set_referrer', { p_u
 
 // --- Boutique -------------------------------------------------------------------------
 
-export type ShopCategory = 'card_theme' | 'site_theme' | 'badge' | 'profile_border' | 'nameplate' | 'victory_animation';
+export type ShopCategory = 'card_theme' | 'site_theme' | 'badge' | 'profile_border' | 'avatar_accessory' | 'nameplate' | 'victory_animation';
 
 export const SHOP_CATEGORIES: { id: ShopCategory; label: string }[] = [
   { id: 'card_theme', label: 'Cartes' },
   { id: 'site_theme', label: 'Site' },
   { id: 'badge', label: 'Badges' },
   { id: 'profile_border', label: 'Contours' },
+  { id: 'avatar_accessory', label: 'Accessoires' },
   { id: 'nameplate', label: 'Plaques' },
   { id: 'victory_animation', label: 'Animations' },
 ];
@@ -219,6 +220,8 @@ export interface Cosmetics {
   site_skin: string | null;
   card_skin: string | null;
   victory_anim: string | null;
+  /** Posé sur la photo (« bow » : le nœud papillon). Absent avant la migration 0008. */
+  accessory?: string | null;
   badges: PlayerBadge[];
   banned: boolean;
 }

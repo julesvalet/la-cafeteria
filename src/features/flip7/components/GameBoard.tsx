@@ -4,6 +4,8 @@ import { ShieldCheck, Snowflake, Trophy } from 'lucide-react';
 import { FlipCard } from './FlipCard';
 import { hasChance, numbers, points } from '../engine/rules';
 import type { PlayerAction, PublicState } from '../engine/types';
+import { SeatFlair } from '../../plafee/components/SeatFlair';
+import { useSeatCards } from '../../plafee/seatCosmetics';
 
 function AnimatedScore({ value }: { value: number }) {
   const [display, setDisplay] = useState(value);
@@ -30,6 +32,8 @@ export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: 
   // playing, or the first seat between rounds.
   const me = state.players.find(p => p.id === selfId);
   const viewed = state.players.find(p => p.id === selected) ?? (state.phase === 'playing' ? state.players[state.pending?.by ?? state.turn] : me ?? state.players[0]);
+  // Les cartes d'un autre joueur s'affichent à son skin ; les siennes, au sien.
+  const viewedSkin = useSeatCards(viewed.id === selfId ? null : viewed.userId);
   const target = state.pending?.by === state.players.findIndex(p => p.id === selfId);
   const myTurn = turnPlayer?.id === selfId && state.phase === 'playing' && !state.automatic && !state.pending;
   const actionable = myTurn && !busy;
@@ -43,7 +47,7 @@ export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: 
     <div className={`f7-table-wrap players-${state.players.length}`}>
       <div className="f7-seats">
         {state.players.map((p, i) => <button type="button" key={p.id} className={`f7-seat seat-${i} ${state.phase === 'playing' && p.id === turnPlayer.id ? 'is-current' : ''} ${p.status === 'busted' ? 'is-busted' : ''} ${p.status === 'frozen' || p.skip ? 'is-frozen' : ''}`} onClick={() => setSelected(p.id)} aria-label={`Voir les cartes de ${p.name}`} style={{ '--seat-color': ['#50ff4d', '#00ffff', '#ff00ff', '#ffe14d', '#ff9f1c'][i] } as CSSProperties}>
-          <span className="f7-avatar">{p.bot ? '✦' : p.name.charAt(0).toUpperCase()}{hasChance(p) && <ShieldCheck className="f7-avatar-badge" size={18} />}{(p.status === 'frozen' || p.skip) && <Snowflake className="f7-avatar-badge" size={18} />}</span>
+          <SeatFlair userId={p.userId}><span className="f7-avatar">{p.bot ? '✦' : p.name.charAt(0).toUpperCase()}{hasChance(p) && <ShieldCheck className="f7-avatar-badge" size={18} />}{(p.status === 'frozen' || p.skip) && <Snowflake className="f7-avatar-badge" size={18} />}</span></SeatFlair>
           <span className="f7-seat-info"><b>{p.name}{p.id === selfId ? ' · toi' : ''}</b><span>{!p.connected ? 'Déconnecté·e' : p.status === 'busted' ? 'Doublon · 0 pt' : p.status === 'frozen' ? 'Gelé·e · points assurés' : p.status === 'stayed' ? 'Points assurés' : p.chanceUsed ? 'Seconde chance utilisée' : `${points(p, state.options.ruleset)} points en jeu`}</span></span>
           <strong>{p.total}<small>PTS</small></strong>
         </button>)}
@@ -54,7 +58,7 @@ export function GameBoard({ state, selfId, busy, sendAction, footer }: { state: 
           <div className="f7-deck"><FlipCard back /><span>{state.deckCount} cartes</span></div>
           <div className="f7-hand-area">
             <p className="f7-hand-label">{viewed.id === selfId ? 'TES CARTES' : `LES CARTES DE ${viewed.name.toUpperCase()}`}</p>
-            <div className="f7-hand" aria-label={`Cartes de ${viewed.name}`}>
+            <div className="f7-hand" data-seat-cards={viewedSkin} aria-label={`Cartes de ${viewed.name}`}>
               {viewed.cards.length ? viewed.cards.map((c, i) => <motion.div key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .25 }} style={{ '--card-angle': `${(i % 3 - 1) * 3}deg` } as CSSProperties}><FlipCard card={c} /></motion.div>) : <div className="f7-empty-hand"><span>✦</span><p>Tout commence<br />par une carte.</p></div>}
             </div>
             {state.options.ruleset === 'official' && <div className="f7-seven-progress" aria-label={`${ns.length} numéros différents sur 7`}>
