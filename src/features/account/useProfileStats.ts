@@ -71,6 +71,9 @@ export function useProfileStats(userId: string | null): State {
               'id, game_type, won, score, points, streak_bonus, created_at, game_sessions(room_code, player_count)',
             )
             .eq('user_id', userId)
+            // Les parties ajoutées par un admin (God mode) comptent dans les
+            // totaux, pas dans l'historique : ce ne sont pas des parties jouées.
+            .is('details->>admin', null)
             // `seq` porte l'ordre d'arrivée réel ; `created_at` peut être
             // identique pour deux parties enregistrées dans la même seconde.
             .order('seq', { ascending: false })

@@ -32,7 +32,7 @@ export function ConfirmAction({
   label: ReactNode;
   confirm?: string;
   onConfirm: () => void | Promise<void>;
-  variant?: 'danger' | 'ghost';
+  variant?: 'danger' | 'ghost' | 'solid';
   disabled?: boolean;
 }) {
   const [armed, setArmed] = useState(false);

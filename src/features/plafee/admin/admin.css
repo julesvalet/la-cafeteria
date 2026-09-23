@@ -165,3 +165,128 @@
 .adm-config li { display: grid; grid-template-columns: minmax(0, 1fr) 110px 32px; align-items: center; gap: 8px; }
 .adm-config label { font-size: 13px; color: var(--ink-2); }
 .adm-config .neon-input { min-height: 34px; padding: 4px 8px; }
+
+/* --- God mode ----------------------------------------------------------------- */
+
+/* L'onglet se distingue : c'est l'outil qui peut tout casser. */
+.adm-tab[data-god] { border-color: rgb(var(--magenta-rgb) / 0.45); color: var(--magenta); }
+.adm-tab[data-god]:hover { border-color: var(--magenta); color: var(--magenta); }
+.adm-tab[data-god][aria-current='page'] { border-color: var(--magenta); background: rgb(var(--magenta-rgb) / 0.14); color: var(--magenta); box-shadow: 0 0 10px rgb(var(--magenta-rgb) / 0.45); }
+.adm-link-god { color: var(--magenta); }
+
+.god .acc-section-title { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; }
+.god-intro .acc-section-title { color: var(--magenta); }
+.god-intro > .neon-hint { margin: 0 0 12px; }
+
+.god-picker { display: flex; flex-direction: column; gap: 10px; }
+.god-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.god-result {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid rgb(var(--neon-rgb) / 0.25);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.god-result > .soc-avatar { grid-row: span 2; }
+.god-result:hover { border-color: var(--neon); }
+.god-result[aria-pressed='true'] { border-color: var(--magenta); background: rgb(var(--magenta-rgb) / 0.1); }
+.god-result:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.god-result-name { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.god-result-mail { font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.god-who { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.god-who-text { min-width: 0; }
+.god-who-text p { margin: 0; overflow-wrap: anywhere; }
+.god-who .acc-section-title { margin: 0 0 2px; }
+
+.god-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (min-width: 1000px) { .god-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+.god-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.god-card > .adm-row-between { margin-bottom: 0; }
+.god-subtitle { padding-top: 12px; border-top: 1px dashed rgb(var(--neon-rgb) / 0.25); }
+.god-photo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.god-photo label { cursor: pointer; }
+.god-photo:focus-within label { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.god-delta { margin: -4px 0 0; font-family: var(--font-vcr); font-size: 20px; color: var(--neon); }
+.god-delta[data-sign='minus'] { color: var(--danger); }
+
+.god-rate { display: flex; align-items: flex-end; gap: 10px; }
+.god-rate .adm-field { flex: 0 1 160px; }
+.god-stats th[scope='row'] { font-weight: 700; color: var(--ink); white-space: normal; }
+.god-num { width: 88px; min-width: 0; min-height: 34px; padding: 4px 8px; }
+@media (max-width: 520px) { .god-num { width: 64px; } .god-stats { white-space: normal; } }
+.god-num[aria-invalid='true'] { border-color: var(--danger); }
+.god-filter { width: 150px; min-height: 34px; padding: 4px 8px; }
+
+/* Listes à cocher : trophées, objets, badges. */
+.god-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.god-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid #262626;
+  border-left: 3px solid transparent;
+  background: #0b0b0b;
+}
+.god-row:not([data-on]) { opacity: 0.62; }
+.god-row[data-on] { border-color: rgb(var(--neon-rgb) / 0.3); }
+/* Ce qui a changé depuis la dernière sauvegarde. */
+.god-row[data-changed] { border-left-color: var(--magenta); opacity: 1; background: rgb(var(--magenta-rgb) / 0.07); }
+.god-row-icon { flex: none; color: var(--neon); }
+.god-row-img { flex: none; width: 22px; height: 22px; object-fit: contain; }
+.god-row-name { flex: 1 1 auto; min-width: 0; font-size: 14px; color: var(--ink); overflow-wrap: anywhere; }
+.god-row .plf-rarity { flex: none; }
+.god-toggle {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgb(var(--neon-rgb) / 0.5);
+  background: transparent;
+  color: var(--neon);
+  cursor: pointer;
+}
+.god-toggle[data-on] { border-color: rgb(var(--danger-rgb) / 0.6); color: var(--danger); }
+.god-toggle:hover { box-shadow: var(--neon-glow-sm); }
+.god-toggle:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.god-equip { flex: none; font-size: 12px; }
+.god-plate { flex: none; width: 80px; min-height: 34px; padding: 4px 8px; font-family: var(--font-pixel); text-transform: uppercase; }
+
+.god-cats { display: flex; flex-direction: column; gap: 14px; }
+.god-cat { margin: 0; padding: 0; border: 0; min-width: 0; }
+.god-cat legend { margin-bottom: 8px; padding: 0; font-family: var(--font-pixel); font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.god-unequip { margin-top: 6px; font-size: 13px; }
+
+/* La barre d'enregistrement suit le défilement. */
+.god-savebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  border: 2px solid rgb(var(--neon-rgb) / 0.35);
+  background: rgb(10 10 10 / 0.96);
+  box-shadow: 0 -8px 24px rgb(0 0 0 / 0.6);
+}
+.god-savebar[data-dirty] { border-color: var(--magenta); box-shadow: 0 -8px 24px rgb(0 0 0 / 0.6), 0 0 14px rgb(var(--magenta-rgb) / 0.35); }
+.god-savebar-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.god-pending { min-width: 0; font-size: 14px; color: var(--ink); }
+.god-pending summary { cursor: pointer; font-weight: 700; color: var(--magenta); }
+.god-pending ul { max-height: 30vh; margin: 8px 0 0; padding-left: 18px; overflow: auto; font-size: 13px; color: var(--ink-2); }
+.god-errors { margin: 0; padding-left: 18px; font-size: 13px; color: var(--danger); }
+
+.adm-log-god { min-width: 240px; font-size: 13px; color: var(--ink); }

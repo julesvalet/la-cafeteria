@@ -312,6 +312,17 @@ ferme toutes les écritures (parties, amis, groupes, messages), pas la
 connexion elle-même. Images : bucket public `plafee-assets`, écrit par les
 admins seulement.
 
+**God mode** (`/admin?onglet=god`, migration
+[0007](supabase/migrations/0007_admin_god_mode.sql)) : réservé au rôle
+`super_admin` d'`admin_users`. Pseudo, photo, bio, solde de FEES, victoires
+et défaites par jeu (ou un win rate global), trophées, objets de boutique,
+badges : tout se modifie dans un brouillon, puis part en un seul envoi
+(`admin_god_save`, tout ou rien). Chaque modification laisse une ligne
+`god_edit` dans le journal. Les victoires ajoutées sont de vraies lignes de
+`game_results` (0 point, datées de l'inscription, `details.admin`) : elles
+comptent dans les totaux et les trophées, pas dans les classements de la
+semaine ni dans l'historique des parties.
+
 ## Ajouter une nouvelle feature
 
 Chaque mini-app vit dans son propre dossier sous `src/features/<nom>/`. Pour

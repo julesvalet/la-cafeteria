@@ -55,6 +55,8 @@ export interface Standing {
   banned: boolean;
   ban_reason: string | null;
   is_admin: boolean;
+  /** Rôle super_admin : accès au God mode. Absent avant la migration 0007. */
+  is_super_admin?: boolean;
   warnings: { message: string; created_at: string }[];
 }
 

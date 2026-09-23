@@ -6,28 +6,74 @@
 
 /* --- Onglets dans l'en-tête --------------------------------------------------- */
 
-/* Les onglets montent dans l'en-tête sur grand écran ; en dessous, ils restent
-   en tête de chaque page. */
-.soc-nav[data-variant='header'] { display: none; }
+/*
+ * Le logo à gauche, puis une seule rangée centrée : les onglets et les
+ * commandes, tous au même écart (--hdr-gap). Header.tsx mesure la rangée et
+ * choisit le premier palier (data-fit) qui tient ; chaque palier ne fait que
+ * resserrer le précédent. Sans JS, rien ne s'affiche de toute façon.
+ */
+.site-header { --hdr-gap: 8px; --hdr-box: 40px; }
+.site-header .container { max-width: 1440px; }
 
-@media (min-width: 1280px) {
-  .site-header .container { max-width: 1440px; }
-
-  .soc-nav[data-variant='header'] {
-    display: flex;
-    flex: 1 1 auto;
-    justify-content: center;
-    width: auto;
-    min-width: 0;
-    padding: 0;
-    border: none;
-    background: none;
-    box-shadow: none;
-  }
-
-  .soc-nav[data-variant='header'] .soc-nav-link { flex: 0 0 auto; gap: 6px; padding: 9px 9px; }
-  .soc-nav[data-variant='page'] { display: none; }
+.site-header-bar {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  justify-content: safe center;
+  gap: var(--hdr-gap);
+  min-width: 0;
 }
+
+.site-header-actions { gap: var(--hdr-gap); }
+
+.site-header-actions > .account-chip,
+.site-header-actions > .theme-toggle { height: var(--hdr-box); min-width: var(--hdr-box); }
+.site-header-actions > .account-chip-icon,
+.site-header-actions > .soc-bell,
+.site-header-actions > .theme-toggle,
+.site-header-actions > .account-chip-avatar,
+.site-header-actions > .account-chip[data-placeholder='true'] { width: var(--hdr-box); }
+
+/* Les onglets de l'en-tête : des cases à la hauteur des commandes. */
+.soc-nav[data-variant='header'] {
+  display: none;
+  flex: none;
+  gap: var(--hdr-gap);
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.soc-nav[data-variant='header'] .soc-nav-link {
+  flex: none;
+  gap: 6px;
+  height: var(--hdr-box);
+  min-width: var(--hdr-box);
+  padding: 0 9px;
+}
+
+.site-header:is([data-fit='full'], [data-fit='tabs'], [data-fit='active'], [data-fit='icons']) .soc-nav[data-variant='header'] { display: flex; }
+.site-header[data-fit='active'] .soc-nav-link:not(.active) .soc-nav-label,
+.site-header[data-fit='icons'] .soc-nav-link .soc-nav-label { display: none; }
+.site-header[data-fit='icons'] .soc-nav[data-variant='header'] .soc-nav-link { padding: 0; }
+html[data-hdr-nav='in'] .soc-nav[data-variant='page'] { display: none; }
+
+/* Le raccourci des classements double l'onglet quand celui-ci est là. */
+html[data-hdr-nav='in'] .hdr-classements { display: none; }
+
+/* Commandes en icônes : libellés, suffixe « FEES » et vitrine s'effacent. */
+.site-header:not([data-fit='full'], [data-fit='out']) :is(.account-chip-label, .plf-fees-chip .plf-fees small, .plf-fees-chip-store) { display: none; }
+.site-header:not([data-fit='full'], [data-fit='out']) :is(.account-chip-signin, .plf-admin-chip) { width: var(--hdr-box); padding: 0; }
+.site-header:not([data-fit='full'], [data-fit='out']) .plf-fees-chip { padding: 0 8px; }
+
+.site-header:is([data-fit='mini'], [data-fit='tiny']) .site-brand-word { display: none; }
+.site-header[data-fit='tiny'] { --hdr-gap: 4px; --hdr-box: 34px; }
+.site-header[data-fit='tiny'] .site-header-inner { gap: 8px; }
+.site-header[data-fit='tiny'] .plf-fees-chip { padding: 0 6px; }
 
 /* --- Tableau de bord sous l'accueil -------------------------------------------- */
 
@@ -527,37 +573,28 @@ html, body { overflow-x: clip; }
   .soc-tab { padding: 7px 8px; }
 }
 
-/* Six onglets avec leurs libellés ne tiennent qu'à partir de 900px. */
+/* Les onglets de la page : sept avec leurs libellés ne tiennent qu'à partir
+   de 900px. (Ceux de l'en-tête suivent les paliers de Header.tsx.) */
 @media (max-width: 900px) {
-  .soc-nav-link:not(.active) .soc-nav-label { display: none; }
-  .soc-nav-link { padding: 10px 12px; }
+  .soc-nav[data-variant='page'] .soc-nav-link:not(.active) .soc-nav-label { display: none; }
+  .soc-nav[data-variant='page'] .soc-nav-link { padding: 10px 12px; }
 }
 
 /* Téléphone : les onglets en icônes seules, l'onglet actif se reconnaît à sa
    case allumée (chaque lien garde son nom dans aria-label). */
 @media (max-width: 480px) {
-  .soc-nav-link .soc-nav-label { display: none; }
-  .soc-nav-link { padding: 10px; }
+  .soc-nav[data-variant='page'] .soc-nav-link .soc-nav-label { display: none; }
+  .soc-nav[data-variant='page'] .soc-nav-link { padding: 10px; }
 }
 
-/* Petit téléphone : le lettrage rétrécit, puis s'efface devant le symbole. */
+/* Petit téléphone : un en-tête moins haut, un logo plus petit ; la suite
+   (lettrage, cases) relève des paliers. */
 @media (max-width: 420px) {
   :root { --header-h: 58px; }
   .site-header-inner { gap: 10px; }
   .site-brand { gap: 8px; }
   .site-brand-mark { height: 34px; }
   .site-brand-word { height: 14px; }
-}
-
-@media (max-width: 380px) {
-  .site-header-actions { gap: 4px; }
-  .site-header-actions > .account-chip,
-  .site-header-actions > .theme-toggle,
-  .site-header-actions .dock-toggle { width: 34px; height: 34px; }
-}
-
-@media (max-width: 340px) {
-  .site-brand-word { display: none; }
 }
 
 /* Salons des jeux : sur un petit téléphone, des marges plus serrées pour que

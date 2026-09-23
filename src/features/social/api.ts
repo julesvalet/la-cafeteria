@@ -272,6 +272,8 @@ export async function getGameHistory(userId: string, offset: number, limit = 20)
       count: 'exact',
     })
     .eq('user_id', userId)
+    // Sans les parties ajoutées par un admin (God mode) : rien n'a été joué.
+    .is('details->>admin', null)
     .order('seq', { ascending: false })
     .range(offset, offset + limit - 1);
   if (error) fail(error);

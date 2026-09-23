@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Ban, Coins, ExternalLink, Megaphone, RotateCcw, Search, ShieldCheck } from 'lucide-react';
+import { Ban, Coins, ExternalLink, Megaphone, RotateCcw, Search, ShieldCheck, Zap } from 'lucide-react';
 import { UserAvatar } from '../../social/components/UserAvatar';
 import { formatFees } from '../format';
+import { usePlafee } from '../usePlafee';
 import { banPlayer, getAdminPlayers, grantFees, resetStats, unbanPlayer, warnPlayer, type AdminPlayer } from './adminApi';
 import { ConfirmAction, Field, Flash } from './ui';
 import { fmtDate, fmtDateTime, useFlash } from './helpers';
@@ -132,6 +133,7 @@ export function PlayersTab() {
 }
 
 function PlayerDetail({ player, onChanged, onClose }: { player: AdminPlayer; onChanged: () => void; onClose: () => void }) {
+  const { isSuperAdmin } = usePlafee();
   const [msg, flash] = useFlash();
   const [reason, setReason] = useState('');
   const [warning, setWarning] = useState('');
@@ -211,9 +213,16 @@ function PlayerDetail({ player, onChanged, onClose }: { player: AdminPlayer; onC
           <dd>{player.banned ? `Banni${player.ban_reason ? ` — ${player.ban_reason}` : ''}` : 'Actif'}</dd>
         </div>
       </dl>
-      <Link to={`/joueur/${player.username}`} className="adm-link" target="_blank">
-        <ExternalLink size={14} aria-hidden /> Voir le profil public
-      </Link>
+      <div className="adm-actions">
+        <Link to={`/joueur/${player.username}`} className="adm-link" target="_blank">
+          <ExternalLink size={14} aria-hidden /> Voir le profil public
+        </Link>
+        {isSuperAdmin && (
+          <Link to={`/admin?onglet=god&joueur=${player.user_id}`} className="adm-link adm-link-god">
+            <Zap size={14} aria-hidden /> Ouvrir en God mode
+          </Link>
+        )}
+      </div>
 
       <Flash msg={msg} />
 

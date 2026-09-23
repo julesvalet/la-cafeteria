@@ -4,6 +4,7 @@ import type { Cosmetics, PlafeeEvent, Standing, Wallet } from './api';
 export interface PlafeeValue {
   standing: Standing | null;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   banned: boolean;
   wallet: Wallet | null;
   refreshWallet: () => void;

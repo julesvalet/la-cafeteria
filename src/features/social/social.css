@@ -589,13 +589,6 @@ button.soc-bell-text:hover { color: var(--neon); }
 .soc-bell-foot a { color: var(--neon); }
 .soc-bell-foot a:hover { text-shadow: 0 0 8px rgb(var(--neon-rgb) / 0.8); }
 
-/* Au téléphone, quatre commandes à côté du logo : on les resserre. */
-@media (max-width: 480px) {
-  .site-header-actions { gap: 6px; }
-  .site-header-actions > .account-chip,
-  .site-header-actions > .theme-toggle { width: 36px; height: 36px; }
-}
-
 @media (max-width: 560px) {
   .soc-bell-panel { inset: calc(var(--header-h) + env(safe-area-inset-top) + 10px) 12px auto 12px; width: auto; }
 }

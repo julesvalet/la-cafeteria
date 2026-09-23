@@ -165,6 +165,7 @@ export function PlafeeProvider({ children }: { children: ReactNode }) {
     () => ({
       standing,
       isAdmin: Boolean(standing?.is_admin),
+      isSuperAdmin: Boolean(standing?.is_super_admin),
       banned: Boolean(standing?.banned),
       wallet,
       refreshWallet,

@@ -1,5 +1,5 @@
 import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Award, BarChart3, Coins, Flag, Gauge, PartyPopper, ScrollText, ShieldAlert, Tag, Users } from 'lucide-react';
+import { Award, BarChart3, Coins, Flag, Gauge, PartyPopper, ScrollText, ShieldAlert, Tag, Users, Zap } from 'lucide-react';
 import { useAuth } from '../../account/useAuth';
 import { usePlafee } from '../usePlafee';
 import { StatsTab } from './StatsTab';
@@ -11,6 +11,7 @@ import { ModerationTab } from './ModerationTab';
 import { ReportsTab } from './ReportsTab';
 import { FeesTab } from './FeesTab';
 import { LogsTab } from './LogsTab';
+import { GodTab } from './GodTab';
 import './admin.css';
 
 const TABS = [
@@ -23,7 +24,9 @@ const TABS = [
   { id: 'rapports', label: 'Rapports', icon: Flag, Panel: ReportsTab },
   { id: 'fees', label: 'FEES', icon: Coins, Panel: FeesTab },
   { id: 'journal', label: 'Journal', icon: ScrollText, Panel: LogsTab },
-] as const;
+  // Réservé au super admin : la base refuse les autres de toute façon.
+  { id: 'god', label: 'God mode', icon: Zap, Panel: GodTab, superOnly: true },
+];
 
 /**
  * Le tableau de bord de PLAFEE, réservé aux admins.
@@ -33,10 +36,11 @@ const TABS = [
  */
 export function AdminPage() {
   const { status } = useAuth();
-  const { standing, isAdmin } = usePlafee();
+  const { standing, isAdmin, isSuperAdmin } = usePlafee();
   const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const tab = TABS.find((t) => t.id === params.get('onglet')) ?? TABS[0];
+  const tabs = TABS.filter((t) => !('superOnly' in t) || isSuperAdmin);
+  const tab = tabs.find((t) => t.id === params.get('onglet')) ?? tabs[0];
 
   if (status === 'loading' || (status === 'signed-in' && !standing)) {
     return (
@@ -69,8 +73,8 @@ export function AdminPage() {
           <Gauge size={26} aria-hidden /> Dashboard admin
         </h1>
         <nav className="adm-tabs" aria-label="Sections du tableau de bord">
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <button key={id} type="button" className="adm-tab" aria-current={tab.id === id ? 'page' : undefined} onClick={() => setParams({ onglet: id })}>
+          {tabs.map(({ id, label, icon: Icon }) => (
+            <button key={id} type="button" className="adm-tab" data-god={id === 'god' || undefined} aria-current={tab.id === id ? 'page' : undefined} onClick={() => setParams({ onglet: id })}>
               <Icon size={15} aria-hidden /> {label}
             </button>
           ))}

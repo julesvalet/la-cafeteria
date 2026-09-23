@@ -28,7 +28,31 @@ const ACTIONS: Record<string, string> = {
   revoke_fees: 'FEES retirés',
   fees_config: 'Réglage FEES',
   upsert_shop_item: 'Objet de boutique',
+  god_edit: 'God mode',
 };
+
+/** Une valeur du journal, lisible : les adresses de photo ne disent rien. */
+function logValue(what: unknown, v: unknown): string {
+  if (v === null || v === undefined || v === '') return what === 'Photo' ? 'aucune' : '—';
+  if (what === 'Photo') return 'photo';
+  if (what === 'Bio') {
+    const s = String(v);
+    return `« ${s.length > 40 ? `${s.slice(0, 40)}…` : s} »`;
+  }
+  return typeof v === 'number' ? v.toLocaleString('fr-FR') : String(v);
+}
+
+/** « Jules a modifié Victoires Scopa pour Alice : 12 → 40 ». */
+function describe(l: AdminLog): string {
+  const d = l.details ?? {};
+  if (l.action === 'god_edit') {
+    return `${l.admin ?? 'Un admin'} a modifié ${String(d.what)} pour ${String(d.user)} : ${logValue(d.what, d.from)} → ${logValue(d.what, d.to)}`;
+  }
+  return Object.entries(d)
+    .filter(([, v]) => v !== null && v !== '')
+    .map(([k, v]) => `${k} : ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
+    .join(' · ');
+}
 
 /** Qui a fait quoi, et quand : chaque action d'admin laisse une trace. */
 export function LogsTab() {
@@ -55,7 +79,7 @@ export function LogsTab() {
                 <th scope="col">Date</th>
                 <th scope="col">Admin</th>
                 <th scope="col">Action</th>
-                <th scope="col" className="acc-col-opt">Détails</th>
+                <th scope="col">Détails</th>
               </tr>
             </thead>
             <tbody>
@@ -64,12 +88,7 @@ export function LogsTab() {
                   <td>{fmtDateTime(l.created_at)}</td>
                   <td>{l.admin ?? '—'}</td>
                   <td>{ACTIONS[l.action] ?? l.action}</td>
-                  <td className="acc-col-opt adm-mono">
-                    {Object.entries(l.details ?? {})
-                      .filter(([, v]) => v !== null && v !== '')
-                      .map(([k, v]) => `${k} : ${typeof v === 'object' ? JSON.stringify(v) : String(v)}`)
-                      .join(' · ')}
-                  </td>
+                  <td className={l.action === 'god_edit' ? 'adm-log-god' : 'adm-mono'}>{describe(l)}</td>
                 </tr>
               ))}
             </tbody>

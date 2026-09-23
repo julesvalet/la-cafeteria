@@ -316,3 +316,69 @@ export async function uploadAsset(file: File, folder: 'trophies' | 'badges' | 'e
   if (error) throw new Error(error.message);
   return storage.getPublicUrl(path).data.publicUrl;
 }
+
+// --- God mode (super admin) ------------------------------------------------------------
+
+export interface GodStat {
+  game: string;
+  label: string;
+  wins: number;
+  losses: number;
+  /** Lignes ajoutées par un admin (0 point, datées de l'inscription). */
+  added: number;
+}
+
+export interface GodCatalogTrophy {
+  id: string;
+  title: string;
+  tier: Tier;
+  icon: string;
+  category: string;
+  image_url: string | null;
+  active: boolean;
+}
+
+export interface GodCatalogItem {
+  id: string;
+  name: string;
+  category: ShopCategory;
+  price: number;
+  is_default: boolean;
+  is_active: boolean;
+  payload: Record<string, unknown>;
+}
+
+export interface GodCatalogBadge {
+  id: string;
+  name: string;
+  type: BadgeType;
+  rarity: BadgeRarity;
+  style: { color?: string; icon?: string };
+  image_url: string | null;
+  sku: string | null;
+}
+
+export interface GodState {
+  profile: { id: string; username: string; email: string | null; avatar: string | null; bio: string | null; created_at: string; banned: boolean };
+  fees: { balance: number; lifetime_earned: number; lifetime_spent: number };
+  stats: GodStat[];
+  trophies: { id: string; unlocked_at: string }[];
+  items: { item_id: string; equipped: boolean; custom_text: string | null; purchased_at: string }[];
+  badges: { badge_id: string; note: string | null; awarded_at: string }[];
+  catalog: { trophies: GodCatalogTrophy[]; items: GodCatalogItem[]; badges: GodCatalogBadge[] };
+}
+
+/** Ce que « Sauvegarder » envoie : seulement ce qui change. */
+export interface GodChanges {
+  profile?: { username?: string; avatar?: string | null; bio?: string | null };
+  fees_balance?: number;
+  stats?: { game: string; wins: number; losses: number }[];
+  trophies?: { add: string[]; remove: string[] };
+  items?: { add: { item_id: string; custom_text?: string }[]; remove: string[]; equip: { category: ShopCategory; item_id: string | null }[] };
+  badges?: { add: string[]; remove: string[] };
+}
+
+export const godLoad = (userId: string) => rpc<GodState>('admin_god_load', { p_user: userId });
+
+export const godSave = (userId: string, changes: GodChanges) =>
+  rpc<{ changes: number; state: GodState }>('admin_god_save', { p_user: userId, p_changes: changes });

@@ -529,12 +529,8 @@ html[data-fx='calm'] .neon-btn:hover:not(:disabled) { animation: none; }
   opacity: 0.4;
 }
 
-/* Le libellé cède la place au téléphone ; l'icône, elle, reste toujours
-   lisible et le lien garde sa cible tactile de 40px. */
-@media (max-width: 560px) {
-  .account-chip-label { display: none; }
-  .account-chip-signin { width: 40px; padding: 0; }
-}
+/* Les libellés cèdent la place quand l'en-tête se resserre (paliers dans
+   arcade.css) ; l'icône reste, avec sa cible tactile. */
 
 /* --- Retour d'enregistrement en fin de partie -------------------------------- */
 

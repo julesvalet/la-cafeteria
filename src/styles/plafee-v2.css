@@ -117,10 +117,6 @@ html[data-fx='calm'] .ach-badge[data-unlocked][data-tier='og'] { animation: none
 .plf-fees-chip { gap: 6px; }
 .plf-fees-chip .plf-fees { font-size: 16px; }
 .plf-admin-chip { color: var(--magenta); border-color: rgb(var(--magenta-rgb) / 0.6); }
-@media (max-width: 720px) {
-  .plf-fees-chip .plf-fees small, .plf-fees-chip-store { display: none; }
-  .plf-admin-chip .account-chip-label { display: none; }
-}
 
 .game-record-fees {
   display: inline-flex;
