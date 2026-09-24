@@ -615,6 +615,19 @@ html[data-fx='calm'] .soc-avatar[data-border='flame']::after { animation: none; 
   filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.5));
   z-index: 1;
 }
+/* Les plantes japonaises : des fleurs grises autour de la photo, qui en occupe
+   48 % (public/cosmetics/flowers.svg). Elles oscillent à peine ; version fixe
+   quand les animations sont coupées. */
+.cos-flowers {
+  position: absolute;
+  inset: -54%;
+  background: url('/cosmetics/flowers.svg') center / contain no-repeat;
+  pointer-events: none;
+  z-index: 1;
+}
+html[data-fx='calm'] .cos-flowers { background-image: url('/cosmetics/flowers-still.svg'); }
+@media (prefers-reduced-motion: reduce) { .cos-flowers { background-image: url('/cosmetics/flowers-still.svg'); } }
+
 /* Avec un nœud, le badge visuel passe en bas à droite. */
 .soc-avatar[data-accessory='bow'] .plf-avatar-badge { top: auto; bottom: -6px; }
 

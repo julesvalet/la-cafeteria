@@ -1,8 +1,7 @@
 import { type CSSProperties, type ReactNode } from 'react';
 import { useCosmetics } from '../useCosmetics';
 import { useSeatCards } from '../seatCosmetics';
-
-const BOW = `${import.meta.env.BASE_URL}cosmetics/bow.svg`;
+import { AvatarAccessory } from './AvatarAccessory';
 
 /*
  * Les cosmétiques en partie : tout le monde voit ceux des autres. Les jeux
@@ -16,7 +15,7 @@ export function SeatFlair({ userId, children, className }: { userId?: string | n
   return (
     <span className={`cos-seat${className ? ` ${className}` : ''}`} data-border={c?.border ?? undefined} data-accessory={c?.accessory ?? undefined}>
       {children}
-      {c?.accessory === 'bow' && <img className="cos-bow" src={BOW} alt="" draggable={false} />}
+      <AvatarAccessory id={c?.accessory} />
     </span>
   );
 }

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useCosmetics } from '../../plafee/useCosmetics';
 import { achievementIcon } from '../../achievements/icons';
-
-const BOW = `${import.meta.env.BASE_URL}cosmetics/bow.svg`;
+import { AvatarAccessory } from '../../plafee/components/AvatarAccessory';
 
 export type AvatarStatus = 'online' | 'away' | 'offline';
 
@@ -58,7 +57,7 @@ export function UserAvatar({
         username.charAt(0).toUpperCase()
       )}
       {dot && <span className="soc-presence" data-status={dot} data-online={dot === 'online'} />}
-      {accessory === 'bow' && <img className="cos-bow" src={BOW} alt="" draggable={false} />}
+      <AvatarAccessory id={accessory} />
       {visual && (
         <span className="plf-avatar-badge" style={{ color: visual.style.color }} title={visual.name}>
           {visual.image_url ? <img src={visual.image_url} alt="" /> : VisualIcon && <VisualIcon size={Math.max(11, size * 0.24)} />}

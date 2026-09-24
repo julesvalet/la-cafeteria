@@ -343,7 +343,10 @@ table ; tout le monde voit alors le contour, les flammes et le nœud papillon
 des autres sur leur place, le dos de leurs cartes à leur skin, et leur
 animation de victoire quand ils gagnent. Le nœud papillon (rayon Accessoires)
 et le contour Flammes sont dessinés en SVG dans `public/cosmetics/`
-(migration [0008](supabase/migrations/0008_cosmetics_bow_flame.sql)).
+(migration [0008](supabase/migrations/0008_cosmetics_bow_flame.sql)), comme les
+Plantes japonaises, des fleurs de cerisier grises aux coins de la photo qui
+oscillent à peine (`flowers.svg`, version fixe `flowers-still.svg` quand les
+animations sont coupées ; migration [0009](supabase/migrations/0009_accessory_flowers.sql)).
 
 **Avertissements** : le bandeau d'un avertissement d'admin s'efface seul après
 10 secondes et ne revient plus (il reste dans la cloche) ; seule la suspension
